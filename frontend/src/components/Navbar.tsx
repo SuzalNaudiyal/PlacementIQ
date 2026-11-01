@@ -57,9 +57,9 @@ export const Navbar: React.FC<NavbarProps> = ({ isBackendOnline, latency, onOpen
           </a>
 
           {/* Phase Badge */}
-          <div className="hidden lg:inline-flex items-center gap-1 text-xs text-emerald-300 bg-emerald-950/50 border border-emerald-800/60 px-3 py-1.5 rounded-lg">
-            <ShieldCheck className="h-3.5 w-3.5 text-emerald-400" />
-            Phase 3: Profile Active
+          <div className="hidden lg:inline-flex items-center gap-1 text-xs text-indigo-300 bg-indigo-950/50 border border-indigo-800/60 px-3 py-1.5 rounded-lg">
+            <ShieldCheck className="h-3.5 w-3.5 text-indigo-400" />
+            Phase 5: ML Engine Active
           </div>
 
           {/* User Session Profile or Sign In Button */}

@@ -6,10 +6,11 @@ import { SystemHealthBanner } from './components/SystemHealthBanner';
 import { FeatureGrid } from './components/FeatureGrid';
 import { PhaseTracker } from './components/PhaseTracker';
 import { ProfileView } from './components/profile/ProfileView';
+import { PredictionDashboard } from './components/prediction/PredictionDashboard';
 import { Footer } from './components/Footer';
 import { fetchSystemHealth, pingBackend } from './services/api';
 import type { HealthResponse } from './types/system';
-import { Sparkles, Shield, User, CheckCircle2, ArrowRight, LayoutDashboard, UserCheck } from 'lucide-react';
+import { Sparkles, Shield, User, CheckCircle2, ArrowRight, LayoutDashboard, UserCheck, Zap } from 'lucide-react';
 
 function DashboardContent() {
   const { user, isAuthenticated, logout } = useAuth();
@@ -18,7 +19,7 @@ function DashboardContent() {
   const [error, setError] = useState<string | null>(null);
   const [latency, setLatency] = useState<number | null>(null);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState<boolean>(false);
-  const [activeView, setActiveView] = useState<'overview' | 'profile'>('overview');
+  const [activeView, setActiveView] = useState<'overview' | 'profile' | 'prediction'>('overview');
 
   const loadHealthData = useCallback(async () => {
     setLoading(true);
@@ -79,12 +80,26 @@ function DashboardContent() {
               </div>
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
               <button
-                onClick={() => setActiveView(activeView === 'overview' ? 'profile' : 'overview')}
-                className="px-3 py-1.5 text-xs font-medium text-emerald-300 hover:text-white bg-emerald-950/60 hover:bg-emerald-900 border border-emerald-500/30 rounded-lg transition-colors cursor-pointer"
+                onClick={() => setActiveView('profile')}
+                className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-colors cursor-pointer ${
+                  activeView === 'profile'
+                    ? 'bg-emerald-600 text-white shadow-sm'
+                    : 'text-emerald-300 hover:text-white bg-emerald-950/60 hover:bg-emerald-900 border border-emerald-500/30'
+                }`}
               >
-                {activeView === 'overview' ? 'Open Career Profile →' : '← Platform Overview'}
+                Profile & Skills
+              </button>
+              <button
+                onClick={() => setActiveView('prediction')}
+                className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-colors cursor-pointer ${
+                  activeView === 'prediction'
+                    ? 'bg-indigo-600 text-white shadow-sm'
+                    : 'text-indigo-300 hover:text-white bg-indigo-950/60 hover:bg-indigo-900 border border-indigo-500/30'
+                }`}
+              >
+                ⚡ Predict Placement
               </button>
               <button
                 onClick={logout}
@@ -97,11 +112,11 @@ function DashboardContent() {
         )}
 
         {/* View Switcher Tabs */}
-        <div className="flex items-center justify-between mb-8 pb-4 border-b border-slate-800/80">
-          <div className="flex items-center gap-2 p-1 bg-slate-900/80 border border-slate-800 rounded-xl">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-8 pb-4 border-b border-slate-800/80 gap-3">
+          <div className="flex flex-wrap items-center gap-2 p-1 bg-slate-900/80 border border-slate-800 rounded-xl">
             <button
               onClick={() => setActiveView('overview')}
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-semibold transition cursor-pointer ${
+              className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-semibold transition cursor-pointer ${
                 activeView === 'overview'
                   ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/30'
                   : 'text-slate-400 hover:text-white hover:bg-slate-800/50'
@@ -118,14 +133,36 @@ function DashboardContent() {
                   setActiveView('profile');
                 }
               }}
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-semibold transition cursor-pointer ${
+              className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-semibold transition cursor-pointer ${
                 activeView === 'profile'
                   ? 'bg-emerald-600 text-white shadow-md shadow-emerald-600/30'
                   : 'text-slate-400 hover:text-white hover:bg-slate-800/50'
               }`}
             >
               <UserCheck className="w-3.5 h-3.5" />
-              Student Profile & Career Stack
+              Student Profile & Skills
+              {!isAuthenticated && (
+                <span className="text-[10px] px-1.5 py-0.5 bg-slate-800 rounded text-slate-400 border border-slate-700">
+                  Login Req
+                </span>
+              )}
+            </button>
+            <button
+              onClick={() => {
+                if (!isAuthenticated) {
+                  setIsAuthModalOpen(true);
+                } else {
+                  setActiveView('prediction');
+                }
+              }}
+              className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-semibold transition cursor-pointer ${
+                activeView === 'prediction'
+                  ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-md shadow-indigo-600/30'
+                  : 'text-slate-400 hover:text-white hover:bg-slate-800/50'
+              }`}
+            >
+              <Zap className="w-3.5 h-3.5 text-amber-400" />
+              AI Placement Predictor & Simulator
               {!isAuthenticated && (
                 <span className="text-[10px] px-1.5 py-0.5 bg-slate-800 rounded text-slate-400 border border-slate-700">
                   Login Req
@@ -134,11 +171,16 @@ function DashboardContent() {
             </button>
           </div>
 
-          <div className="text-xs text-slate-400 hidden sm:block">
+          <div className="text-xs text-slate-400 hidden lg:block">
             {activeView === 'profile' ? (
               <span className="text-emerald-400 font-medium flex items-center gap-1.5">
                 <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
                 Phase 3: Student Profile View
+              </span>
+            ) : activeView === 'prediction' ? (
+              <span className="text-indigo-400 font-medium flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-indigo-400 animate-pulse"></span>
+                Phase 5: ML Prediction & What-If Engine
               </span>
             ) : (
               <span>Architecture & Multi-Phase Control</span>
@@ -149,6 +191,8 @@ function DashboardContent() {
         {/* View Body */}
         {activeView === 'profile' && isAuthenticated ? (
           <ProfileView />
+        ) : activeView === 'prediction' && isAuthenticated ? (
+          <PredictionDashboard />
         ) : (
           <>
             {/* Hero Section */}
