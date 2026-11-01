@@ -18,6 +18,7 @@ export const PhaseTracker: React.FC = () => {
     { number: 13, title: 'Docker Orchestration', status: 'completed', desc: 'Compose production containers' },
     { number: 14, title: 'Documentation & Report', status: 'completed', desc: 'Project report, architecture docs' },
     { number: 15, title: 'AI Mock Interview', status: 'completed', desc: 'Role-based timed interview practice & scoring' },
+    { number: 16, title: 'University ERP & Drives', status: 'completed', desc: 'Roster CSV sync, drive eligibility & shortlists' },
   ];
 
   return (

@@ -14,10 +14,11 @@ import { RoadmapView } from './components/roadmap/RoadmapView';
 import { UnifiedDashboard } from './components/dashboard/UnifiedDashboard';
 import { AdminDashboard } from './components/admin/AdminDashboard';
 import { MockInterviewView } from './components/interview/MockInterviewView';
+import { UniversityERPView } from './components/erp/UniversityERPView';
 import { Footer } from './components/Footer';
 import { fetchSystemHealth, pingBackend } from './services/api';
 import type { HealthResponse } from './types/system';
-import { Sparkles, Shield, User, CheckCircle2, ArrowRight, LayoutDashboard, UserCheck, Zap, FileText, Target, Briefcase, Calendar, Mic } from 'lucide-react';
+import { Sparkles, Shield, User, CheckCircle2, ArrowRight, LayoutDashboard, UserCheck, Zap, FileText, Target, Briefcase, Calendar, Mic, Building2 } from 'lucide-react';
 
 function DashboardContent() {
   const { user, isAuthenticated, logout } = useAuth();
@@ -26,7 +27,7 @@ function DashboardContent() {
   const [error, setError] = useState<string | null>(null);
   const [latency, setLatency] = useState<number | null>(null);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState<boolean>(false);
-  const [activeView, setActiveView] = useState<'overview' | 'profile' | 'prediction' | 'resume' | 'skillgap' | 'jobs' | 'roadmap' | 'interview' | 'admin'>('overview');
+  const [activeView, setActiveView] = useState<'overview' | 'profile' | 'prediction' | 'resume' | 'skillgap' | 'jobs' | 'roadmap' | 'interview' | 'erp' | 'admin'>('overview');
 
   const loadHealthData = useCallback(async () => {
     setLoading(true);
@@ -159,6 +160,16 @@ function DashboardContent() {
                 🎙️ Mock Interview
               </button>
               <button
+                onClick={() => setActiveView('erp')}
+                className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-colors cursor-pointer ${
+                  activeView === 'erp'
+                    ? 'bg-emerald-600 text-white shadow-sm'
+                    : 'text-emerald-300 hover:text-white bg-emerald-950/60 hover:bg-emerald-900 border border-emerald-500/30'
+                }`}
+              >
+                🏛️ Campus Drives & ERP
+              </button>
+              <button
                 onClick={() => setActiveView('admin')}
                 className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors cursor-pointer ${
                   activeView === 'admin'
@@ -166,7 +177,7 @@ function DashboardContent() {
                     : 'text-rose-300 hover:text-white bg-rose-950/60 hover:bg-rose-900 border border-rose-500/30'
                 }`}
               >
-                🏛️ Admin Center
+                ⚙️ Admin Center
               </button>
               <button
                 onClick={logout}
@@ -351,6 +362,28 @@ function DashboardContent() {
                 if (!isAuthenticated) {
                   setIsAuthModalOpen(true);
                 } else {
+                  setActiveView('erp');
+                }
+              }}
+              className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-semibold transition cursor-pointer ${
+                activeView === 'erp'
+                  ? 'bg-emerald-600 text-white shadow-md shadow-emerald-600/30'
+                  : 'text-slate-400 hover:text-white hover:bg-slate-800/50'
+              }`}
+            >
+              <Building2 className="w-3.5 h-3.5 text-emerald-400" />
+              University ERP & Drives
+              {!isAuthenticated && (
+                <span className="text-[10px] px-1.5 py-0.5 bg-slate-800 rounded text-slate-400 border border-slate-700">
+                  Login Req
+                </span>
+              )}
+            </button>
+            <button
+              onClick={() => {
+                if (!isAuthenticated) {
+                  setIsAuthModalOpen(true);
+                } else {
                   setActiveView('admin');
                 }
               }}
@@ -406,6 +439,11 @@ function DashboardContent() {
                 <span className="w-2 h-2 rounded-full bg-purple-400 animate-pulse"></span>
                 Phase 15: AI Mock Interview Simulator
               </span>
+            ) : activeView === 'erp' ? (
+              <span className="text-emerald-400 font-medium flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                Phase 17: University ERP & Roster Sync
+              </span>
             ) : (
               <span>Architecture & Multi-Phase Control</span>
             )}
@@ -427,6 +465,8 @@ function DashboardContent() {
           <RoadmapView />
         ) : activeView === 'interview' && isAuthenticated ? (
           <MockInterviewView />
+        ) : activeView === 'erp' && isAuthenticated ? (
+          <UniversityERPView />
         ) : activeView === 'admin' && isAuthenticated ? (
           <AdminDashboard />
         ) : isAuthenticated ? (
