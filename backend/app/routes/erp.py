@@ -4,6 +4,8 @@ Provides student roster CSV upload, academic grade sync, placement drive managem
 """
 
 from datetime import datetime, timezone
+import io
+import csv
 import uuid
 from typing import List, Dict, Any, Optional
 from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File
