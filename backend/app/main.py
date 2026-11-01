@@ -6,7 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from backend.app.config import settings
 from backend.app.database import connect_to_mongo, close_mongo_connection
 from backend.app.auth.seed import seed_demo_users
-from backend.app.routes import health, auth
+from backend.app.routes import health, auth, student
 
 
 @asynccontextmanager
@@ -59,6 +59,7 @@ async def add_process_time_header(request: Request, call_next):
 # Include modular route collections
 app.include_router(health.router, prefix=settings.API_V1_PREFIX)
 app.include_router(auth.router, prefix=settings.API_V1_PREFIX)
+app.include_router(student.router, prefix=settings.API_V1_PREFIX)
 
 
 @app.get("/", tags=["Root"])

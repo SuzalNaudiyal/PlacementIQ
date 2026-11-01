@@ -83,8 +83,8 @@ async def seed_demo_users() -> None:
                             }
                         ],
                         "certifications": [
-                            "SQL Advanced Queries (HackerRank)",
-                            "Python for Data Science (Coursera)",
+                            {"name": "SQL Advanced Queries", "issuer": "HackerRank", "year": 2025},
+                            {"name": "Python for Data Science", "issuer": "Coursera", "year": 2024},
                         ],
                         "assessments": {
                             "coding_score": 75,
