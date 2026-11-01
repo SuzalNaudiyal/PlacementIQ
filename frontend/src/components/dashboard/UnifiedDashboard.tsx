@@ -34,7 +34,7 @@ import type { DashboardSummaryResponse } from '../../types/dashboard';
 
 interface UnifiedDashboardProps {
   onNavigate: (
-    view: 'profile' | 'prediction' | 'resume' | 'skillgap' | 'jobs' | 'roadmap'
+    view: 'profile' | 'prediction' | 'resume' | 'skillgap' | 'jobs' | 'roadmap' | 'interview'
   ) => void;
 }
 

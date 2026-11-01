@@ -59,7 +59,7 @@ export const Navbar: React.FC<NavbarProps> = ({ isBackendOnline, latency, onOpen
           {/* Phase Badge */}
           <div className="hidden lg:inline-flex items-center gap-1 text-xs text-indigo-300 bg-indigo-950/50 border border-indigo-800/60 px-3 py-1.5 rounded-lg">
             <ShieldCheck className="h-3.5 w-3.5 text-indigo-400" />
-            Phase 6: Resume & ATS Active
+            Phase 15: AI Mock Interview Active
           </div>
 
           {/* User Session Profile or Sign In Button */}

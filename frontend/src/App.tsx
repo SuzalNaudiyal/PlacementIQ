@@ -13,10 +13,11 @@ import { JobMatchingView } from './components/jobs/JobMatchingView';
 import { RoadmapView } from './components/roadmap/RoadmapView';
 import { UnifiedDashboard } from './components/dashboard/UnifiedDashboard';
 import { AdminDashboard } from './components/admin/AdminDashboard';
+import { MockInterviewView } from './components/interview/MockInterviewView';
 import { Footer } from './components/Footer';
 import { fetchSystemHealth, pingBackend } from './services/api';
 import type { HealthResponse } from './types/system';
-import { Sparkles, Shield, User, CheckCircle2, ArrowRight, LayoutDashboard, UserCheck, Zap, FileText, Target, Briefcase, Calendar } from 'lucide-react';
+import { Sparkles, Shield, User, CheckCircle2, ArrowRight, LayoutDashboard, UserCheck, Zap, FileText, Target, Briefcase, Calendar, Mic } from 'lucide-react';
 
 function DashboardContent() {
   const { user, isAuthenticated, logout } = useAuth();
@@ -25,7 +26,7 @@ function DashboardContent() {
   const [error, setError] = useState<string | null>(null);
   const [latency, setLatency] = useState<number | null>(null);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState<boolean>(false);
-  const [activeView, setActiveView] = useState<'overview' | 'profile' | 'prediction' | 'resume' | 'skillgap' | 'jobs' | 'roadmap' | 'admin'>('overview');
+  const [activeView, setActiveView] = useState<'overview' | 'profile' | 'prediction' | 'resume' | 'skillgap' | 'jobs' | 'roadmap' | 'interview' | 'admin'>('overview');
 
   const loadHealthData = useCallback(async () => {
     setLoading(true);
@@ -146,6 +147,16 @@ function DashboardContent() {
                 }`}
               >
                 🗺️ 8-Wk Roadmap
+              </button>
+              <button
+                onClick={() => setActiveView('interview')}
+                className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-colors cursor-pointer ${
+                  activeView === 'interview'
+                    ? 'bg-purple-600 text-white shadow-sm'
+                    : 'text-purple-300 hover:text-white bg-purple-950/60 hover:bg-purple-900 border border-purple-500/30'
+                }`}
+              >
+                🎙️ Mock Interview
               </button>
               <button
                 onClick={() => setActiveView('admin')}
@@ -318,6 +329,28 @@ function DashboardContent() {
                 if (!isAuthenticated) {
                   setIsAuthModalOpen(true);
                 } else {
+                  setActiveView('interview');
+                }
+              }}
+              className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-semibold transition cursor-pointer ${
+                activeView === 'interview'
+                  ? 'bg-purple-600 text-white shadow-md shadow-purple-600/30'
+                  : 'text-slate-400 hover:text-white hover:bg-slate-800/50'
+              }`}
+            >
+              <Mic className="w-3.5 h-3.5 text-purple-400" />
+              AI Mock Interview
+              {!isAuthenticated && (
+                <span className="text-[10px] px-1.5 py-0.5 bg-slate-800 rounded text-slate-400 border border-slate-700">
+                  Login Req
+                </span>
+              )}
+            </button>
+            <button
+              onClick={() => {
+                if (!isAuthenticated) {
+                  setIsAuthModalOpen(true);
+                } else {
                   setActiveView('admin');
                 }
               }}
@@ -368,6 +401,11 @@ function DashboardContent() {
                 <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
                 Phase 9: Personalized 8-Week Learning Roadmap
               </span>
+            ) : activeView === 'interview' ? (
+              <span className="text-purple-400 font-medium flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-purple-400 animate-pulse"></span>
+                Phase 15: AI Mock Interview Simulator
+              </span>
             ) : (
               <span>Architecture & Multi-Phase Control</span>
             )}
@@ -387,6 +425,8 @@ function DashboardContent() {
           <JobMatchingView />
         ) : activeView === 'roadmap' && isAuthenticated ? (
           <RoadmapView />
+        ) : activeView === 'interview' && isAuthenticated ? (
+          <MockInterviewView />
         ) : activeView === 'admin' && isAuthenticated ? (
           <AdminDashboard />
         ) : isAuthenticated ? (

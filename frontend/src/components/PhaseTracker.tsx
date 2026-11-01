@@ -12,11 +12,12 @@ export const PhaseTracker: React.FC = () => {
     { number: 7, title: 'Skill Gap Engine', status: 'completed', desc: '10+ Tech roles & 3-tier gap breakdown' },
     { number: 8, title: 'Job Matching', status: 'completed', desc: 'Semantic similarity with Sentence-BERT' },
     { number: 9, title: 'Learning Roadmap', status: 'completed', desc: '8-Week customized action schedules' },
-    { number: 10, title: 'Main Dashboard', status: 'upcoming', desc: 'Recharts visual analytics & status cards' },
-    { number: 11, title: 'Admin Panel', status: 'upcoming', desc: 'Role management, dataset updates' },
-    { number: 12, title: 'Testing & Hardening', status: 'upcoming', desc: 'E2E and unit test suites' },
-    { number: 13, title: 'Docker Orchestration', status: 'upcoming', desc: 'Compose production containers' },
-    { number: 14, title: 'Documentation & Report', status: 'upcoming', desc: 'Project report, architecture docs' },
+    { number: 10, title: 'Main Dashboard', status: 'completed', desc: 'Recharts visual analytics & status cards' },
+    { number: 11, title: 'Admin Panel', status: 'completed', desc: 'Role management, dataset updates' },
+    { number: 12, title: 'Testing & Hardening', status: 'completed', desc: 'E2E and 56+ unit test suite' },
+    { number: 13, title: 'Docker Orchestration', status: 'completed', desc: 'Compose production containers' },
+    { number: 14, title: 'Documentation & Report', status: 'completed', desc: 'Project report, architecture docs' },
+    { number: 15, title: 'AI Mock Interview', status: 'completed', desc: 'Role-based timed interview practice & scoring' },
   ];
 
   return (
@@ -35,7 +36,7 @@ export const PhaseTracker: React.FC = () => {
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3.5">
           {phases.map((phase) => {
             const isCompleted = phase.status === 'completed';
-            const isCurrent = phase.number === 10; // Next up
+            const isCurrent = phase.status === 'in_progress';
             return (
               <div
                 key={phase.number}

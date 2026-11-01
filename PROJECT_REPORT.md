@@ -4,7 +4,7 @@
 **Project Type**: Final-Year B.Tech / M.Tech Major Project & Enterprise Career SaaS  
 **Developer & Author**: Suzal Naudiyal  
 **Architecture**: FastAPI (Asynchronous Python 3.14) + React 19 + TypeScript + Vite 8 + Tailwind CSS v4 + MongoDB Motor + Scikit-Learn + SHAP  
-**Status**: Production Verified & Fully Tested (100% Pass Rate Across 56 Unit Tests)
+**Status**: Production Verified & Fully Tested (100% Pass Rate Across 62 Unit Tests)
 
 ---
 
@@ -183,7 +183,8 @@ A comprehensive automated test suite of **56 unit and integration tests** was de
 | `test_jobs.py` | 7 | Job matching, TF-IDF cosine similarity, eligibility filters | **PASSED** |
 | `test_roadmap.py` | 4 | 8-week curriculum generation, task completion toggle | **PASSED** |
 | `test_admin.py` | 7 | Cohort stats, student directory, job CRUD, CSV export | **PASSED** |
-| **Total** | **56** | **Full System Regression Suite** | **100% PASSED** |
+| `test_interview.py` | 6 | Mock interview generation, speech/text scoring, STAR eval | **PASSED** |
+| **Total** | **62** | **Full System Regression Suite** | **100% PASSED** |
 
 ---
 
@@ -210,13 +211,22 @@ A comprehensive automated test suite of **56 unit and integration tests** was de
 2. Asynchronous MongoDB Motor driver connecting over bridge network `placement_net`.
 3. In local development or testing without an active MongoDB daemon, a transparent `mongomock_motor` in-memory fallback engages automatically without code alteration.
 
+### Q5: How does the Phase 15 AI Mock Interview evaluation engine score candidate responses?
+**Answer**: The evaluation engine evaluates responses across four distinct dimensions:
+1. **Technical Concept Accuracy (40%)**: Keyword density against gold-standard concepts, semantic vocabulary depth, and length adequacy.
+2. **Communication Clarity (25%)**: Sentence structure, lexical diversity, and articulation.
+3. **Answer Structure (20%)**: Heuristic detection of STAR framework (Situation, Task, Action, Result) for behavioral questions and trade-off analysis for technical prompts.
+4. **Delivery & Confidence (15%)**: Detection and penalty for verbal filler expressions ("um", "uh", "like", "i guess").
+
 ---
 
 ## 10. Conclusion & Future Enhancements
 
-The **AI Placement Predictor & Skill Gap Analyzer** delivers a complete, production-ready full-stack software system that transcends traditional academic prototypes. Future enhancements include:
-- Audio/Video AI Mock Interview Assessment using speech sentiment analysis and facial confidence scoring.
-- Automated GitHub repository analysis for verifiable code quality index scoring.
+The **AI Placement Predictor & Skill Gap Analyzer** delivers a complete, production-ready full-stack software system that transcends traditional academic prototypes. 
+- **Phase 15 (AI Mock Interview Simulator & Speech Assessment)** is fully operational with real-time speech dictation, audio question read-aloud, and multi-dimensional candidate evaluation.
+
+Future roadmap enhancements include:
+- Automated GitHub and LeetCode profile analysis for verifiable code quality index scoring.
 - Direct integration with university ERP portals for automated student grade synchronization.
 
 ---
