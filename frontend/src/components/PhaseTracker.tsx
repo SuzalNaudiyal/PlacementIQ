@@ -5,11 +5,11 @@ export const PhaseTracker: React.FC = () => {
   const phases = [
     { number: 1, title: 'Architecture & Foundation', status: 'completed', desc: 'FastAPI, React, Motor, Docker, Health Check' },
     { number: 2, title: 'Database & Auth', status: 'completed', desc: 'JWT, MongoDB collections, password hashing' },
-    { number: 3, title: 'Student Profile', status: 'upcoming', desc: 'Academic, skills, & assessment data forms' },
-    { number: 4, title: 'Dataset & ML Pipeline', status: 'upcoming', desc: 'Synthetic/real datasets & model training' },
-    { number: 5, title: 'Prediction API', status: 'upcoming', desc: 'Model serving with explainability (SHAP)' },
-    { number: 6, title: 'Resume Parser (NLP)', status: 'upcoming', desc: 'spaCy, PyMuPDF, skill extraction' },
-    { number: 7, title: 'Skill Gap Engine', status: 'upcoming', desc: '10+ Tech roles & radar gap breakdown' },
+    { number: 3, title: 'Student Profile', status: 'completed', desc: 'Academic, skills, & assessment data forms' },
+    { number: 4, title: 'Dataset & ML Pipeline', status: 'completed', desc: 'Synthetic/real datasets & model training' },
+    { number: 5, title: 'Prediction API', status: 'completed', desc: 'Model serving with explainability (SHAP)' },
+    { number: 6, title: 'Resume Parser (NLP)', status: 'completed', desc: 'spaCy, PyMuPDF, skill extraction' },
+    { number: 7, title: 'Skill Gap Engine', status: 'completed', desc: '10+ Tech roles & 3-tier gap breakdown' },
     { number: 8, title: 'Job Matching', status: 'upcoming', desc: 'Semantic similarity with Sentence-BERT' },
     { number: 9, title: 'Learning Roadmap', status: 'upcoming', desc: '8-Week customized action schedules' },
     { number: 10, title: 'Main Dashboard', status: 'upcoming', desc: 'Recharts visual analytics & status cards' },
@@ -35,7 +35,7 @@ export const PhaseTracker: React.FC = () => {
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3.5">
           {phases.map((phase) => {
             const isCompleted = phase.status === 'completed';
-            const isCurrent = phase.number === 3; // Next up
+            const isCurrent = phase.number === 8; // Next up
             return (
               <div
                 key={phase.number}

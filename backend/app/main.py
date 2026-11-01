@@ -6,7 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from backend.app.config import settings
 from backend.app.database import connect_to_mongo, close_mongo_connection
 from backend.app.auth.seed import seed_demo_users
-from backend.app.routes import health, auth, student, prediction, resume
+from backend.app.routes import health, auth, student, prediction, resume, skill_gap
 
 
 @asynccontextmanager
@@ -62,6 +62,7 @@ app.include_router(auth.router, prefix=settings.API_V1_PREFIX)
 app.include_router(student.router, prefix=settings.API_V1_PREFIX)
 app.include_router(prediction.router, prefix=settings.API_V1_PREFIX)
 app.include_router(resume.router, prefix=settings.API_V1_PREFIX)
+app.include_router(skill_gap.router, prefix=settings.API_V1_PREFIX)
 
 
 @app.get("/", tags=["Root"])
