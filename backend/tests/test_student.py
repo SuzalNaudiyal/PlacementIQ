@@ -141,3 +141,25 @@ async def test_update_student_profile_invalid_cgpa():
             headers={"Authorization": f"Bearer {token}"},
         )
         assert res.status_code == 422
+
+
+@pytest.mark.asyncio
+async def test_get_student_dashboard_summary():
+    """Verify authenticated student can retrieve unified dashboard summary telemetry."""
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://test") as client:
+        token = await get_student_auth_token(client)
+        res = await client.get(
+            "/api/student/dashboard-summary",
+            headers={"Authorization": f"Bearer {token}"},
+        )
+        assert res.status_code == 200
+        data = res.json()
+        assert "kpis" in data
+        assert data["kpis"]["placement_probability"] >= 0.0
+        assert "radar_benchmarks" in data
+        assert len(data["radar_benchmarks"]) == 6
+        for point in data["radar_benchmarks"]:
+            assert point["candidate_score"] >= 0.0
+            assert point["industry_benchmark"] > 0.0
+        assert len(data["next_recommended_actions"]) > 0

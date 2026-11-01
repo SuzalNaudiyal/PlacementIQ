@@ -11,6 +11,7 @@ import { ResumeAnalyzer } from './components/resume/ResumeAnalyzer';
 import { SkillGapAnalyzer } from './components/skillgap/SkillGapAnalyzer';
 import { JobMatchingView } from './components/jobs/JobMatchingView';
 import { RoadmapView } from './components/roadmap/RoadmapView';
+import { UnifiedDashboard } from './components/dashboard/UnifiedDashboard';
 import { Footer } from './components/Footer';
 import { fetchSystemHealth, pingBackend } from './services/api';
 import type { HealthResponse } from './types/system';
@@ -353,6 +354,8 @@ function DashboardContent() {
           <JobMatchingView />
         ) : activeView === 'roadmap' && isAuthenticated ? (
           <RoadmapView />
+        ) : isAuthenticated ? (
+          <UnifiedDashboard onNavigate={(view) => setActiveView(view)} />
         ) : (
           <>
             {/* Hero Section */}
