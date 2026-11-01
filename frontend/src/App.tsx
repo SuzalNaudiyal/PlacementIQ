@@ -12,6 +12,7 @@ import { SkillGapAnalyzer } from './components/skillgap/SkillGapAnalyzer';
 import { JobMatchingView } from './components/jobs/JobMatchingView';
 import { RoadmapView } from './components/roadmap/RoadmapView';
 import { UnifiedDashboard } from './components/dashboard/UnifiedDashboard';
+import { AdminDashboard } from './components/admin/AdminDashboard';
 import { Footer } from './components/Footer';
 import { fetchSystemHealth, pingBackend } from './services/api';
 import type { HealthResponse } from './types/system';
@@ -24,7 +25,7 @@ function DashboardContent() {
   const [error, setError] = useState<string | null>(null);
   const [latency, setLatency] = useState<number | null>(null);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState<boolean>(false);
-  const [activeView, setActiveView] = useState<'overview' | 'profile' | 'prediction' | 'resume' | 'skillgap' | 'jobs' | 'roadmap'>('overview');
+  const [activeView, setActiveView] = useState<'overview' | 'profile' | 'prediction' | 'resume' | 'skillgap' | 'jobs' | 'roadmap' | 'admin'>('overview');
 
   const loadHealthData = useCallback(async () => {
     setLoading(true);
@@ -145,6 +146,16 @@ function DashboardContent() {
                 }`}
               >
                 🗺️ 8-Wk Roadmap
+              </button>
+              <button
+                onClick={() => setActiveView('admin')}
+                className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors cursor-pointer ${
+                  activeView === 'admin'
+                    ? 'bg-rose-600 text-white shadow-sm'
+                    : 'text-rose-300 hover:text-white bg-rose-950/60 hover:bg-rose-900 border border-rose-500/30'
+                }`}
+              >
+                🏛️ Admin Center
               </button>
               <button
                 onClick={logout}
@@ -302,6 +313,28 @@ function DashboardContent() {
                 </span>
               )}
             </button>
+            <button
+              onClick={() => {
+                if (!isAuthenticated) {
+                  setIsAuthModalOpen(true);
+                } else {
+                  setActiveView('admin');
+                }
+              }}
+              className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-semibold transition cursor-pointer ${
+                activeView === 'admin'
+                  ? 'bg-rose-600 text-white shadow-md shadow-rose-600/30'
+                  : 'text-slate-400 hover:text-white hover:bg-slate-800/50'
+              }`}
+            >
+              <Shield className="w-3.5 h-3.5 text-rose-400" />
+              Admin Command Center
+              {!isAuthenticated && (
+                <span className="text-[10px] px-1.5 py-0.5 bg-slate-800 rounded text-slate-400 border border-slate-700">
+                  Admin Req
+                </span>
+              )}
+            </button>
           </div>
 
           <div className="text-xs text-slate-400 hidden lg:block">
@@ -354,6 +387,8 @@ function DashboardContent() {
           <JobMatchingView />
         ) : activeView === 'roadmap' && isAuthenticated ? (
           <RoadmapView />
+        ) : activeView === 'admin' && isAuthenticated ? (
+          <AdminDashboard />
         ) : isAuthenticated ? (
           <UnifiedDashboard onNavigate={(view) => setActiveView(view)} />
         ) : (
