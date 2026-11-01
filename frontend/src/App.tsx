@@ -7,10 +7,11 @@ import { FeatureGrid } from './components/FeatureGrid';
 import { PhaseTracker } from './components/PhaseTracker';
 import { ProfileView } from './components/profile/ProfileView';
 import { PredictionDashboard } from './components/prediction/PredictionDashboard';
+import { ResumeAnalyzer } from './components/resume/ResumeAnalyzer';
 import { Footer } from './components/Footer';
 import { fetchSystemHealth, pingBackend } from './services/api';
 import type { HealthResponse } from './types/system';
-import { Sparkles, Shield, User, CheckCircle2, ArrowRight, LayoutDashboard, UserCheck, Zap } from 'lucide-react';
+import { Sparkles, Shield, User, CheckCircle2, ArrowRight, LayoutDashboard, UserCheck, Zap, FileText } from 'lucide-react';
 
 function DashboardContent() {
   const { user, isAuthenticated, logout } = useAuth();
@@ -19,7 +20,7 @@ function DashboardContent() {
   const [error, setError] = useState<string | null>(null);
   const [latency, setLatency] = useState<number | null>(null);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState<boolean>(false);
-  const [activeView, setActiveView] = useState<'overview' | 'profile' | 'prediction'>('overview');
+  const [activeView, setActiveView] = useState<'overview' | 'profile' | 'prediction' | 'resume'>('overview');
 
   const loadHealthData = useCallback(async () => {
     setLoading(true);
@@ -102,6 +103,16 @@ function DashboardContent() {
                 ⚡ Predict Placement
               </button>
               <button
+                onClick={() => setActiveView('resume')}
+                className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-colors cursor-pointer ${
+                  activeView === 'resume'
+                    ? 'bg-teal-600 text-white shadow-sm'
+                    : 'text-teal-300 hover:text-white bg-teal-950/60 hover:bg-teal-900 border border-teal-500/30'
+                }`}
+              >
+                📄 Resume & ATS
+              </button>
+              <button
                 onClick={logout}
                 className="px-3 py-1.5 text-xs font-medium text-slate-300 hover:text-white bg-slate-900/80 hover:bg-slate-900 border border-slate-800 rounded-lg transition-colors cursor-pointer"
               >
@@ -169,6 +180,28 @@ function DashboardContent() {
                 </span>
               )}
             </button>
+            <button
+              onClick={() => {
+                if (!isAuthenticated) {
+                  setIsAuthModalOpen(true);
+                } else {
+                  setActiveView('resume');
+                }
+              }}
+              className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-semibold transition cursor-pointer ${
+                activeView === 'resume'
+                  ? 'bg-teal-600 text-white shadow-md shadow-teal-600/30'
+                  : 'text-slate-400 hover:text-white hover:bg-slate-800/50'
+              }`}
+            >
+              <FileText className="w-3.5 h-3.5 text-teal-400" />
+              Resume Parser & ATS Auditor
+              {!isAuthenticated && (
+                <span className="text-[10px] px-1.5 py-0.5 bg-slate-800 rounded text-slate-400 border border-slate-700">
+                  Login Req
+                </span>
+              )}
+            </button>
           </div>
 
           <div className="text-xs text-slate-400 hidden lg:block">
@@ -182,6 +215,11 @@ function DashboardContent() {
                 <span className="w-2 h-2 rounded-full bg-indigo-400 animate-pulse"></span>
                 Phase 5: ML Prediction & What-If Engine
               </span>
+            ) : activeView === 'resume' ? (
+              <span className="text-teal-400 font-medium flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-teal-400 animate-pulse"></span>
+                Phase 6: Resume Parser & ATS Engine
+              </span>
             ) : (
               <span>Architecture & Multi-Phase Control</span>
             )}
@@ -193,6 +231,8 @@ function DashboardContent() {
           <ProfileView />
         ) : activeView === 'prediction' && isAuthenticated ? (
           <PredictionDashboard />
+        ) : activeView === 'resume' && isAuthenticated ? (
+          <ResumeAnalyzer />
         ) : (
           <>
             {/* Hero Section */}
