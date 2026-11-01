@@ -1,0 +1,71 @@
+version: "3.8"
+
+services:
+  # MongoDB Database Service
+  mongo:
+    image: mongo:7.0
+    container_name: placement_mongo
+    restart: always
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_DATABASE: placement_predictor_db
+    volumes:
+      - mongo_data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      - placement_net
+
+  # FastAPI Backend Service
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    container_name: placement_backend
+    restart: always
+    ports:
+      - "8000:8000"
+    environment:
+      - PROJECT_NAME=AI Placement Predictor & Skill Gap Analyzer
+      - APP_ENV=production
+      - DEBUG=False
+      - SERVER_HOST=0.0.0.0
+      - SERVER_PORT=8000
+      - MONGODB_URL=mongodb://mongo:27017
+      - MONGODB_DB_NAME=placement_predictor_db
+      - CORS_ORIGINS=http://localhost:5173,http://localhost:80,http://127.0.0.1:5173
+      - JWT_SECRET_KEY=dev-insecure-secret-key-change-in-production-123456789
+    depends_on:
+      mongo:
+        condition: service_healthy
+    volumes:
+      - ./ml/models:/app/ml/models
+    networks:
+      - placement_net
+
+  # React Vite Frontend Service (Served via Nginx)
+  frontend:
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+    container_name: placement_frontend
+    restart: always
+    ports:
+      - "5173:80"
+    depends_on:
+      - backend
+    networks:
+      - placement_net
+
+volumes:
+  mongo_data:
+    driver: local
+
+networks:
+  placement_net:
+    driver: bridge
