@@ -11,7 +11,7 @@ export const PhaseTracker: React.FC = () => {
     { number: 6, title: 'Resume Parser (NLP)', status: 'completed', desc: 'spaCy, PyMuPDF, skill extraction' },
     { number: 7, title: 'Skill Gap Engine', status: 'completed', desc: '10+ Tech roles & 3-tier gap breakdown' },
     { number: 8, title: 'Job Matching', status: 'completed', desc: 'Semantic similarity with Sentence-BERT' },
-    { number: 9, title: 'Learning Roadmap', status: 'upcoming', desc: '8-Week customized action schedules' },
+    { number: 9, title: 'Learning Roadmap', status: 'completed', desc: '8-Week customized action schedules' },
     { number: 10, title: 'Main Dashboard', status: 'upcoming', desc: 'Recharts visual analytics & status cards' },
     { number: 11, title: 'Admin Panel', status: 'upcoming', desc: 'Role management, dataset updates' },
     { number: 12, title: 'Testing & Hardening', status: 'upcoming', desc: 'E2E and unit test suites' },
@@ -35,7 +35,7 @@ export const PhaseTracker: React.FC = () => {
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3.5">
           {phases.map((phase) => {
             const isCompleted = phase.status === 'completed';
-            const isCurrent = phase.number === 9; // Next up
+            const isCurrent = phase.number === 10; // Next up
             return (
               <div
                 key={phase.number}

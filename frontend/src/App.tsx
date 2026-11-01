@@ -10,10 +10,11 @@ import { PredictionDashboard } from './components/prediction/PredictionDashboard
 import { ResumeAnalyzer } from './components/resume/ResumeAnalyzer';
 import { SkillGapAnalyzer } from './components/skillgap/SkillGapAnalyzer';
 import { JobMatchingView } from './components/jobs/JobMatchingView';
+import { RoadmapView } from './components/roadmap/RoadmapView';
 import { Footer } from './components/Footer';
 import { fetchSystemHealth, pingBackend } from './services/api';
 import type { HealthResponse } from './types/system';
-import { Sparkles, Shield, User, CheckCircle2, ArrowRight, LayoutDashboard, UserCheck, Zap, FileText, Target, Briefcase } from 'lucide-react';
+import { Sparkles, Shield, User, CheckCircle2, ArrowRight, LayoutDashboard, UserCheck, Zap, FileText, Target, Briefcase, Calendar } from 'lucide-react';
 
 function DashboardContent() {
   const { user, isAuthenticated, logout } = useAuth();
@@ -22,7 +23,7 @@ function DashboardContent() {
   const [error, setError] = useState<string | null>(null);
   const [latency, setLatency] = useState<number | null>(null);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState<boolean>(false);
-  const [activeView, setActiveView] = useState<'overview' | 'profile' | 'prediction' | 'resume' | 'skillgap' | 'jobs'>('overview');
+  const [activeView, setActiveView] = useState<'overview' | 'profile' | 'prediction' | 'resume' | 'skillgap' | 'jobs' | 'roadmap'>('overview');
 
   const loadHealthData = useCallback(async () => {
     setLoading(true);
@@ -133,6 +134,16 @@ function DashboardContent() {
                 }`}
               >
                 💼 Campus Jobs
+              </button>
+              <button
+                onClick={() => setActiveView('roadmap')}
+                className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-colors cursor-pointer ${
+                  activeView === 'roadmap'
+                    ? 'bg-emerald-600 text-white shadow-sm'
+                    : 'text-emerald-300 hover:text-white bg-emerald-950/60 hover:bg-emerald-900 border border-emerald-500/30'
+                }`}
+              >
+                🗺️ 8-Wk Roadmap
               </button>
               <button
                 onClick={logout}
@@ -268,6 +279,28 @@ function DashboardContent() {
                 </span>
               )}
             </button>
+            <button
+              onClick={() => {
+                if (!isAuthenticated) {
+                  setIsAuthModalOpen(true);
+                } else {
+                  setActiveView('roadmap');
+                }
+              }}
+              className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-semibold transition cursor-pointer ${
+                activeView === 'roadmap'
+                  ? 'bg-emerald-600 text-white shadow-md shadow-emerald-600/30'
+                  : 'text-slate-400 hover:text-white hover:bg-slate-800/50'
+              }`}
+            >
+              <Calendar className="w-3.5 h-3.5 text-emerald-400" />
+              8-Week Learning Roadmap
+              {!isAuthenticated && (
+                <span className="text-[10px] px-1.5 py-0.5 bg-slate-800 rounded text-slate-400 border border-slate-700">
+                  Login Req
+                </span>
+              )}
+            </button>
           </div>
 
           <div className="text-xs text-slate-400 hidden lg:block">
@@ -296,6 +329,11 @@ function DashboardContent() {
                 <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
                 Phase 8: Semantic Job Matching Engine
               </span>
+            ) : activeView === 'roadmap' ? (
+              <span className="text-emerald-400 font-medium flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                Phase 9: Personalized 8-Week Learning Roadmap
+              </span>
             ) : (
               <span>Architecture & Multi-Phase Control</span>
             )}
@@ -313,6 +351,8 @@ function DashboardContent() {
           <SkillGapAnalyzer />
         ) : activeView === 'jobs' && isAuthenticated ? (
           <JobMatchingView />
+        ) : activeView === 'roadmap' && isAuthenticated ? (
+          <RoadmapView />
         ) : (
           <>
             {/* Hero Section */}
