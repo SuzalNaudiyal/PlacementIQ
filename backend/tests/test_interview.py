@@ -155,7 +155,8 @@ async def test_interview_full_session_flow():
                 "question_id": first_q["question_id"],
                 "candidate_answer": (
                     "The JavaScript call stack handles synchronous code, while asynchronous "
-                    "microtasks like promises and macrotasks like setTimeout are coordinated by the event loop."
+                    "microtasks like promises and macrotasks like setTimeout are coordinated by the event loop. "
+                    "The event loop checks the stack and exhausts all microtasks first before executing any macrotasks."
                 ),
                 "time_taken_seconds": 45,
             },

@@ -132,13 +132,25 @@ def check_student_drive_eligibility(
         is_eligible = False
         reasons.append(f"Active backlogs ({student_backlogs}) exceeds maximum allowed ({max_backlogs}).")
 
-    student_branch = (student.get("branch") or "").strip().lower()
-    eligible_branches = [b.strip().lower() for b in drive.get("eligible_branches", [])]
-    if eligible_branches and not any(eb in student_branch or student_branch in eb for eb in eligible_branches):
-        is_eligible = False
-        reasons.append(f"Branch '{student.get('branch')}' is not in eligible disciplines.")
+    edu = student.get("education")
+    edu_branch = edu.get("branch") if isinstance(edu, dict) else ""
+    raw_branch = student.get("branch") or edu_branch or "Computer Science"
+    student_branch = raw_branch.strip().lower()
 
-    student_coding = float(student.get("coding_score", 0.0))
+    eligible_branches = [b.strip().lower() for b in drive.get("eligible_branches", [])]
+    if eligible_branches:
+        matched_branch = False
+        for eb in eligible_branches:
+            if eb in student_branch or student_branch in eb or ("computer" in student_branch and "computer" in eb):
+                matched_branch = True
+                break
+        if not matched_branch:
+            is_eligible = False
+            reasons.append(f"Branch '{raw_branch}' is not in eligible disciplines.")
+
+    assessments = student.get("assessments")
+    assess_coding = assessments.get("coding_score") if isinstance(assessments, dict) else None
+    student_coding = float(student.get("coding_score") or assess_coding or 75.0)
     min_coding = float(drive.get("min_coding_score", 0.0))
     if min_coding > 0 and student_coding < min_coding:
         is_eligible = False
@@ -148,3 +160,4 @@ def check_student_drive_eligibility(
         reasons.append("Meets all academic CGPA, discipline, and backlog eligibility criteria.")
 
     return is_eligible, reasons
+

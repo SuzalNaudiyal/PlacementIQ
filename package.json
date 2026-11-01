@@ -1,0 +1,16 @@
+{
+  "name": "placementiq",
+  "version": "1.0.0",
+  "description": "AI Placement Predictor & Skill Gap Analyzer - Institutional Suite",
+  "author": "Suzal Naudiyal",
+  "license": "MIT",
+  "scripts": {
+    "dev": "npm --prefix frontend run dev",
+    "build": "npm --prefix frontend run build",
+    "preview": "npm --prefix frontend run preview",
+    "lint": "npm --prefix frontend run lint",
+    "start": "./start.sh",
+    "test:backend": "PYTHONPATH=. backend/.venv/bin/pytest backend/tests/ -v",
+    "test": "PYTHONPATH=. backend/.venv/bin/pytest backend/tests/ -v && npm --prefix frontend run build"
+  }
+}
