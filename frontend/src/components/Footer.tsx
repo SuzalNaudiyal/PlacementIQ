@@ -13,6 +13,9 @@ export const Footer: React.FC = () => {
           <p className="mt-1 text-slate-500">
             Full-Stack AI Career Intelligence Platform • Final Year B.Tech Engineering Project
           </p>
+          <p className="mt-2 text-slate-500 text-[11px]">
+            © {new Date().getFullYear()} <span className="text-slate-300 font-medium">Suzal Naudiyal</span>. All rights reserved.
+          </p>
         </div>
 
         <div className="flex flex-wrap items-center gap-4 text-slate-400">

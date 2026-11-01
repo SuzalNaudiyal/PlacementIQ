@@ -1,0 +1,41 @@
+# ARYAN SHARMA
+Email: aryan.sharma@apex.edu | Phone: +91 98765 43210
+LinkedIn: https://linkedin.com/in/aryansharma-dev | GitHub: https://github.com/aryansharma-dev
+Bangalore, India
+
+## PROFESSIONAL SUMMARY
+Passionate and results-oriented final-year Computer Science undergraduate with proven experience building full-stack distributed web applications, high-throughput REST APIs, and automated CI/CD microservices. Experienced in React, Node.js, Python, PostgreSQL, and Docker.
+
+## EDUCATION
+Apex Institute of Technology, Bangalore
+Bachelor of Technology (B.Tech) in Computer Science & Engineering | CGPA: 8.75 / 10.0
+Expected Graduation: May 2026
+
+## TECHNICAL SKILLS
+- Programming Languages: Python, JavaScript, TypeScript, SQL, C++
+- Frontend Technologies: React, Next.js, Redux, Tailwind CSS, HTML5/CSS3
+- Backend & APIs: Node.js, Express, FastAPI, RESTful APIs, WebSockets
+- Databases & Storage: PostgreSQL, MongoDB, Redis, MySQL
+- Cloud & DevOps: Docker, Git, GitHub Actions, AWS (S3, EC2), Linux/Bash
+- Core Computer Science: Data Structures & Algorithms, Object-Oriented Design, DBMS, Computer Networks
+
+## WORK EXPERIENCE
+Full Stack Engineering Intern | Zeta Tech Solutions, Bangalore
+June 2025 – August 2025
+- Architected and deployed a multi-tenant client onboarding portal using React, Node.js, and PostgreSQL, serving 12,000+ monthly active users.
+- Reduced API p95 response latency by 38% through optimized database indexing, connection pooling, and Redis caching.
+- Integrated automated GitHub Actions CI/CD pipelines with Jest unit tests, achieving 88% code coverage.
+
+## KEY PROJECTS
+E-Commerce Microservices Platform (React, FastAPI, PostgreSQL, Docker)
+- Engineered a scalable e-commerce backend with decoupled order processing, inventory tracking, and Stripe payment gateway.
+- Deployed multi-container environment using Docker Compose with automated database healthcheck migrations.
+
+Collaborative Real-Time Code Workspace (TypeScript, WebSockets, Redis)
+- Implemented operational transform algorithms supporting concurrent multi-user code editing with sub-50ms sync latency.
+- Built responsive dark-mode UI with Monaco Editor and Tailwind CSS.
+
+## CERTIFICATIONS & AWARDS
+- AWS Certified Cloud Practitioner (2025)
+- Meta Front-End Developer Professional Certificate (Coursera, 2024)
+- 1st Runner-Up, Smart India Hackathon Internal College Round (2025)

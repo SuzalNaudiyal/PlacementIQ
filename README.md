@@ -257,3 +257,11 @@ npm run build
 - [ ] **Phase 12: Comprehensive E2E Testing & Hardening**
 - [ ] **Phase 13: Docker Orchestration Verification**
 - [ ] **Phase 14: Final Academic Project Report & Documentation**
+
+---
+
+## 📄 License & Copyright
+
+Copyright © 2026 Suzal Naudiyal. All rights reserved.
+
+Licensed under the [MIT License](LICENSE).

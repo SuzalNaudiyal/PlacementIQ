@@ -2,6 +2,7 @@
 ## Full-Stack Explainable AI Career Intelligence Platform
 
 **Project Type**: Final-Year B.Tech / M.Tech Major Project & Enterprise Career SaaS  
+**Developer & Author**: Suzal Naudiyal  
 **Architecture**: FastAPI (Asynchronous Python 3.14) + React 19 + TypeScript + Vite 8 + Tailwind CSS v4 + MongoDB Motor + Scikit-Learn + SHAP  
 **Status**: Production Verified & Fully Tested (100% Pass Rate Across 56 Unit Tests)
 
@@ -217,3 +218,7 @@ The **AI Placement Predictor & Skill Gap Analyzer** delivers a complete, product
 - Audio/Video AI Mock Interview Assessment using speech sentiment analysis and facial confidence scoring.
 - Automated GitHub repository analysis for verifiable code quality index scoring.
 - Direct integration with university ERP portals for automated student grade synchronization.
+
+---
+
+**Copyright © 2026 Suzal Naudiyal. All rights reserved.**
