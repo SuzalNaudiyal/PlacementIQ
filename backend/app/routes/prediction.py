@@ -9,6 +9,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 
 from backend.app.database import get_database
 from backend.app.auth.deps import get_current_user
+from backend.app.models.student import get_or_create_student
 from backend.app.schemas.prediction import (
     PredictionResponse,
     SimulationRequest,
@@ -30,12 +31,7 @@ async def evaluate_current_student(
     """
     db = get_database()
     user_id = str(current_user.get("id") or current_user.get("_id"))
-    student = await db.students.find_one({"user_id": user_id})
-    if not student:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Student profile not found. Please complete profile details first.",
-        )
+    student = await get_or_create_student(db, current_user)
 
     predictor = get_predictor()
     eval_result = predictor.predict(student)

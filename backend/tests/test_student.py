@@ -1,5 +1,6 @@
 import pytest
 import pytest_asyncio
+import uuid
 from httpx import ASGITransport, AsyncClient
 from backend.app.main import app
 from backend.app.auth.seed import seed_demo_users
@@ -163,3 +164,35 @@ async def test_get_student_dashboard_summary():
             assert point["candidate_score"] >= 0.0
             assert point["industry_benchmark"] > 0.0
         assert len(data["next_recommended_actions"]) > 0
+
+
+@pytest.mark.asyncio
+async def test_get_student_dashboard_summary_resilient_fresh_user():
+    """Verify newly registered user gets 200 (not 404) on dashboard-summary with auto-initialized telemetry."""
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://test") as client:
+        # Register a unique fresh user
+        unique_email = f"fresh_student_{uuid.uuid4().hex[:8]}@placementiq.ai"
+        reg_res = await client.post(
+            "/api/auth/register",
+            json={
+                "name": "Fresh Student",
+                "email": unique_email,
+                "password": "Password@1234",
+                "role": "student",
+            },
+        )
+        assert reg_res.status_code == 201
+        token = reg_res.json()["access_token"]
+
+        # Call dashboard summary immediately without prior profile creation
+        res = await client.get(
+            "/api/student/dashboard-summary",
+            headers={"Authorization": f"Bearer {token}"},
+        )
+        assert res.status_code == 200
+        data = res.json()
+        assert data["student_email"] == unique_email
+        assert "kpis" in data
+        assert data["kpis"]["placement_probability"] >= 0.0
+        assert len(data["radar_benchmarks"]) == 6

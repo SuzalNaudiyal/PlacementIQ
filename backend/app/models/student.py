@@ -127,3 +127,71 @@ def student_entity(doc: Optional[Dict[str, Any]], user_doc: Optional[Dict[str, A
         "completeness_percent": completeness,
         "updated_at": updated_at_str,
     }
+
+
+async def get_or_create_student(db, current_user: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    Retrieve existing student profile document for authenticated user.
+    If not found by user_id, attempts resolution via email (for imported rosters or prior signups).
+    If still absent, auto-initializes standard student profile document in DB.
+    """
+    user_id = str(current_user.get("id") or current_user.get("_id") or "")
+    user_email = (current_user.get("email") or "").strip().lower()
+
+    # 1. Query by primary user_id
+    student = None
+    if user_id:
+        student = await db.students.find_one({"user_id": user_id})
+
+    # 2. Fallback query by email (matches ERP roster imports or legacy registrations)
+    if not student and user_email:
+        student = await db.students.find_one({
+            "$or": [
+                {"email": user_email},
+                {"personal.email": user_email},
+            ]
+        })
+        if student and user_id:
+            await db.students.update_one(
+                {"_id": student["_id"]},
+                {"$set": {"user_id": user_id, "updated_at": datetime.now(timezone.utc)}},
+            )
+
+    # 3. Auto-initialize default student profile if not found
+    if not student:
+        new_student_doc = {
+            "user_id": user_id,
+            "personal": {"phone": "", "location": ""},
+            "education": {
+                "degree": "B.Tech",
+                "branch": "Computer Science & Engineering",
+                "university": "Apex Institute of Technology",
+                "graduation_year": 2026,
+            },
+            "cgpa": 7.5,
+            "backlogs": 0,
+            "skills": {
+                "programming": ["Python", "SQL", "JavaScript"],
+                "databases": ["PostgreSQL", "MongoDB"],
+                "frameworks": ["FastAPI", "React"],
+                "cloud": ["Docker"],
+                "data_ai": [],
+                "soft_skills": ["Problem Solving", "Communication"],
+            },
+            "projects": [],
+            "internships": [],
+            "certifications": [],
+            "assessments": {
+                "coding_score": 75.0,
+                "aptitude_score": 75.0,
+                "communication_score": 80.0,
+                "technical_interview_score": 75.0,
+            },
+            "created_at": datetime.now(timezone.utc),
+            "updated_at": datetime.now(timezone.utc),
+        }
+        res = await db.students.insert_one(new_student_doc)
+        new_student_doc["_id"] = res.inserted_id
+        student = new_student_doc
+
+    return student

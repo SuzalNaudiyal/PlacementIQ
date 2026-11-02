@@ -6,7 +6,7 @@ from backend.app.database import get_database
 from backend.app.auth.deps import get_current_user
 from backend.app.schemas.student import StudentProfileUpdate, StudentProfileResponse
 from backend.app.schemas.dashboard import DashboardSummaryResponse, DashboardKpis, RadarBenchmarkPoint
-from backend.app.models.student import student_entity
+from backend.app.models.student import student_entity, get_or_create_student
 from backend.app.models.skills_taxonomy import SKILL_TAXONOMY
 from ml.inference.predictor import get_predictor
 from backend.app.analytics.skill_gap import rank_all_roles_for_candidate
@@ -24,46 +24,7 @@ async def get_my_student_profile(
     Automatically initializes a default record if one does not exist yet.
     """
     db = get_database()
-    user_id = str(current_user["id"])
-
-    student = await db.students.find_one({"user_id": user_id})
-    if not student:
-        # Initialize default student document
-        new_student_doc = {
-            "user_id": user_id,
-            "personal": {"phone": "", "location": ""},
-            "education": {
-                "degree": "B.Tech",
-                "branch": "Computer Science",
-                "university": "",
-                "graduation_year": 2026,
-            },
-            "cgpa": 7.0,
-            "backlogs": 0,
-            "skills": {
-                "programming": [],
-                "databases": [],
-                "frameworks": [],
-                "cloud": [],
-                "data_ai": [],
-                "soft_skills": [],
-            },
-            "projects": [],
-            "internships": [],
-            "certifications": [],
-            "assessments": {
-                "coding_score": 70.0,
-                "aptitude_score": 75.0,
-                "communication_score": 80.0,
-                "technical_interview_score": 75.0,
-            },
-            "created_at": datetime.now(timezone.utc),
-            "updated_at": datetime.now(timezone.utc),
-        }
-        res = await db.students.insert_one(new_student_doc)
-        new_student_doc["_id"] = res.inserted_id
-        student = new_student_doc
-
+    student = await get_or_create_student(db, current_user)
     return StudentProfileResponse(**student_entity(student, current_user))
 
 
@@ -105,23 +66,20 @@ async def get_skill_taxonomy():
 
 
 @router.get("/dashboard-summary", response_model=DashboardSummaryResponse)
+@router.get("/dashboard-summary/", response_model=DashboardSummaryResponse, include_in_schema=False)
 async def get_student_dashboard_summary(
     current_user: Dict[str, Any] = Depends(get_current_user),
 ) -> DashboardSummaryResponse:
     """
     Unified executive telemetry synthesizing ML placement readiness, ATS audit score,
     top role fit, semantic job match, roadmap sprint status, and radar competency benchmarks.
+    Resilient: auto-initializes baseline profile if user has not yet completed profile setup.
     """
     db = get_database()
     user_id = str(current_user["id"])
 
-    # 1. Fetch Student Profile
-    student = await db.students.find_one({"user_id": user_id})
-    if not student:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Student profile not found.",
-        )
+    # 1. Fetch or auto-initialize Student Profile (prevents 404 for any valid authenticated user)
+    student = await get_or_create_student(db, current_user)
 
     profile_data = student_entity(student, current_user)
     skills = student.get("skills", {})
