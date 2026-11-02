@@ -27,7 +27,7 @@ async def lifespan(app: FastAPI):
 app = FastAPI(
     title=settings.PROJECT_NAME,
     version=settings.VERSION,
-    description="Full-Stack AI Placement Predictor & Skill Gap Analyzer REST API",
+    description="HireMatrix AI - Full-Stack Career Intelligence & Placement Readiness REST API",
     docs_url="/docs",
     redoc_url="/redoc",
     openapi_url="/openapi.json",
@@ -88,7 +88,7 @@ async def root_endpoint():
             "profile": f"{settings.API_V1_PREFIX}/auth/me",
             "demo_credentials": f"{settings.API_V1_PREFIX}/auth/demo-credentials",
         },
-        "message": "Welcome to the AI Placement Predictor & Skill Gap Analyzer API",
+        "message": "Welcome to the HireMatrix AI - Placement & Skill Gap Analyzer API",
     }
 
 

@@ -1,4 +1,4 @@
-# AI Placement Predictor & Skill Gap Analyzer
+# HireMatrix AI — AI Placement & Skill Gap Analyzer
 ### *Full-Stack AI Career Intelligence & Placement Readiness SaaS Platform*
 
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.110+-009688.svg?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com)
@@ -13,7 +13,7 @@
 
 ## 📌 Executive Overview
 
-**PlacementIQ (AI Placement Predictor & Skill Gap Analyzer)** is an enterprise-grade AI career intelligence platform engineered for college students and academic institutions. Rather than relying on simple heuristics, the platform combines machine learning classification, natural language processing (NLP), semantic similarity scoring, and explainable AI (SHAP) to:
+**HireMatrix AI (AI Placement & Skill Gap Analyzer)** is an enterprise-grade AI career intelligence platform engineered for college students and academic institutions. Rather than relying on simple heuristics, the platform combines machine learning classification, natural language processing (NLP), semantic similarity scoring, and explainable AI (SHAP) to:
 
 1. **Evaluate Placement Likelihood**: Multi-feature ML models trained on academics, coding scores, project breadth, and internships.
 2. **Parse & Audit Resumes**: Section extraction, skill mining, and an objective application-generated ATS readiness score (without vendor misrepresentation).
@@ -228,7 +228,7 @@ npm run build
 
 | Variable | Default Value | Description |
 | :--- | :--- | :--- |
-| `PROJECT_NAME` | `"AI Placement Predictor & Skill Gap Analyzer"` | Application title |
+| `PROJECT_NAME` | `"HireMatrix AI - Placement & Skill Gap Analyzer"` | Application title |
 | `APP_ENV` | `development` | Environment mode (`development` / `production`) |
 | `DEBUG` | `True` | Debug mode toggle |
 | `SERVER_HOST` | `0.0.0.0` | API bind address |

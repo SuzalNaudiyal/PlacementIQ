@@ -15,6 +15,7 @@ import { UnifiedDashboard } from './components/dashboard/UnifiedDashboard';
 import { AdminDashboard } from './components/admin/AdminDashboard';
 import { MockInterviewView } from './components/interview/MockInterviewView';
 import { UniversityERPView } from './components/erp/UniversityERPView';
+import HireMatrixExplainer from './components/HireMatrixExplainer';
 import { Footer } from './components/Footer';
 import { fetchSystemHealth, pingBackend } from './services/api';
 import type { HealthResponse } from './types/system';
@@ -27,7 +28,7 @@ function DashboardContent() {
   const [error, setError] = useState<string | null>(null);
   const [latency, setLatency] = useState<number | null>(null);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState<boolean>(false);
-  const [activeView, setActiveView] = useState<'overview' | 'profile' | 'prediction' | 'resume' | 'skillgap' | 'jobs' | 'roadmap' | 'interview' | 'erp' | 'admin'>('overview');
+  const [activeView, setActiveView] = useState<'overview' | 'profile' | 'prediction' | 'resume' | 'skillgap' | 'jobs' | 'roadmap' | 'interview' | 'erp' | 'admin' | 'explainer'>('overview');
 
   const loadHealthData = useCallback(async () => {
     setLoading(true);
@@ -204,6 +205,17 @@ function DashboardContent() {
               Platform Overview & Health
             </button>
             <button
+              onClick={() => setActiveView('explainer')}
+              className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-semibold transition cursor-pointer ${
+                activeView === 'explainer'
+                  ? 'bg-cyan-600 text-white shadow-md shadow-cyan-600/30'
+                  : 'text-cyan-300 hover:text-white hover:bg-slate-800/50'
+              }`}
+            >
+              <Sparkles className="w-3.5 h-3.5 text-cyan-400" />
+              HireMatrix Explainer Tour
+            </button>
+            <button
               onClick={() => {
                 if (!isAuthenticated) {
                   setIsAuthModalOpen(true);
@@ -240,7 +252,7 @@ function DashboardContent() {
               }`}
             >
               <Zap className="w-3.5 h-3.5 text-amber-400" />
-              AI Placement Predictor & Simulator
+              AI Placement & Simulator
               {!isAuthenticated && (
                 <span className="text-[10px] px-1.5 py-0.5 bg-slate-800 rounded text-slate-400 border border-slate-700">
                   Login Req
@@ -451,7 +463,21 @@ function DashboardContent() {
         </div>
 
         {/* View Body */}
-        {activeView === 'profile' && isAuthenticated ? (
+        {activeView === 'explainer' ? (
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <button
+                onClick={() => setActiveView('overview')}
+                className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-slate-900 border border-slate-800 text-xs text-slate-300 hover:text-white transition cursor-pointer hover:border-slate-700"
+              >
+                ← Back to Overview
+              </button>
+            </div>
+            <div className="rounded-2xl overflow-hidden border border-slate-800/80 shadow-2xl bg-slate-950">
+              <HireMatrixExplainer />
+            </div>
+          </div>
+        ) : activeView === 'profile' && isAuthenticated ? (
           <ProfileView />
         ) : activeView === 'prediction' && isAuthenticated ? (
           <PredictionDashboard />
@@ -481,11 +507,17 @@ function DashboardContent() {
               </div>
 
               <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-white leading-tight">
-                AI Placement Predictor &{' '}
+                HireMatrix{' '}
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-indigo-300 to-purple-400">
+                  AI
+                </span>
+              </h1>
+              <h2 className="mt-2 text-xl sm:text-2xl lg:text-3xl font-bold tracking-tight text-indigo-200">
+                AI Placement &{' '}
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 via-purple-300 to-pink-400">
                   Skill Gap Analyzer
                 </span>
-              </h1>
+              </h2>
 
               <p className="mt-5 text-base sm:text-lg text-slate-400 max-w-2xl mx-auto leading-relaxed">
                 Evaluate placement readiness, parse resumes with NLP, identify missing skills for specific job roles, match against industry opportunities, and follow an explainable 8-week roadmap.
@@ -494,13 +526,22 @@ function DashboardContent() {
               {/* Action Callouts */}
               <div className="flex flex-wrap items-center justify-center gap-3 mt-7">
                 {!isAuthenticated ? (
-                  <button
-                    onClick={() => setIsAuthModalOpen(true)}
-                    className="px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-sm shadow-lg shadow-indigo-600/30 flex items-center gap-2 transition-all cursor-pointer hover:scale-[1.02]"
-                  >
-                    <span>Get Started (Sign In / Register)</span>
-                    <ArrowRight className="w-4 h-4" />
-                  </button>
+                  <>
+                    <button
+                      onClick={() => setIsAuthModalOpen(true)}
+                      className="px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-sm shadow-lg shadow-indigo-600/30 flex items-center gap-2 transition-all cursor-pointer hover:scale-[1.02]"
+                    >
+                      <span>Get Started (Sign In / Register)</span>
+                      <ArrowRight className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={() => setActiveView('explainer')}
+                      className="px-5 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-cyan-300 border border-cyan-500/30 font-semibold text-sm shadow-lg flex items-center gap-2 transition-all cursor-pointer hover:scale-[1.02]"
+                    >
+                      <Sparkles className="w-4 h-4 text-cyan-400" />
+                      <span>Watch HireMatrix Tour</span>
+                    </button>
+                  </>
                 ) : (
                   <button
                     onClick={() => setActiveView('profile')}

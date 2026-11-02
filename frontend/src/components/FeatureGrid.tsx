@@ -5,7 +5,7 @@ export const FeatureGrid: React.FC = () => {
   const features = [
     {
       icon: Target,
-      title: 'ML Placement Readiness Predictor',
+      title: 'ML Placement Readiness Engine',
       description: 'Supervised classification trained on student academic records, coding scores, internships, and project breadth to estimate realistic placement readiness with XAI explanations.',
       color: 'from-blue-500/20 to-indigo-500/20 text-blue-400 border-blue-500/30',
       badge: 'XGBoost & Random Forest',

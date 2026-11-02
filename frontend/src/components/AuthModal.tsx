@@ -78,7 +78,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
             <Sparkles className="h-5 w-5 text-white" />
           </div>
           <div>
-            <h3 className="text-lg font-bold text-white">PlacementIQ Access</h3>
+            <h3 className="text-lg font-bold text-white">HireMatrix AI Access</h3>
             <p className="text-xs text-slate-400">Career Intelligence & Assessment Portal</p>
           </div>
         </div>

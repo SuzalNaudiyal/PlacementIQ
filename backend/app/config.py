@@ -16,7 +16,7 @@ class Settings(BaseSettings):
     )
 
     # Core Application
-    PROJECT_NAME: str = "AI Placement Predictor & Skill Gap Analyzer"
+    PROJECT_NAME: str = "HireMatrix AI - Placement & Skill Gap Analyzer"
     APP_ENV: str = "development"
     DEBUG: bool = True
     VERSION: str = "1.0.0"

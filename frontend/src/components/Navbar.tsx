@@ -21,7 +21,7 @@ export const Navbar: React.FC<NavbarProps> = ({ isBackendOnline, latency, onOpen
           </div>
           <div>
             <span className="text-lg font-bold tracking-tight text-white flex items-center gap-1.5">
-              PlacementIQ <span className="text-indigo-400 font-medium text-xs px-2 py-0.5 rounded-full bg-indigo-500/10 border border-indigo-500/20">AI</span>
+              HireMatrix <span className="text-indigo-400 font-medium text-xs px-2 py-0.5 rounded-full bg-indigo-500/10 border border-indigo-500/20">AI</span>
             </span>
             <p className="text-[11px] text-slate-400 hidden sm:block">Career Intelligence & Skill Gap Analyzer</p>
           </div>

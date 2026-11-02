@@ -1,4 +1,4 @@
-# AI Placement Predictor & Skill Gap Analyzer
+# HireMatrix AI — AI Placement & Skill Gap Analyzer
 ## Full-Stack Explainable AI Career Intelligence Platform
 
 **Project Type**: Final-Year B.Tech / M.Tech Major Project & Enterprise Career SaaS  
@@ -17,7 +17,7 @@ Campus placement readiness assessment in higher education institutions has histo
 4. The compatibility of their resume documents with modern Applicant Tracking Systems (ATS).
 5. A structured, milestone-oriented roadmap to bridge identified competency voids prior to company drives.
 
-The **AI Placement Predictor & Skill Gap Analyzer** addresses this challenge through an end-to-end, production-grade Career Intelligence SaaS platform. Powered by an ensemble of **Gradient Boosting (LightGBM/XGBoost calibrated)** and **Random Forest classifiers** trained on 4,500 realistic engineering candidates (achieving **96.1% accuracy** and **0.988 ROC-AUC**), the platform pairs predictive classification with game-theoretic **SHAP (SHapley Additive exPlanations)** to deliver personalized factor attributions. 
+The **AI Placement & Skill Gap Analyzer** addresses this challenge through an end-to-end, production-grade Career Intelligence SaaS platform. Powered by an ensemble of **Gradient Boosting (LightGBM/XGBoost calibrated)** and **Random Forest classifiers** trained on 4,500 realistic engineering candidates (achieving **96.1% accuracy** and **0.988 ROC-AUC**), the platform pairs predictive classification with game-theoretic **SHAP (SHapley Additive exPlanations)** to deliver personalized factor attributions. 
 
 Furthermore, the system integrates:
 - An **NLP-driven Document Text Parser** and **5-Dimension ATS Compatibility Engine** (0–100 scale) supporting PDF, DOCX, and TXT files.
@@ -231,7 +231,7 @@ Eligible candidates can apply with one-click, and placement officers can instant
 
 ## 10. Conclusion & Future Enhancements
 
-The **AI Placement Predictor & Skill Gap Analyzer** delivers a complete, production-ready full-stack software system that transcends traditional academic prototypes. 
+The **AI Placement & Skill Gap Analyzer** delivers a complete, production-ready full-stack software system that transcends traditional academic prototypes. 
 - **Phase 15 (AI Mock Interview Simulator & Speech Assessment)** is fully operational with real-time speech dictation, audio question read-aloud, and multi-dimensional candidate evaluation.
 - **Phase 16 (University ERP & Bulk Student Roster Sync)** provides institutional CSV ingestion, placement drive lifecycle management, and recruiter shortlist exports.
 

@@ -34,4 +34,4 @@ async def test_health_endpoint():
         assert data["status"] in ["healthy", "degraded"]
         assert "database" in data
         assert "services" in data
-        assert data["app_name"] == "AI Placement Predictor & Skill Gap Analyzer"
+        assert data["app_name"] == "HireMatrix AI - Placement & Skill Gap Analyzer"
