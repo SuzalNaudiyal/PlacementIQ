@@ -10,7 +10,7 @@
     "preview": "npm --prefix frontend run preview",
     "lint": "npm --prefix frontend run lint",
     "start": "./start.sh",
-    "test:backend": "PYTHONPATH=. backend/.venv/bin/pytest backend/tests/ -v",
-    "test": "PYTHONPATH=. backend/.venv/bin/pytest backend/tests/ -v && npm --prefix frontend run build"
+    "test:backend": "backend/.venv/bin/pytest -v",
+    "test": "backend/.venv/bin/pytest -v && npm --prefix frontend run build"
   }
 }
