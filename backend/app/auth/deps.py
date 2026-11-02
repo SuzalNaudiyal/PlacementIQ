@@ -50,8 +50,11 @@ async def get_current_user(
         query = {"_id": user_id}
 
     user = await db.users.find_one(query)
-    if not user:
-        # Fallback query by email if sub was email
+    if not user and payload.get("email"):
+        # Seamlessly fallback query by email claim in case of development database reload
+        user = await db.users.find_one({"email": payload.get("email")})
+    elif not user:
+        # Fallback query if sub was raw email string
         user = await db.users.find_one({"email": user_id})
 
     if not user:

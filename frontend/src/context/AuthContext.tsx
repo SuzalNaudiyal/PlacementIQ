@@ -37,12 +37,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           const profile = await getCurrentUser();
           setUser(profile);
           setToken(storedToken);
-        } catch (err) {
-          console.warn('Stored JWT session expired or invalid:', err);
+        } catch {
           removeAuthToken();
           setUser(null);
           setToken(null);
         }
+      } else {
+        removeAuthToken();
+        setUser(null);
+        setToken(null);
       }
       setIsLoading(false);
     };

@@ -11,14 +11,28 @@ export const apiClient = axios.create({
   },
 });
 
-// Interceptor to inject JWT Authorization token if present in localStorage
+// Interceptor to inject JWT Authorization token if valid and present in localStorage
 apiClient.interceptors.request.use((config) => {
   const token = localStorage.getItem('placementiq_jwt_token');
-  if (token && config.headers) {
-    config.headers.Authorization = `Bearer ${token}`;
+  const isValid = token && token !== 'undefined' && token !== 'null' && token.trim().length > 10;
+  if (isValid && config.headers) {
+    config.headers.Authorization = `Bearer ${token.trim()}`;
+  } else if (!isValid && config.headers?.Authorization) {
+    delete config.headers.Authorization;
   }
   return config;
 });
+
+// Interceptor to automatically purge invalid/expired sessions on 401 Unauthorized
+apiClient.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+      localStorage.removeItem('placementiq_jwt_token');
+    }
+    return Promise.reject(error);
+  }
+);
 
 /**
  * Fetch system health and connectivity metrics from the backend.

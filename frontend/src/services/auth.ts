@@ -8,7 +8,11 @@ export const setAuthToken = (token: string): void => {
 };
 
 export const getAuthToken = (): string | null => {
-  return localStorage.getItem(TOKEN_KEY);
+  const token = localStorage.getItem(TOKEN_KEY);
+  if (!token || token === 'undefined' || token === 'null' || token.trim().length <= 10) {
+    return null;
+  }
+  return token.trim();
 };
 
 export const removeAuthToken = (): void => {
