@@ -124,6 +124,7 @@ def student_entity(doc: Optional[Dict[str, Any]], user_doc: Optional[Dict[str, A
             "communication_score": 80.0,
             "technical_interview_score": 75.0,
         },
+        "coding_profiles": doc.get("coding_profiles"),
         "completeness_percent": completeness,
         "updated_at": updated_at_str,
     }

@@ -1,3 +1,5 @@
+import type { CodingProfileResponse } from './codingProfiles';
+
 export interface PersonalDetails {
   phone: string;
   location: string;
@@ -60,6 +62,7 @@ export interface StudentProfile {
   internships: InternshipItem[];
   certifications: CertificationItem[];
   assessments: AssessmentScores;
+  coding_profiles?: CodingProfileResponse;
   completeness_percent: number;
   updated_at: string;
 }
@@ -74,6 +77,7 @@ export interface StudentProfileUpdatePayload {
   internships: InternshipItem[];
   certifications: CertificationItem[];
   assessments: AssessmentScores;
+  coding_profiles?: CodingProfileResponse;
 }
 
 export interface SkillTaxonomy {

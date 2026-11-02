@@ -16,6 +16,7 @@ import { AdminDashboard } from './components/admin/AdminDashboard';
 import { MockInterviewView } from './components/interview/MockInterviewView';
 import { UniversityERPView } from './components/erp/UniversityERPView';
 import HireMatrixExplainer from './components/HireMatrixExplainer';
+import { CareerCopilotWidget } from './components/copilot/CareerCopilotWidget';
 import { Footer } from './components/Footer';
 import { fetchSystemHealth, pingBackend } from './services/api';
 import type { HealthResponse } from './types/system';
@@ -599,6 +600,9 @@ function DashboardContent() {
         isOpen={isAuthModalOpen}
         onClose={() => setIsAuthModalOpen(false)}
       />
+
+      {/* AI Placement Career Copilot Floating Chatbot */}
+      <CareerCopilotWidget studentName={user?.name} />
 
       {/* Footer */}
       <Footer />

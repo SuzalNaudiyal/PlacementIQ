@@ -13,9 +13,11 @@ import {
   ExternalLink,
   Sparkles,
   RefreshCw,
+  GitBranch,
 } from 'lucide-react';
 import { getStudentProfile, updateStudentProfile, getSkillTaxonomy } from '../../services/student';
 import type { StudentProfile, SkillTaxonomy, ProjectItem, InternshipItem, CertificationItem } from '../../types/student';
+import { CodingProfileCard } from './CodingProfileCard';
 
 interface ProfileViewProps {
   onProfileUpdated?: (profile: StudentProfile) => void;
@@ -24,7 +26,7 @@ interface ProfileViewProps {
 export const ProfileView: React.FC<ProfileViewProps> = ({ onProfileUpdated }) => {
   const [profile, setProfile] = useState<StudentProfile | null>(null);
   const [taxonomy, setTaxonomy] = useState<SkillTaxonomy | null>(null);
-  const [activeTab, setActiveTab] = useState<'academics' | 'skills' | 'experience' | 'assessments'>('academics');
+  const [activeTab, setActiveTab] = useState<'academics' | 'skills' | 'experience' | 'assessments' | 'coding'>('academics');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
@@ -357,6 +359,17 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ onProfileUpdated }) =>
         >
           <Sliders className="w-4 h-4" />
           Assessment Benchmarks
+        </button>
+        <button
+          onClick={() => setActiveTab('coding')}
+          className={`flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition ${
+            activeTab === 'coding'
+              ? 'bg-indigo-500/10 text-indigo-400 border border-indigo-500/20'
+              : 'text-slate-400 hover:text-white hover:bg-slate-800/50'
+          }`}
+        >
+          <GitBranch className="w-4 h-4" />
+          GitHub & LeetCode
         </button>
       </div>
 
@@ -977,7 +990,53 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ onProfileUpdated }) =>
               );
             })}
           </div>
+
+          {/* Quick link to GitHub & LeetCode verification */}
+          <div className="mt-4 p-4 rounded-xl bg-indigo-950/30 border border-indigo-500/20 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div className="flex items-center gap-2.5">
+              <GitBranch className="w-5 h-5 text-indigo-400 shrink-0" />
+              <div>
+                <p className="text-xs font-bold text-white">Automate Coding Score Calibration</p>
+                <p className="text-[11px] text-slate-400">
+                  Connect your GitHub & LeetCode handles to calculate your verified Code Quality Index (CQI).
+                </p>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={() => setActiveTab('coding')}
+              className="px-3.5 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold shrink-0 transition"
+            >
+              Verify Profiles →
+            </button>
+          </div>
         </div>
+      )}
+
+      {/* Tab 5: Verified Coding Profiles (GitHub & LeetCode) */}
+      {activeTab === 'coding' && (
+        <CodingProfileCard
+          onProfileSynced={(res) => {
+            if (profile) {
+              setProfile({
+                ...profile,
+                assessments: {
+                  ...profile.assessments,
+                  coding_score: res.calibrated_coding_score,
+                },
+              });
+              if (onProfileUpdated) {
+                onProfileUpdated({
+                  ...profile,
+                  assessments: {
+                    ...profile.assessments,
+                    coding_score: res.calibrated_coding_score,
+                  },
+                });
+              }
+            }
+          }}
+        />
       )}
     </div>
   );

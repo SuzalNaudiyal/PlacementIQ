@@ -74,6 +74,7 @@ class StudentProfileUpdate(BaseModel):
     internships: List[InternshipItem] = Field(default_factory=list)
     certifications: List[CertificationItem] = Field(default_factory=list)
     assessments: Optional[AssessmentScores] = Field(default_factory=AssessmentScores)
+    coding_profiles: Optional[Dict[str, Any]] = Field(default=None, description="Verified GitHub and LeetCode metrics")
 
 
 class StudentProfileResponse(BaseModel):
@@ -93,5 +94,6 @@ class StudentProfileResponse(BaseModel):
     internships: List[InternshipItem]
     certifications: List[CertificationItem]
     assessments: AssessmentScores
+    coding_profiles: Optional[Dict[str, Any]] = None
     completeness_percent: int = Field(..., ge=0, le=100, description="Profile completeness percentage")
     updated_at: str
