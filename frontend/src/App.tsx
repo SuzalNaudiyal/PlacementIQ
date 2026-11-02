@@ -15,12 +15,13 @@ import { UnifiedDashboard } from './components/dashboard/UnifiedDashboard';
 import { AdminDashboard } from './components/admin/AdminDashboard';
 import { MockInterviewView } from './components/interview/MockInterviewView';
 import { UniversityERPView } from './components/erp/UniversityERPView';
+import { CompanyPrepView } from './components/companyprep/CompanyPrepView';
 import HireMatrixExplainer from './components/HireMatrixExplainer';
 import { CareerCopilotWidget } from './components/copilot/CareerCopilotWidget';
 import { Footer } from './components/Footer';
 import { fetchSystemHealth, pingBackend } from './services/api';
 import type { HealthResponse } from './types/system';
-import { Sparkles, Shield, User, CheckCircle2, ArrowRight, LayoutDashboard, UserCheck, Zap, FileText, Target, Briefcase, Calendar, Mic, Building2 } from 'lucide-react';
+import { Sparkles, Shield, User, CheckCircle2, ArrowRight, LayoutDashboard, UserCheck, Zap, FileText, Target, Briefcase, Calendar, Mic, Building2, BookOpen } from 'lucide-react';
 
 function DashboardContent() {
   const { user, isAuthenticated, logout } = useAuth();
@@ -29,7 +30,7 @@ function DashboardContent() {
   const [error, setError] = useState<string | null>(null);
   const [latency, setLatency] = useState<number | null>(null);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState<boolean>(false);
-  const [activeView, setActiveView] = useState<'overview' | 'profile' | 'prediction' | 'resume' | 'skillgap' | 'jobs' | 'roadmap' | 'interview' | 'erp' | 'admin' | 'explainer'>('overview');
+  const [activeView, setActiveView] = useState<'overview' | 'profile' | 'prediction' | 'resume' | 'skillgap' | 'jobs' | 'roadmap' | 'interview' | 'erp' | 'admin' | 'explainer' | 'company_prep'>('overview');
 
   const loadHealthData = useCallback(async () => {
     setLoading(true);
@@ -397,6 +398,28 @@ function DashboardContent() {
                 if (!isAuthenticated) {
                   setIsAuthModalOpen(true);
                 } else {
+                  setActiveView('company_prep');
+                }
+              }}
+              className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-semibold transition cursor-pointer ${
+                activeView === 'company_prep'
+                  ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/30'
+                  : 'text-slate-400 hover:text-white hover:bg-slate-800/50'
+              }`}
+            >
+              <BookOpen className="w-3.5 h-3.5 text-indigo-400" />
+              Company Prep Cheat Sheets
+              {!isAuthenticated && (
+                <span className="text-[10px] px-1.5 py-0.5 bg-slate-800 rounded text-slate-400 border border-slate-700">
+                  Login Req
+                </span>
+              )}
+            </button>
+            <button
+              onClick={() => {
+                if (!isAuthenticated) {
+                  setIsAuthModalOpen(true);
+                } else {
                   setActiveView('admin');
                 }
               }}
@@ -494,6 +517,8 @@ function DashboardContent() {
           <MockInterviewView />
         ) : activeView === 'erp' && isAuthenticated ? (
           <UniversityERPView />
+        ) : activeView === 'company_prep' && isAuthenticated ? (
+          <CompanyPrepView />
         ) : activeView === 'admin' && isAuthenticated ? (
           <AdminDashboard />
         ) : isAuthenticated ? (

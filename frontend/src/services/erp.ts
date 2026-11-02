@@ -47,4 +47,24 @@ export const erpService = {
     const res = await apiClient.get<string>(`/erp/drives/${driveId}/shortlist-csv`, { responseType: 'text' as any });
     return res.data;
   },
+
+  async getDriveAlerts(driveId: string): Promise<any> {
+    const res = await apiClient.get(`/erp/drives/${driveId}/alerts`);
+    return res.data;
+  },
+
+  async dispatchTestAlert(driveId: string, channel: 'whatsapp' | 'email' | 'all' = 'whatsapp'): Promise<any> {
+    const res = await apiClient.post('/erp/alerts/send-test', { drive_id: driveId, channel });
+    return res.data;
+  },
+
+  async getAlertPreferences(): Promise<any> {
+    const res = await apiClient.get('/erp/alerts/preferences');
+    return res.data;
+  },
+
+  async updateAlertPreferences(prefs: any): Promise<any> {
+    const res = await apiClient.put('/erp/alerts/preferences', prefs);
+    return res.data;
+  },
 };

@@ -14,8 +14,10 @@ import {
   Sparkles,
   RefreshCw,
   GitBranch,
+  Download,
 } from 'lucide-react';
 import { getStudentProfile, updateStudentProfile, getSkillTaxonomy } from '../../services/student';
+import { downloadAtsResumePdf } from '../../services/resume';
 import type { StudentProfile, SkillTaxonomy, ProjectItem, InternshipItem, CertificationItem } from '../../types/student';
 import { CodingProfileCard } from './CodingProfileCard';
 
@@ -29,6 +31,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ onProfileUpdated }) =>
   const [activeTab, setActiveTab] = useState<'academics' | 'skills' | 'experience' | 'assessments' | 'coding'>('academics');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [downloadingPdf, setDownloadingPdf] = useState(false);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
@@ -287,15 +290,43 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ onProfileUpdated }) =>
               </div>
             </div>
 
-            {/* Save Button */}
-            <button
-              onClick={handleSave}
-              disabled={saving}
-              className="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 font-bold text-sm shadow-lg shadow-emerald-500/20 disabled:opacity-50 transition transform hover:-translate-y-0.5"
-            >
-              {saving ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-              {saving ? 'Saving...' : 'Save Profile'}
-            </button>
+            {/* Action Buttons: Save & 1-Click ATS PDF */}
+            <div className="flex items-center gap-2">
+              <button
+                onClick={async () => {
+                  try {
+                    setDownloadingPdf(true);
+                    setSuccessMessage(null);
+                    setErrorMessage(null);
+                    await downloadAtsResumePdf();
+                    setSuccessMessage('1-Click ATS Resume PDF generated and downloaded!');
+                  } catch (e: any) {
+                    setErrorMessage(e?.message || 'Failed to generate ATS PDF.');
+                  } finally {
+                    setDownloadingPdf(false);
+                  }
+                }}
+                disabled={downloadingPdf}
+                className="inline-flex items-center gap-2 px-4 py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 font-bold text-xs disabled:opacity-50 transition"
+                title="Generate 1-Click ATS PDF Resume"
+              >
+                {downloadingPdf ? (
+                  <RefreshCw className="w-4 h-4 animate-spin text-teal-400" />
+                ) : (
+                  <Download className="w-4 h-4 text-teal-400" />
+                )}
+                <span>ATS Resume (PDF)</span>
+              </button>
+
+              <button
+                onClick={handleSave}
+                disabled={saving}
+                className="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 font-bold text-sm shadow-lg shadow-emerald-500/20 disabled:opacity-50 transition transform hover:-translate-y-0.5"
+              >
+                {saving ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+                {saving ? 'Saving...' : 'Save Profile'}
+              </button>
+            </div>
           </div>
         </div>
 

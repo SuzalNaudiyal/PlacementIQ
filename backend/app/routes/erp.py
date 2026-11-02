@@ -13,6 +13,11 @@ from fastapi.responses import PlainTextResponse
 
 from backend.app.database import get_database
 from backend.app.auth.deps import get_current_user
+from backend.app.models.student import get_or_create_student
+from backend.app.analytics.drive_alerts import (
+    format_whatsapp_drive_alert,
+    format_email_drive_alert,
+)
 from backend.app.erp.engine import (
     parse_roster_csv_content,
     get_sample_csv_template,
@@ -456,3 +461,105 @@ async def export_drive_shortlist_csv(
         ])
 
     return output.getvalue()
+
+
+@router.get("/drives/{drive_id}/alerts")
+async def get_drive_alerts_preview(
+    drive_id: str,
+    current_user: Dict[str, Any] = Depends(get_current_user),
+):
+    """
+    Automated WhatsApp & Email Drive Alerts:
+    Generates personalized broadcast message templates and single-click WhatsApp
+    deep links for upcoming campus drives.
+    """
+    db = get_database()
+    student = await get_or_create_student(db, current_user)
+    drive = await db.placement_drives.find_one({"drive_id": drive_id})
+    if not drive:
+        raise HTTPException(status_code=404, detail="Placement drive not found.")
+
+    wa_alert = format_whatsapp_drive_alert(student, drive)
+    email_alert = format_email_drive_alert(student, drive)
+
+    return {
+        "drive_id": drive_id,
+        "company_name": drive.get("company_name", ""),
+        "whatsapp_alert": wa_alert,
+        "email_alert": email_alert,
+        "generated_at": datetime.now(timezone.utc).isoformat(),
+    }
+
+
+@router.post("/alerts/send-test")
+async def dispatch_test_drive_alert(
+    payload: Dict[str, Any],
+    current_user: Dict[str, Any] = Depends(get_current_user),
+):
+    """
+    Simulates automated dispatch of drive notification via WhatsApp & Email webhooks.
+    """
+    db = get_database()
+    student = await get_or_create_student(db, current_user)
+    drive_id = payload.get("drive_id", "")
+    channel = payload.get("channel", "all")  # 'whatsapp', 'email', or 'all'
+
+    drive = await db.placement_drives.find_one({"drive_id": drive_id}) or DEFAULT_PLACEMENTS_DRIVES[0]
+
+    log_entry = {
+        "alert_id": f"alert_{uuid.uuid4().hex[:10]}",
+        "user_id": str(current_user["id"]),
+        "drive_id": drive.get("drive_id", drive_id),
+        "company_name": drive.get("company_name", ""),
+        "channel": channel,
+        "dispatched_to": current_user.get("email"),
+        "status": "Delivered",
+        "timestamp": datetime.now(timezone.utc),
+    }
+
+    await db.drive_alerts.insert_one(log_entry)
+
+    return {
+        "status": "success",
+        "message": f"Drive alert successfully dispatched via {channel.upper()}!",
+        "alert_id": log_entry["alert_id"],
+        "channel": channel,
+        "company_name": drive.get("company_name"),
+    }
+
+
+@router.get("/alerts/preferences")
+async def get_alert_preferences(
+    current_user: Dict[str, Any] = Depends(get_current_user),
+):
+    """
+    Retrieve candidate notification alert channels and CTC filter threshold.
+    """
+    db = get_database()
+    user_id = str(current_user["id"])
+    student = await db.students.find_one({"user_id": user_id}) or {}
+    prefs = student.get("alert_preferences") or {
+        "email_enabled": True,
+        "whatsapp_enabled": True,
+        "min_ctc_lpa": 6.0,
+        "instant_alerts": True,
+    }
+    return prefs
+
+
+@router.put("/alerts/preferences")
+async def update_alert_preferences(
+    payload: Dict[str, Any],
+    current_user: Dict[str, Any] = Depends(get_current_user),
+):
+    """
+    Update candidate notification alert channels and CTC threshold.
+    """
+    db = get_database()
+    user_id = str(current_user["id"])
+    await db.students.update_one(
+        {"user_id": user_id},
+        {"$set": {"alert_preferences": payload}},
+        upsert=True,
+    )
+    return {"status": "success", "preferences": payload}
