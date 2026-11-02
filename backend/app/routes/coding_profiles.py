@@ -3,7 +3,7 @@ from datetime import datetime, timezone
 from typing import Dict, Any, Optional
 import asyncio
 
-from backend.app.database import get_database
+from backend.app.database import get_database, persist_db_if_fallback
 from backend.app.auth.deps import get_current_user
 from backend.app.schemas.coding_profiles import (
     CodingProfileVerifyRequest,
@@ -109,6 +109,8 @@ async def verify_coding_profiles(
             }
         },
     )
+
+    await persist_db_if_fallback()
 
     return CodingProfileResponse(**coding_profile_data)
 

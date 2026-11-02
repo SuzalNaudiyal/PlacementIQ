@@ -7,7 +7,7 @@ from typing import Dict, Any, Optional
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Query, status
 from pydantic import BaseModel
 
-from backend.app.database import get_database
+from backend.app.database import get_database, persist_db_if_fallback
 from backend.app.auth.deps import get_current_user
 from backend.app.schemas.resume import ParsedResumeResponse, ATSAnalysis
 from backend.app.nlp.extractor import extract_resume_text
@@ -126,6 +126,7 @@ async def upload_and_parse_resume(
             "parsed_skills": parsed["skills"],
             "created_at": datetime.now(timezone.utc),
         })
+        await persist_db_if_fallback()
     except Exception:
         pass
 

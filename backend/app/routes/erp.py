@@ -11,7 +11,7 @@ from typing import List, Dict, Any, Optional
 from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File
 from fastapi.responses import PlainTextResponse
 
-from backend.app.database import get_database
+from backend.app.database import get_database, persist_db_if_fallback
 from backend.app.auth.deps import get_current_user
 from backend.app.models.student import get_or_create_student
 from backend.app.analytics.drive_alerts import (
@@ -182,6 +182,9 @@ async def upload_student_roster_csv(
             failed += 1
             parse_errors.append(f"Roll {r.get('roll_number')}: {str(e)}")
 
+    if successful > 0 or updated > 0:
+        await persist_db_if_fallback()
+
     return RosterIngestionReport(
         total_records_processed=len(records) + len(parse_errors),
         successful_imports=successful,
@@ -282,6 +285,7 @@ async def create_placement_drive(
     }
 
     await db.placement_drives.insert_one(new_drive)
+    await persist_db_if_fallback()
 
     # Estimate eligible student count
     all_students = await db.students.find({}).to_list(length=500)
@@ -420,6 +424,7 @@ async def apply_to_placement_drive(
     }
 
     await db.placement_applications.insert_one(app_doc)
+    await persist_db_if_fallback()
 
     return {
         "status": "success",

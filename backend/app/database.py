@@ -1,11 +1,29 @@
 import logging
 import time
+import os
+from pathlib import Path
 from typing import Optional, Dict, Any
 from motor.motor_asyncio import AsyncIOMotorClient, AsyncIOMotorDatabase
 from mongomock_motor import AsyncMongoMockClient
+from bson import json_util
 from backend.app.config import settings
 
 logger = logging.getLogger("uvicorn.error")
+
+SNAPSHOT_DIR = Path(__file__).resolve().parent.parent / "data"
+SNAPSHOT_FILE = SNAPSHOT_DIR / "local_db_snapshot.json"
+PERSISTED_COLLECTIONS = [
+    "users",
+    "students",
+    "placement_drives",
+    "placement_applications",
+    "drive_alerts",
+    "resumes",
+    "roadmaps",
+    "interview_sessions",
+    "predictions",
+    "jobs",
+]
 
 class DatabaseManager:
     client: Optional[Any] = None
@@ -17,11 +35,53 @@ class DatabaseManager:
 
 db_manager = DatabaseManager()
 
+
+async def persist_db_if_fallback() -> None:
+    """
+    Saves in-memory mock collections to local JSON file so created accounts,
+    student profiles, and applications persist seamlessly across server restarts.
+    """
+    if not db_manager.is_fallback or db_manager.db is None:
+        return
+    try:
+        os.makedirs(SNAPSHOT_DIR, exist_ok=True)
+        snapshot = {}
+        for coll_name in PERSISTED_COLLECTIONS:
+            docs = await db_manager.db[coll_name].find({}).to_list(length=2000)
+            snapshot[coll_name] = docs
+
+        json_data = json_util.dumps(snapshot, indent=2)
+        with open(SNAPSHOT_FILE, "w", encoding="utf-8") as f:
+            f.write(json_data)
+        logger.info(f"Persisted in-memory database snapshot to {SNAPSHOT_FILE}")
+    except Exception as e:
+        logger.warning(f"Could not persist in-memory database snapshot: {e}")
+
+
+async def restore_db_from_snapshot(db) -> None:
+    """
+    Restores previously saved collections from local JSON snapshot if available.
+    """
+    if not SNAPSHOT_FILE.exists():
+        return
+    try:
+        with open(SNAPSHOT_FILE, "r", encoding="utf-8") as f:
+            data = f.read()
+        snapshot = json_util.loads(data)
+        for coll_name, docs in snapshot.items():
+            if docs:
+                await db[coll_name].delete_many({})
+                await db[coll_name].insert_many(docs)
+        logger.info(f"Successfully restored local database snapshot from {SNAPSHOT_FILE}")
+    except Exception as e:
+        logger.warning(f"Could not restore database snapshot: {e}")
+
+
 async def connect_to_mongo() -> None:
     """
     Establish connection to MongoDB using Motor.
     If real MongoDB is unreachable, gracefully activates in-memory AsyncMongoMockClient
-    so that authentication, CRUD, and all APIs remain 100% functional without external dependencies.
+    with automated on-disk persistence so that user accounts and data are never lost across restarts.
     """
     logger.info(f"Connecting to MongoDB at: {settings.MONGODB_URL}")
     try:
@@ -40,7 +100,7 @@ async def connect_to_mongo() -> None:
         logger.info(f"Connected to live MongoDB cluster: '{settings.MONGODB_DB_NAME}'")
     except Exception as e:
         logger.warning(
-            f"Live MongoDB unreachable ({e}). Activating asynchronous in-memory MongoDB driver..."
+            f"Live MongoDB unreachable ({e}). Activating persistent in-memory MongoDB driver..."
         )
         mock_client = AsyncMongoMockClient()
         db_manager.client = mock_client
@@ -48,13 +108,20 @@ async def connect_to_mongo() -> None:
         db_manager.is_connected = True
         db_manager.is_fallback = True
         db_manager.driver_type = "in_memory_mock"
-        db_manager.last_error = f"Standalone MongoDB not detected. Running on in-memory driver: {e}"
-        logger.info(f"In-memory MongoDB initialized for '{settings.MONGODB_DB_NAME}'. App is fully operational.")
+        db_manager.last_error = f"Standalone MongoDB not detected. Running on persistent in-memory driver: {e}"
+
+        # Restore any saved accounts and profiles from disk
+        await restore_db_from_snapshot(db_manager.db)
+        logger.info(f"In-memory MongoDB initialized for '{settings.MONGODB_DB_NAME}' with disk persistence. App is fully operational.")
+
 
 async def close_mongo_connection() -> None:
     """
-    Close MongoDB client connection on shutdown.
+    Close MongoDB client connection on shutdown and persist snapshot if running in fallback mode.
     """
+    if db_manager.is_fallback:
+        await persist_db_if_fallback()
+
     if db_manager.client is not None:
         try:
             db_manager.client.close()

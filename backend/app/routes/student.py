@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from datetime import datetime, timezone
 from typing import Dict, Any
 
-from backend.app.database import get_database
+from backend.app.database import get_database, persist_db_if_fallback
 from backend.app.auth.deps import get_current_user
 from backend.app.schemas.student import StudentProfileUpdate, StudentProfileResponse
 from backend.app.schemas.dashboard import DashboardSummaryResponse, DashboardKpis, RadarBenchmarkPoint
@@ -49,6 +49,9 @@ async def update_student_profile(
         {"$set": update_dict},
         upsert=True,
     )
+
+    # Persist updated profile to snapshot on disk if in fallback mode
+    await persist_db_if_fallback()
 
     updated_doc = await db.students.find_one({"user_id": user_id})
     return StudentProfileResponse(**student_entity(updated_doc, current_user))

@@ -1,5 +1,6 @@
 import pytest
 import pytest_asyncio
+import uuid
 from httpx import ASGITransport, AsyncClient
 from backend.app.main import app
 from backend.app.auth.seed import seed_demo_users
@@ -63,7 +64,7 @@ async def test_login_invalid_password():
 @pytest.mark.asyncio
 async def test_register_new_student_and_get_me():
     transport = ASGITransport(app=app)
-    unique_email = "new.candidate@placementiq.ai"
+    unique_email = f"candidate_{uuid.uuid4().hex[:8]}@placementiq.ai"
     async with AsyncClient(transport=transport, base_url="http://test") as client:
         # Register new student
         reg_response = await client.post(
@@ -116,3 +117,43 @@ async def test_protected_route_without_token_fails():
     async with AsyncClient(transport=transport, base_url="http://test") as client:
         response = await client.get("/api/auth/me")
         assert response.status_code == 401
+
+
+@pytest.mark.asyncio
+async def test_registered_account_persists_across_database_reload():
+    """
+    Verify that an account registered in fallback/mock mode is persisted to disk,
+    and upon database reconnect/reload, the user can successfully log in without 'invalid user'.
+    """
+    transport = ASGITransport(app=app)
+    test_email = f"persistent_{uuid.uuid4().hex[:8]}@placementiq.ai"
+    test_password = "SecretPassword!123"
+
+    async with AsyncClient(transport=transport, base_url="http://test") as client:
+        # 1. Register new student
+        reg_response = await client.post(
+            "/api/auth/register",
+            json={
+                "name": "Persistent Candidate",
+                "email": test_email,
+                "password": test_password,
+                "role": "student",
+            },
+        )
+        assert reg_response.status_code == 201
+
+        # 2. Simulate server reload / database restart
+        await connect_to_mongo()
+
+        # 3. Attempt login with the newly created credentials
+        login_response = await client.post(
+            "/api/auth/login",
+            json={
+                "email": test_email,
+                "password": test_password,
+            },
+        )
+        assert login_response.status_code == 200
+        data = login_response.json()
+        assert data["user"]["email"] == test_email
+        assert data["user"]["name"] == "Persistent Candidate"

@@ -35,6 +35,10 @@ wheels/
 htmlcov/
 .tox/
 
+# Local Mock Database Snapshots
+backend/data/*.json
+!backend/data/.gitkeep
+
 # Node & Frontend
 node_modules/
 frontend/node_modules/

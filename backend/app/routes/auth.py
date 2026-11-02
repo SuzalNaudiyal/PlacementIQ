@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from datetime import datetime, timezone
 from typing import Dict, Any
 
-from backend.app.database import get_database
+from backend.app.database import get_database, persist_db_if_fallback
 from backend.app.auth.security import get_password_hash, verify_password, create_access_token
 from backend.app.auth.deps import get_current_user
 from backend.app.auth.seed import DEMO_STUDENT, DEMO_ADMIN
@@ -70,6 +70,9 @@ async def register_user(data: UserRegister) -> TokenResponse:
             },
             upsert=True,
         )
+
+    # Immediately write to persistent snapshot file if running in mock fallback mode
+    await persist_db_if_fallback()
 
     # Issue JWT token
     token_payload = {
