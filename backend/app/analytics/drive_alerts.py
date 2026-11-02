@@ -31,7 +31,7 @@ def format_whatsapp_drive_alert(student: Dict[str, Any], drive: Dict[str, Any]) 
         f"🎓 *Status*: {eligibility_tag} (Your CGPA: {cgpa:.2f} | Cutoff: {min_cgpa})\n"
         f"⏳ *Apply By*: {deadline}\n"
         f"--------------------------------------------------\n"
-        f"⚡ *Quick Action*: Apply via 1-Click ATS Verified Profile on HireMatrix.\n"
+        f"⚡ *Quick Action*: Apply via Verified Student Profile on HireMatrix.\n"
         f"🔗 *Apply Here*: https://hirematrix.ai/student/drives/{drive.get('drive_id', 'drive')}\n\n"
         f"— *University Training & Placement Cell (TPO)*"
     )
@@ -111,7 +111,7 @@ def format_email_drive_alert(student: Dict[str, Any], drive: Dict[str, Any]) -> 
         </div>
 
         <p style="color: #94a3b8; font-size: 12px;">
-          Make sure your verified GitHub, LeetCode, and 1-Click ATS Resume are up to date on HireMatrix before applying.
+          Make sure your verified GitHub, LeetCode, and skills profile are up to date on HireMatrix before applying.
         </p>
 
         <a href="https://hirematrix.ai/student/drives/{drive_id}" class="btn">

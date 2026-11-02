@@ -11,9 +11,8 @@ import {
   ExternalLink,
   ChevronRight,
   FileCode,
-  Download,
 } from 'lucide-react';
-import { uploadResumeFile, parseResumeText, downloadAtsResumePdf } from '../../services/resume';
+import { uploadResumeFile, parseResumeText } from '../../services/resume';
 import type { ParsedResumeResponse } from '../../types/resume';
 
 const SAMPLE_BENCHMARK_RESUME = `Alex Mercer
@@ -62,24 +61,8 @@ export const ResumeAnalyzer: React.FC<ResumeAnalyzerProps> = ({ onProfileSynced 
   const [pastedText, setPastedText] = useState<string>('');
   const [applyToProfile, setApplyToProfile] = useState<boolean>(true);
   const [loading, setLoading] = useState<boolean>(false);
-  const [generatingPdf, setGeneratingPdf] = useState<boolean>(false);
   const [result, setResult] = useState<ParsedResumeResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [pdfSuccess, setPdfSuccess] = useState<string | null>(null);
-
-  const handleDownloadAtsPdf = async () => {
-    try {
-      setGeneratingPdf(true);
-      setError(null);
-      setPdfSuccess(null);
-      await downloadAtsResumePdf();
-      setPdfSuccess('100% ATS-Compliant PDF Resume successfully generated and downloaded!');
-    } catch (err: any) {
-      setError(err?.response?.data?.detail || err?.message || 'Failed to generate ATS PDF resume.');
-    } finally {
-      setGeneratingPdf(false);
-    }
-  };
 
   const handleFileUpload = async (fileToUpload: File) => {
     try {
@@ -144,42 +127,14 @@ export const ResumeAnalyzer: React.FC<ResumeAnalyzerProps> = ({ onProfileSynced 
             </p>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2.5 self-start md:self-auto">
-            <button
-              onClick={handleDownloadAtsPdf}
-              disabled={generatingPdf}
-              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-teal-500 to-emerald-500 hover:from-teal-400 hover:to-emerald-400 text-slate-950 text-xs font-bold shadow-lg shadow-teal-500/20 disabled:opacity-50 transition transform hover:-translate-y-0.5"
-            >
-              {generatingPdf ? (
-                <>
-                  <RefreshCw className="w-4 h-4 animate-spin" />
-                  Generating ATS PDF...
-                </>
-              ) : (
-                <>
-                  <Download className="w-4 h-4" />
-                  1-Click ATS PDF Generator
-                </>
-              )}
-            </button>
-
-            <button
-              onClick={handleLoadSample}
-              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold border border-slate-700 transition"
-            >
-              <FileCode className="w-4 h-4 text-emerald-400" />
-              Load Sample Tier-1
-            </button>
-          </div>
+          <button
+            onClick={handleLoadSample}
+            className="self-start md:self-auto inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold border border-slate-700 transition"
+          >
+            <FileCode className="w-4 h-4 text-emerald-400" />
+            Load Sample Tier-1 Resume
+          </button>
         </div>
-
-        {/* PDF Download Alert */}
-        {pdfSuccess && (
-          <div className="mt-4 p-3 bg-emerald-950/40 border border-emerald-500/30 rounded-xl flex items-center gap-2 text-emerald-400 text-xs animate-fadeIn">
-            <CheckCircle2 className="w-4 h-4 shrink-0" />
-            <span>{pdfSuccess}</span>
-          </div>
-        )}
       </div>
 
       {/* Input Section */}

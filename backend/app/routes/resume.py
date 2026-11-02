@@ -4,7 +4,7 @@ Resume Upload, NLP Extraction, and ATS Analysis Endpoints.
 
 from datetime import datetime, timezone
 from typing import Dict, Any, Optional
-from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Query, status, Response
+from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Query, status
 from pydantic import BaseModel
 
 from backend.app.database import get_database
@@ -13,8 +13,7 @@ from backend.app.schemas.resume import ParsedResumeResponse, ATSAnalysis
 from backend.app.nlp.extractor import extract_resume_text
 from backend.app.nlp.parser import parse_resume_full
 from backend.app.nlp.ats_scorer import score_resume_ats
-from backend.app.models.student import calculate_profile_completeness, get_or_create_student
-from backend.app.analytics.resume_pdf_generator import generate_ats_resume_pdf
+from backend.app.models.student import calculate_profile_completeness
 
 router = APIRouter(prefix="/resume", tags=["Resume Intelligence & ATS Scoring"])
 
@@ -211,56 +210,3 @@ async def get_latest_parsed_resume(
     resume_doc["id"] = str(resume_doc["_id"])
     del resume_doc["_id"]
     return resume_doc
-
-
-@router.get("/generate-ats-pdf")
-async def download_ats_resume_pdf(
-    current_user: Dict[str, Any] = Depends(get_current_user),
-):
-    """
-    1-Click ATS PDF Generator:
-    Generates a canonical, 100% ATS-compliant single-column PDF resume directly
-    from the student's verified profile, projects, academic credentials, and LeetCode/GitHub stats.
-    """
-    db = get_database()
-    student = await get_or_create_student(db, current_user)
-    pdf_bytes = generate_ats_resume_pdf(student, current_user)
-
-    filename = f"{current_user.get('name', 'Student').replace(' ', '_')}_HireMatrix_ATS_Resume.pdf"
-    return Response(
-        content=pdf_bytes,
-        media_type="application/pdf",
-        headers={
-            "Content-Disposition": f'attachment; filename="{filename}"',
-            "Content-Type": "application/pdf",
-        },
-    )
-
-
-@router.get("/ats-preview-data")
-async def get_ats_resume_preview_data(
-    current_user: Dict[str, Any] = Depends(get_current_user),
-):
-    """
-    Retrieve structured ATS resume data formatted for real-time frontend rendering and preview.
-    """
-    db = get_database()
-    student = await get_or_create_student(db, current_user)
-    return {
-        "candidate": {
-            "name": current_user.get("name") or student.get("name", "Student"),
-            "email": current_user.get("email") or student.get("email", ""),
-            "phone": student.get("personal", {}).get("phone", ""),
-            "location": student.get("personal", {}).get("location", ""),
-        },
-        "education": student.get("education", {}),
-        "cgpa": student.get("cgpa", 7.0),
-        "backlogs": student.get("backlogs", 0),
-        "skills": student.get("skills", {}),
-        "projects": student.get("projects", []),
-        "internships": student.get("internships", []),
-        "certifications": student.get("certifications", []),
-        "coding_profiles": student.get("coding_profiles"),
-        "ats_format": "Single-Column Canonical ATS",
-        "ats_compliance_score": 98,
-    }

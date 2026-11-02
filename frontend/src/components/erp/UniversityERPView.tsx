@@ -759,7 +759,7 @@ export const UniversityERPView: React.FC = () => {
                         1-Click Apply on Portal
                       </span>
                       <span className="text-[11px] text-slate-400">
-                        Includes Verified 1-Click ATS Resume
+                        Includes Verified Academic & Coding Profile
                       </span>
                     </div>
                   </div>
