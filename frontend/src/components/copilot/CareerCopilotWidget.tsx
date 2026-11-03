@@ -32,7 +32,7 @@ export const CareerCopilotWidget: React.FC<CareerCopilotWidgetProps> = ({
       sender: 'assistant',
       text: `Hello ${
         studentName ? studentName.split(' ')[0] : 'there'
-      }! 👋 I am your **HireMatrix Career Copilot**.\n\nI have real-time access to your academic standing, TreeSHAP placement readiness, LeetCode benchmarks, and missing skills. How can I assist your placement preparation today?`,
+      }! 👋 I am your **PlacementIQ Career Copilot**.\n\nI have real-time access to your academic standing, TreeSHAP placement readiness, LeetCode benchmarks, and missing skills. How can I assist your placement preparation today?`,
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       suggestedActions: [
         'How can I boost my placement readiness past 90%?',
@@ -222,7 +222,7 @@ export const CareerCopilotWidget: React.FC<CareerCopilotWidgetProps> = ({
               </div>
               <div>
                 <h3 className="font-bold text-sm text-white flex items-center gap-1.5">
-                  HireMatrix Career Copilot
+                  PlacementIQ Career Copilot
                   <Sparkles className="w-3.5 h-3.5 text-amber-400" />
                 </h3>
                 <p className="text-[11px] text-emerald-400 flex items-center gap-1">

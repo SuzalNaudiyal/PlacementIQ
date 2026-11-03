@@ -29,6 +29,10 @@ from backend.app.analytics.svar_evaluator import (
     get_curated_svar_grammar_test,
     evaluate_svar_grammar_test,
 )
+from backend.app.analytics.placement_test_bank import (
+    get_curated_placement_test,
+    evaluate_placement_test,
+)
 from backend.app.schemas.assessments import (
     AptitudeQuestionOut,
     SubmitAptitudeRequest,
@@ -43,6 +47,9 @@ from backend.app.schemas.assessments import (
     ExtemporeEvaluateRequest,
     ExtemporeEvaluationOut,
     AdminAssessmentSubmissionOut,
+    PlacementTestResponse,
+    SubmitPlacementTestRequest,
+    PlacementTestResultResponse,
 )
 
 router = APIRouter(prefix="/assessments", tags=["Assessments & SVAR Voice Testing"])
@@ -402,7 +409,103 @@ async def get_my_assessment_history(
 
 
 # ==============================================================================
-# 5. Centralized Administrative Telemetry
+# 5. Campus Placement Comprehensive Multi-Section Test (Company PYQs)
+# ==============================================================================
+
+@router.get("/placement-test/questions", response_model=PlacementTestResponse)
+async def get_placement_test_questions_endpoint(
+    num_per_section: int = 10,
+    current_user: Dict[str, Any] = Depends(get_current_user),
+) -> PlacementTestResponse:
+    """
+    Returns a unified 2-section Campus Placement Comprehensive Test.
+    Section 1: Verbal & Corporate Grammar (TCS, Infosys, Accenture PYQs)
+    Section 2: Quantitative Aptitude, Logic Series & Data Interpretation Charts (Company PYQs)
+    """
+    test_data = get_curated_placement_test(num_per_section=num_per_section)
+    return test_data
+
+
+@router.post("/placement-test/submit", response_model=PlacementTestResultResponse)
+async def submit_placement_test_endpoint(
+    data: SubmitPlacementTestRequest,
+    current_user: Dict[str, Any] = Depends(get_current_user),
+) -> PlacementTestResultResponse:
+    """
+    Evaluates both Section 1 and Section 2 of the comprehensive placement test.
+    Records performance in the user profile and institutional admin telemetry.
+    """
+    db = get_database()
+    user_id = str(current_user.get("id") or current_user.get("_id", ""))
+    student_name = current_user.get("name", "Student Candidate")
+    student_email = current_user.get("email", "")
+
+    result = evaluate_placement_test(
+        section1_answers=data.section_1_answers,
+        section2_answers=data.section_2_answers,
+        total_time_taken_seconds=data.total_time_taken_seconds or 0,
+    )
+
+    submission_id = f"sub_pt_{uuid.uuid4().hex[:10]}"
+    now = datetime.now(timezone.utc)
+
+    submission_doc = {
+        "submission_id": submission_id,
+        "user_id": user_id,
+        "student_name": student_name,
+        "student_email": student_email,
+        "test_type": "placement_test",
+        "headline_score": result["overall_percentage"],
+        "rating_or_badge": result["badge_awarded"],
+        "summary": {
+            "section_1_summary": result["section_1_summary"],
+            "section_2_summary": result["section_2_summary"],
+            "eligible_companies": result["eligible_companies"],
+            "total_questions": result["total_questions"],
+            "total_correct": result["total_correct"],
+        },
+        "submitted_at": now,
+    }
+
+    await db.assessment_submissions.insert_one(submission_doc)
+
+    # Update student profile
+    await db.students.update_one(
+        {"user_id": user_id},
+        {
+            "$set": {
+                "assessments.placement_test": {
+                    "last_score": result["overall_percentage"],
+                    "badge": result["badge_awarded"],
+                    "section_1_pct": result["section_1_summary"]["percentage"],
+                    "section_2_pct": result["section_2_summary"]["percentage"],
+                    "taken_at": now,
+                },
+                "updated_at": now,
+            }
+        },
+    )
+
+    await persist_db_if_fallback()
+
+    return {
+        "submission_id": submission_id,
+        "total_questions": result["total_questions"],
+        "total_attempted": result["total_attempted"],
+        "total_correct": result["total_correct"],
+        "overall_percentage": result["overall_percentage"],
+        "readiness_status": result["readiness_status"],
+        "badge_awarded": result["badge_awarded"],
+        "section_1_summary": result["section_1_summary"],
+        "section_2_summary": result["section_2_summary"],
+        "eligible_companies": result["eligible_companies"],
+        "detailed_review": result["detailed_review"],
+        "submitted_at": now,
+    }
+
+
+# ==============================================================================
+# 6. Centralized Administrative Telemetry
 # ==============================================================================
 
 @router.get("/admin/submissions", response_model=List[AdminAssessmentSubmissionOut])

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { X, Sparkles, LogIn, UserPlus, Shield, UserCheck, AlertCircle, Loader2 } from 'lucide-react';
+import { X, Sparkles, LogIn, UserPlus, UserCheck, AlertCircle, Loader2 } from 'lucide-react';
 import type { UserRole } from '../types/auth';
 
 interface AuthModalProps {
@@ -20,7 +20,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [role, setRole] = useState<UserRole>('student');
+  const role: UserRole = 'student';
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -86,37 +86,25 @@ export const AuthModal: React.FC<AuthModalProps> = ({
             <Sparkles className="h-5 w-5 text-white" />
           </div>
           <div>
-            <h3 className="text-lg font-bold text-white">HireMatrix AI Access</h3>
+            <h3 className="text-lg font-bold text-white">PlacementIQ AI Access</h3>
             <p className="text-xs text-slate-400">Career Intelligence & Assessment Portal</p>
           </div>
         </div>
 
-        {/* 1-Click Fast Demo Login for Examiners/Evaluators */}
-        <div className="mb-6 p-3.5 rounded-xl bg-slate-950/80 border border-slate-800/90">
-          <div className="flex items-center justify-between text-xs text-slate-400 mb-2 font-medium">
-            <span>⚡ Instant Demo Access</span>
-            <span className="text-[10px] text-indigo-400 bg-indigo-500/10 px-1.5 py-0.5 rounded">1-Click</span>
+        {/* Quick Demo Preview for Students */}
+        <div className="mb-6 p-3 rounded-xl bg-slate-950/80 border border-slate-800/90 flex items-center justify-between">
+          <div className="text-xs text-slate-400">
+            <span className="font-semibold text-slate-300">Quick Preview:</span> Try student view
           </div>
-          <div className="grid grid-cols-2 gap-2">
-            <button
-              type="button"
-              onClick={() => handleDemoClick('student')}
-              disabled={isSubmitting}
-              className="flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-semibold rounded-lg bg-indigo-600/20 hover:bg-indigo-600/30 text-indigo-300 border border-indigo-500/30 transition-all cursor-pointer disabled:opacity-50"
-            >
-              <UserCheck className="w-3.5 h-3.5" />
-              Demo Student
-            </button>
-            <button
-              type="button"
-              onClick={() => handleDemoClick('admin')}
-              disabled={isSubmitting}
-              className="flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-semibold rounded-lg bg-purple-600/20 hover:bg-purple-600/30 text-purple-300 border border-purple-500/30 transition-all cursor-pointer disabled:opacity-50"
-            >
-              <Shield className="w-3.5 h-3.5" />
-              Lead Admin (Suzal)
-            </button>
-          </div>
+          <button
+            type="button"
+            onClick={() => handleDemoClick('student')}
+            disabled={isSubmitting}
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg bg-indigo-600/20 hover:bg-indigo-600/30 text-indigo-300 border border-indigo-500/30 transition-all cursor-pointer disabled:opacity-50"
+          >
+            <UserCheck className="w-3.5 h-3.5" />
+            Demo Student
+          </button>
         </div>
 
         {/* Tab Switcher */}
@@ -210,36 +198,6 @@ export const AuthModal: React.FC<AuthModalProps> = ({
               className="w-full px-3.5 py-2 text-sm bg-slate-950 border border-slate-800 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"
             />
           </div>
-
-          {tab === 'register' && (
-            <div>
-              <label className="block text-xs font-medium text-slate-300 mb-1">Account Role</label>
-              <div className="grid grid-cols-2 gap-2">
-                <button
-                  type="button"
-                  onClick={() => setRole('student')}
-                  className={`py-2 px-3 text-xs font-medium rounded-lg border text-center transition-all cursor-pointer ${
-                    role === 'student'
-                      ? 'bg-indigo-600/20 border-indigo-500 text-indigo-300'
-                      : 'bg-slate-950 border-slate-800 text-slate-400 hover:border-slate-700'
-                  }`}
-                >
-                  Student Candidate
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setRole('admin')}
-                  className={`py-2 px-3 text-xs font-medium rounded-lg border text-center transition-all cursor-pointer ${
-                    role === 'admin'
-                      ? 'bg-purple-600/20 border-purple-500 text-purple-300'
-                      : 'bg-slate-950 border-slate-800 text-slate-400 hover:border-slate-700'
-                  }`}
-                >
-                  Administrator
-                </button>
-              </div>
-            </div>
-          )}
 
           <button
             type="submit"

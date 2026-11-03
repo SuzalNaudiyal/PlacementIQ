@@ -121,9 +121,59 @@ class AdminAssessmentSubmissionOut(BaseModel):
     user_id: str
     student_name: str
     student_email: str
-    test_type: str  # "aptitude_mcq" | "svar_sentence" | "svar_extempore" | "svar_grammar"
+    test_type: str  # "aptitude_mcq" | "svar_sentence" | "svar_extempore" | "svar_grammar" | "placement_test"
     headline_score: float  # percentage or SVAR score
     rating_or_badge: str
     summary: Dict[str, Any]
     audio_data: Optional[str] = None
+    submitted_at: datetime
+
+
+class PlacementSectionQuestionOut(BaseModel):
+    id: str
+    company: str
+    category: str
+    subtopic: str
+    question: str
+    options: List[str]
+
+
+class PlacementSectionOut(BaseModel):
+    section_id: str
+    section_number: int
+    title: str
+    badge: str
+    company_tags: List[str]
+    instructions: str
+    duration_seconds: int
+    questions: List[PlacementSectionQuestionOut]
+
+
+class PlacementTestResponse(BaseModel):
+    title: str
+    subtitle: str
+    total_sections: int
+    total_questions: int
+    total_duration_minutes: int
+    sections: List[PlacementSectionOut]
+
+
+class SubmitPlacementTestRequest(BaseModel):
+    section_1_answers: Dict[str, int] = Field(..., description="Section 1 Grammar & Verbal answers")
+    section_2_answers: Dict[str, int] = Field(..., description="Section 2 Quant & Data Chart answers")
+    total_time_taken_seconds: Optional[int] = None
+
+
+class PlacementTestResultResponse(BaseModel):
+    submission_id: str
+    total_questions: int
+    total_attempted: int
+    total_correct: int
+    overall_percentage: float
+    readiness_status: str
+    badge_awarded: str
+    section_1_summary: Dict[str, Any]
+    section_2_summary: Dict[str, Any]
+    eligible_companies: List[str]
+    detailed_review: List[Dict[str, Any]]
     submitted_at: datetime

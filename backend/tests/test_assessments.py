@@ -156,3 +156,58 @@ async def test_admin_assessment_submissions():
         assert "headline_score" in sub0
         assert "test_type" in sub0
 
+
+@pytest.mark.asyncio
+async def test_placement_test_flow():
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://test") as client:
+        token = await get_student_token(client)
+
+        # 1. Fetch multi-section placement test package
+        res = await client.get(
+            "/api/assessments/placement-test/questions",
+            headers={"Authorization": f"Bearer {token}"},
+        )
+        assert res.status_code == 200
+        data = res.json()
+        assert data["title"] == "Campus Placement Comprehensive Test (Company PYQs)"
+        assert len(data["sections"]) == 2
+        
+        sec1 = data["sections"][0]
+        assert sec1["section_id"] == "sec_verbal_grammar"
+        assert len(sec1["questions"]) == 10
+        for q in sec1["questions"]:
+            assert "correct_option_index" not in q
+            assert "explanation" not in q
+
+        sec2 = data["sections"][1]
+        assert sec2["section_id"] == "sec_quant_di"
+        assert len(sec2["questions"]) == 10
+        for q in sec2["questions"]:
+            assert "correct_option_index" not in q
+            assert "explanation" not in q
+
+        # 2. Submit placement test
+        sec1_answers = {q["id"]: 0 for q in sec1["questions"]}
+        sec2_answers = {q["id"]: 0 for q in sec2["questions"]}
+
+        sub_res = await client.post(
+            "/api/assessments/placement-test/submit",
+            headers={"Authorization": f"Bearer {token}"},
+            json={
+                "section_1_answers": sec1_answers,
+                "section_2_answers": sec2_answers,
+                "total_time_taken_seconds": 770,
+            },
+        )
+        assert sub_res.status_code == 200
+        result = sub_res.json()
+        assert result["submission_id"].startswith("sub_pt_")
+        assert "section_1_summary" in result
+        assert "section_2_summary" in result
+        assert "overall_percentage" in result
+        assert "eligible_companies" in result
+        assert len(result["eligible_companies"]) >= 0
+        assert "detailed_review" in result
+
+

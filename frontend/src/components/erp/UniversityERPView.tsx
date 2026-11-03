@@ -713,7 +713,7 @@ export const UniversityERPView: React.FC = () => {
                   ) : (
                     <div className="p-3.5 rounded-xl bg-[#005c4b] text-[#e9edef] text-xs leading-relaxed whitespace-pre-wrap shadow-md">
                       {alertData?.whatsapp_alert?.text ||
-                        `🚀 *CAMPUS RECRUITMENT DRIVE ALERT* | *HireMatrix AI*\n\n🏢 Company: Google\n💼 Role: Software Development Engineer\n💰 CTC: ₹24.5 LPA\n🎓 Status: ✅ ELIGIBLE\n⏳ Deadline: 15 December 2026\n\n🔗 Apply: https://hirematrix.ai/drives/drive_google_sde`}
+                        `🚀 *CAMPUS RECRUITMENT DRIVE ALERT* | *PlacementIQ AI*\n\n🏢 Company: Google\n💼 Role: Software Development Engineer\n💰 CTC: ₹24.5 LPA\n🎓 Status: ✅ ELIGIBLE\n⏳ Deadline: 15 December 2026\n\n🔗 Apply: https://placementiq.ai/drives/drive_google_sde`}
                       <div className="text-[10px] text-right text-emerald-200/80 mt-2 flex items-center justify-end gap-1">
                         <span>Just now</span>
                         <span>✓✓</span>

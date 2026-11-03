@@ -8,7 +8,7 @@ import {
 
 const SCENES = [
   { s: 0, e: 8, name: "The Challenge", tag: "Campus Friction", sub: "Every campus placement season, students and colleges face recruitment blindly — without knowing their true hiring readiness." },
-  { s: 8, e: 16, name: "Introducing HireMatrix", tag: "AI Intelligence", sub: "Meet HireMatrix AI: the next-generation platform turning placement guesswork into actionable intelligence." },
+  { s: 8, e: 16, name: "Introducing PlacementIQ", tag: "AI Intelligence", sub: "Meet PlacementIQ AI: the next-generation platform turning placement guesswork into actionable intelligence." },
   { s: 16, e: 25, name: "Readiness Assessment", tag: "TreeSHAP Explained", sub: "No black-box scores. TreeSHAP reveals the exact mathematical drivers behind your readiness — from CGPA to coding skills." },
   { s: 25, e: 34, name: "ATS & Skill Gap", tag: "Role Fit & Audit", sub: "Instant ATS resume audits, paired with three-tier skill gap analysis. We pinpoint exactly what you need to level up." },
   { s: 34, e: 42, name: "Roadmap & Job Match", tag: "8-Week Execution", sub: "Turn missing skills into structured, eight-week action roadmaps — matched semantically to real company job profiles." },
@@ -120,7 +120,7 @@ function Intro({ lt, t }) {
           <Layers size={42} className="text-white" />
         </div>
         <F lt={lt} a={2.2} className="text-center">
-          <h2 className="text-4xl font-black text-white tracking-tight">HireMatrix <span className="text-cyan-300">AI</span></h2>
+          <h2 className="text-4xl font-black text-white tracking-tight">PlacementIQ <span className="text-cyan-300">AI</span></h2>
           <p className="text-indigo-200 text-sm">Explainable AI Career Intelligence &amp; Placement Readiness Suite</p>
         </F>
         <div className="flex gap-3">
@@ -273,7 +273,7 @@ function Admin({ lt, t }) {
       <div className="h-full flex items-center justify-center" style={{ opacity: p }}>
         <div className={`${GLASS} rounded-3xl px-12 py-8 text-center`} style={{ transform: `scale(${0.94 + 0.06 * p})`, boxShadow: `0 0 ${50 + Math.sin(t * 3) * 15}px rgba(99,102,241,.5)` }}>
           <div className="mx-auto w-16 h-16 rounded-2xl bg-gradient-to-br from-cyan-400 to-violet-600 flex items-center justify-center mb-3"><Sparkles size={32} className="text-white" /></div>
-          <h2 className="text-3xl font-black text-white tracking-tight">HireMatrix AI</h2>
+          <h2 className="text-3xl font-black text-white tracking-tight">PlacementIQ AI</h2>
           <p className="text-lg text-cyan-200">Engineered by Suzal Naudiyal</p>
           <p className="text-xs text-slate-400 mt-2">FastAPI · React 19 · TypeScript · MongoDB · Scikit-Learn · TreeSHAP</p>
           <p className="text-xs text-emerald-300 mt-1">100% automated test pass rate</p>
@@ -518,7 +518,7 @@ export default function HireMatrixExplainer() {
           {/* Top Video Header */}
           <div className="absolute top-3 left-4 flex items-center gap-2 text-xs text-slate-300 z-10 flex-wrap">
             <Layers size={14} className="text-cyan-300" />
-            <span className="font-bold text-white">HireMatrix AI</span>
+            <span className="font-bold text-white">PlacementIQ AI</span>
             <ChevronRight size={12} className="text-slate-500" />
             <span className="text-cyan-200 font-medium">{sc.name}</span>
             <span className="px-1.5 py-0.5 rounded text-[10px] bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">

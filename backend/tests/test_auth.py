@@ -24,7 +24,7 @@ async def test_demo_credentials_endpoint():
         assert "student" in data
         assert "admin" in data
         assert data["student"]["email"] == "student@placementiq.ai"
-        assert data["admin"]["email"] == "suzal.php@gmail.com"
+        assert data["admin"]["email"] == "admin@placementiq.ai"
 
 
 @pytest.mark.asyncio

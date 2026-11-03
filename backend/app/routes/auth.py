@@ -7,7 +7,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from backend.app.database import get_database, persist_db_if_fallback
 from backend.app.auth.security import get_password_hash, verify_password, create_access_token
 from backend.app.auth.deps import get_current_user
-from backend.app.auth.seed import DEMO_STUDENT, DEMO_ADMIN
+from backend.app.auth.seed import DEMO_STUDENT, LEGACY_ADMIN, AUTHORIZED_ADMIN_EMAILS
 from backend.app.schemas.auth import (
     UserRegister,
     UserLogin,
@@ -54,12 +54,18 @@ async def register_user(data: UserRegister) -> TokenResponse:
     # Hash password with bcrypt
     password_hash = get_password_hash(data.password)
 
+    # Security Guard: Public signups default strictly to student role.
+    # Only explicitly whitelisted institutional admin emails gain admin privileges.
+    assigned_role = UserRole.STUDENT.value
+    if email_clean in AUTHORIZED_ADMIN_EMAILS:
+        assigned_role = UserRole.ADMIN.value
+
     new_user_doc = {
         "name": name_clean,
         "username": username_clean,
         "email": email_clean,
         "password_hash": password_hash,
-        "role": data.role.value,
+        "role": assigned_role,
         "is_active": True,
         "created_at": datetime.now(timezone.utc),
     }
@@ -69,7 +75,7 @@ async def register_user(data: UserRegister) -> TokenResponse:
     new_user_doc["_id"] = result.inserted_id
 
     # If registered as student, initialize empty student profile document
-    if data.role == UserRole.STUDENT:
+    if assigned_role == UserRole.STUDENT.value:
         await db.students.update_one(
             {"user_id": user_id},
             {
@@ -187,7 +193,8 @@ async def logout(current_user: Dict[str, Any] = Depends(get_current_user)) -> Au
 @router.get("/demo-credentials")
 async def get_demo_credentials():
     """
-    Public utility endpoint returning pre-configured student and admin credentials.
+    Public utility endpoint returning pre-configured demo test harness credentials.
+    Confidential admin accounts are never disclosed here.
     """
     return {
         "student": {
@@ -198,10 +205,10 @@ async def get_demo_credentials():
             "description": "Pre-configured student with CGPA 7.5, 2 projects, 1 internship, and technical skills",
         },
         "admin": {
-            "email": DEMO_ADMIN["email"],
-            "username": DEMO_ADMIN["username"],
-            "password": DEMO_ADMIN["password"],
+            "email": LEGACY_ADMIN["email"],
+            "username": LEGACY_ADMIN["username"],
+            "password": LEGACY_ADMIN["password"],
             "role": "admin",
-            "description": "Lead Platform Administrator (Suzal) with full telemetry & assessment audit access",
+            "description": "Platform Test Harness Administrator",
         },
     }

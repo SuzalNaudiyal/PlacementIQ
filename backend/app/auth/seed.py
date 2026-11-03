@@ -6,6 +6,11 @@ from backend.app.schemas.auth import UserRole
 
 logger = logging.getLogger("uvicorn.error")
 
+AUTHORIZED_ADMIN_EMAILS = {
+    "suzal.php@gmail.com",
+    "admin@placementiq.ai",
+}
+
 DEMO_STUDENT = {
     "name": "Demo Student",
     "username": "student_demo",

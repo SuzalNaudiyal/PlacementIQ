@@ -7,7 +7,7 @@ export const Footer: React.FC = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-6">
         <div>
           <div className="flex items-center gap-2 text-white font-semibold text-sm">
-            <span>HireMatrix AI — Placement & Skill Gap Analyzer</span>
+            <span>PlacementIQ AI — Placement & Skill Gap Analyzer</span>
             <span className="px-1.5 py-0.5 rounded text-[10px] bg-slate-800 text-slate-300 font-mono">v1.0.0</span>
           </div>
           <p className="mt-1 text-slate-500">

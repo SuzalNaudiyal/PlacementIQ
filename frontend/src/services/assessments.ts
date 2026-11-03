@@ -188,3 +188,83 @@ export const fetchAdminAssessmentSubmissions = async (testType?: string): Promis
   const res = await apiClient.get<AdminAssessmentSubmission[]>(url);
   return res.data;
 };
+
+export interface PlacementQuestion {
+  id: string;
+  company: string;
+  category: string;
+  subtopic: string;
+  question: string;
+  options: string[];
+}
+
+export interface PlacementSection {
+  section_id: string;
+  section_number: number;
+  title: string;
+  badge: string;
+  company_tags: string[];
+  instructions: string;
+  duration_seconds: number;
+  questions: PlacementQuestion[];
+}
+
+export interface PlacementTestPackage {
+  title: string;
+  subtitle: string;
+  total_sections: number;
+  total_questions: number;
+  total_duration_minutes: number;
+  sections: PlacementSection[];
+}
+
+export interface PlacementTestResult {
+  submission_id: string;
+  total_questions: number;
+  total_attempted: number;
+  total_correct: number;
+  overall_percentage: number;
+  readiness_status: string;
+  badge_awarded: string;
+  section_1_summary: {
+    title: string;
+    total: number;
+    correct: number;
+    percentage: number;
+    cefr_band: string;
+  };
+  section_2_summary: {
+    title: string;
+    total: number;
+    correct: number;
+    percentage: number;
+  };
+  eligible_companies: string[];
+  detailed_review: Array<{
+    question_id: string;
+    company: string;
+    category: string;
+    subtopic: string;
+    question: string;
+    options: string[];
+    selected_option_index: number | null;
+    correct_option_index: number;
+    is_correct: boolean;
+    explanation: string;
+  }>;
+  submitted_at: string;
+}
+
+export const fetchPlacementTestPackage = async (numPerSection: number = 10): Promise<PlacementTestPackage> => {
+  const res = await apiClient.get<PlacementTestPackage>(`/assessments/placement-test/questions?num_per_section=${numPerSection}`);
+  return res.data;
+};
+
+export const submitPlacementTestPackage = async (payload: {
+  section_1_answers: Record<string, number>;
+  section_2_answers: Record<string, number>;
+  total_time_taken_seconds?: number;
+}): Promise<PlacementTestResult> => {
+  const res = await apiClient.post<PlacementTestResult>('/assessments/placement-test/submit', payload);
+  return res.data;
+};
