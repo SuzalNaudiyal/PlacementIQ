@@ -62,3 +62,4 @@ async def test_generate_outreach_pitches():
         assert "Microsoft" in data["messages"]["alumni_referral"]
         assert len(data["subject_lines"]) >= 3
         assert len(data["tips"]) >= 3
+

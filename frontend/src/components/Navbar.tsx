@@ -1,5 +1,5 @@
 import React from 'react';
-import { ShieldCheck, Sparkles, BookOpen, LogIn, LogOut } from 'lucide-react';
+import { Sparkles, BookOpen, LogIn, LogOut } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 interface NavbarProps {
@@ -57,9 +57,9 @@ export const Navbar: React.FC<NavbarProps> = ({ isBackendOnline, latency, onOpen
           </a>
 
           {/* Phase Badge */}
-          <div className="hidden lg:inline-flex items-center gap-1 text-xs text-indigo-300 bg-indigo-950/50 border border-indigo-800/60 px-3 py-1.5 rounded-lg">
-            <ShieldCheck className="h-3.5 w-3.5 text-indigo-400" />
-            Phase 15: AI Mock Interview Active
+          <div className="hidden lg:inline-flex items-center gap-2 text-xs text-indigo-300 bg-indigo-950/40 border border-indigo-800/50 px-3 py-1.5 rounded-lg">
+            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+            <span className="font-medium text-slate-200">HireMatrix v2.0 Enterprise</span>
           </div>
 
           {/* User Session Profile or Sign In Button */}

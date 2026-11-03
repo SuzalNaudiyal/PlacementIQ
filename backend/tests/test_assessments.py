@@ -155,3 +155,4 @@ async def test_admin_assessment_submissions():
         assert "submission_id" in sub0
         assert "headline_score" in sub0
         assert "test_type" in sub0
+

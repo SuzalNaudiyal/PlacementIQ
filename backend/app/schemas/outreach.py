@@ -29,3 +29,4 @@ class OutreachResponse(BaseModel):
     subject_lines: List[str]
     messages: Dict[str, str]
     tips: List[str]
+
