@@ -43,6 +43,7 @@ import {
   Share2,
   Brain,
   BarChart3,
+  ArrowUp,
 } from 'lucide-react';
 
 type ViewId =
@@ -277,6 +278,8 @@ function DashboardContent() {
   const [isAuthModalOpen, setIsAuthModalOpen] = useState<boolean>(false);
   const [activeView, setActiveView] = useState<ViewId>('overview');
   const [activePillarId, setActivePillarId] = useState<PillarId>('intelligence');
+  const [scrollProgress, setScrollProgress] = useState<number>(0);
+  const [showBackToTop, setShowBackToTop] = useState<boolean>(false);
 
   const navigateToView = (view: ViewId) => {
     setActiveView(view);
@@ -317,10 +320,55 @@ function DashboardContent() {
     loadHealthData();
   }, [loadHealthData]);
 
+  // Scroll listener for sticky progress line and back-to-top visibility
+  useEffect(() => {
+    const handleScroll = () => {
+      const totalHeight = document.documentElement.scrollHeight - window.innerHeight;
+      const progress = totalHeight > 0 ? (window.scrollY / totalHeight) * 100 : 0;
+      setScrollProgress(Math.min(100, Math.max(0, progress)));
+      setShowBackToTop(window.scrollY > 350);
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    handleScroll();
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  // IntersectionObserver for smooth scroll-reveal effects on cards and sections
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      const elements = document.querySelectorAll('.reveal-on-scroll');
+      if (!elements.length) return;
+
+      const observer = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              entry.target.classList.add('is-visible');
+            }
+          });
+        },
+        { threshold: 0.08, rootMargin: '0px 0px -40px 0px' }
+      );
+
+      elements.forEach((el) => observer.observe(el));
+      return () => observer.disconnect();
+    }, 120);
+
+    return () => clearTimeout(timer);
+  }, [activeView]);
+
   const isBackendOnline = healthData !== null && error === null;
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col selection:bg-indigo-500/30 selection:text-indigo-200 relative overflow-x-hidden">
+      {/* Sticky Top Scroll Progress Glow Line */}
+      <div
+        className="scroll-progress-line"
+        style={{ width: `${scrollProgress}%` }}
+        aria-hidden="true"
+      />
+
       {/* Background Animated Glow Orbs & Cyber-Grid */}
       <div className="fixed inset-0 cyber-grid pointer-events-none z-0 opacity-40" />
       <div className="absolute top-10 left-1/4 w-96 h-96 bg-indigo-600/10 rounded-full blur-3xl pointer-events-none animate-pulse-glow" />
@@ -547,19 +595,30 @@ function DashboardContent() {
         ) : (
           <>
             {/* Main Authentic Hero Section: HireMatrix AI */}
-            <div className="text-center max-w-4xl mx-auto mb-12 relative z-10">
-              <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-300 text-xs font-semibold mb-6 shadow-sm backdrop-blur-md animate-float">
+            <div className="text-center max-w-4xl mx-auto mb-14 relative z-10">
+              <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-300 text-xs font-semibold mb-6 shadow-sm backdrop-blur-md animate-float animate-badge-sweep">
                 <Sparkles className="w-3.5 h-3.5 text-cyan-400" />
                 <span>AI Career Intelligence & Placement Readiness SaaS</span>
               </div>
 
-              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-white leading-tight">
-                HireMatrix{' '}
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-indigo-300 to-purple-400 animate-text-shimmer">
-                  AI
-                </span>
-              </h1>
-              <h2 className="mt-2 text-xl sm:text-2xl lg:text-3xl font-bold tracking-tight text-indigo-200">
+              {/* Glowing Dynamic Hero Title with Aura & Transition */}
+              <div className="relative inline-block my-2">
+                <div className="title-aura" aria-hidden="true" />
+                <h1 className="relative text-4xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight leading-tight hero-glow-fx">
+                  <span className="hero-title-gradient hover:scale-[1.02] transition-transform duration-300 cursor-default select-none">
+                    HireMatrix
+                  </span>{' '}
+                  <span className="relative inline-flex items-center gap-2 px-3 sm:px-4 py-0.5 sm:py-1 rounded-2xl bg-gradient-to-r from-indigo-500/20 via-purple-500/25 to-pink-500/20 border border-indigo-400/40 shadow-lg shadow-indigo-500/30 backdrop-blur-md align-middle text-2xl sm:text-4xl lg:text-5xl text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 via-indigo-200 to-purple-300 animate-text-shimmer">
+                    <span className="absolute -top-1 -right-1 flex h-3 w-3">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75"></span>
+                      <span className="relative inline-flex rounded-full h-3 w-3 bg-cyan-500"></span>
+                    </span>
+                    AI
+                  </span>
+                </h1>
+              </div>
+
+              <h2 className="mt-3 text-xl sm:text-2xl lg:text-3xl font-bold tracking-tight text-indigo-200">
                 AI Placement &{' '}
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 via-purple-300 to-pink-400">
                   Skill Gap Analyzer
@@ -622,7 +681,7 @@ function DashboardContent() {
             </div>
 
             {/* Live Backend Telemetry Widget */}
-            <div className="mb-14">
+            <div className="mb-14 reveal-on-scroll">
               <SystemHealthBanner
                 healthData={healthData}
                 loading={loading}
@@ -640,6 +699,18 @@ function DashboardContent() {
           </>
         )}
       </main>
+
+      {/* Floating Back to Top Button */}
+      {showBackToTop && (
+        <button
+          onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+          aria-label="Scroll back to top"
+          className="back-to-top-btn flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-900/90 hover:bg-slate-800 border border-indigo-500/30 text-indigo-300 hover:text-white shadow-xl shadow-indigo-950/40 backdrop-blur-md text-xs font-semibold cursor-pointer animate-in fade-in slide-in-from-bottom-2 hover:scale-105"
+        >
+          <ArrowUp className="w-3.5 h-3.5 text-cyan-400" />
+          <span className="hidden sm:inline">Top</span>
+        </button>
+      )}
 
       {/* Auth Modal */}
       <AuthModal

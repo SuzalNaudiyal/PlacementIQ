@@ -22,7 +22,7 @@ export const PhaseTracker: React.FC = () => {
   ];
 
   return (
-    <div className="py-10 border-t border-slate-800/80">
+    <div className="py-10 border-t border-slate-800/80 reveal-on-scroll">
       <div className="max-w-7xl mx-auto">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-8">
           <div>
@@ -35,13 +35,14 @@ export const PhaseTracker: React.FC = () => {
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3.5">
-          {phases.map((phase) => {
+          {phases.map((phase, idx) => {
             const isCompleted = phase.status === 'completed';
             const isCurrent = phase.status === 'in_progress';
+            const delayClass = `reveal-delay-${(idx % 4) + 1}`;
             return (
               <div
                 key={phase.number}
-                className={`p-3.5 rounded-xl border text-left transition-all ${
+                className={`p-3.5 rounded-xl border text-left transition-all reveal-on-scroll ${delayClass} ${
                   isCompleted
                     ? 'bg-emerald-950/20 border-emerald-500/30 ring-1 ring-emerald-500/10'
                     : isCurrent

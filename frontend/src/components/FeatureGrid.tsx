@@ -65,7 +65,7 @@ export const FeatureGrid: React.FC<FeatureGridProps> = ({ onSelectFeature }) => 
 
   return (
     <div className="py-12 relative z-10">
-      <div className="text-center max-w-3xl mx-auto mb-12">
+      <div className="text-center max-w-3xl mx-auto mb-12 reveal-on-scroll">
         <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-900 border border-slate-800 text-slate-400 text-xs font-semibold mb-3">
           <span className="w-1.5 h-1.5 rounded-full bg-indigo-400"></span>
           <span>Unified Placement Operating System</span>
@@ -79,13 +79,14 @@ export const FeatureGrid: React.FC<FeatureGridProps> = ({ onSelectFeature }) => 
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {features.map((feature) => {
+        {features.map((feature, idx) => {
           const Icon = feature.icon;
+          const delayClass = `reveal-delay-${(idx % 6) + 1}`;
           return (
             <div
               key={feature.id}
               onClick={() => onSelectFeature && onSelectFeature(feature.id)}
-              className="p-6 rounded-2xl glass-card glass-card-hover group flex flex-col justify-between cursor-pointer"
+              className={`p-6 rounded-2xl glass-card glass-card-hover group flex flex-col justify-between cursor-pointer reveal-on-scroll ${delayClass}`}
             >
               <div>
                 <div className="flex items-center justify-between mb-4">
