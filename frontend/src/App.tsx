@@ -595,16 +595,19 @@ function DashboardContent() {
         ) : (
           <>
             {/* Main Authentic Hero Section: HireMatrix AI */}
-            <div className="text-center max-w-4xl mx-auto mb-14 relative z-10">
-              <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-300 text-xs font-semibold mb-6 shadow-sm backdrop-blur-md animate-float animate-badge-sweep">
-                <Sparkles className="w-3.5 h-3.5 text-cyan-400" />
-                <span>AI Career Intelligence & Placement Readiness SaaS</span>
+            <div className="max-w-4xl w-full mx-auto mb-14 relative z-10 flex flex-col items-center text-center">
+              {/* Row 1: Pill Badge */}
+              <div className="mb-5 flex justify-center w-full">
+                <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-300 text-xs font-semibold shadow-sm backdrop-blur-md animate-float animate-badge-sweep">
+                  <Sparkles className="w-3.5 h-3.5 text-cyan-400" />
+                  <span>AI Career Intelligence & Placement Readiness SaaS</span>
+                </div>
               </div>
 
-              {/* Glowing Dynamic Hero Title with Aura & Transition */}
-              <div className="relative inline-block my-2">
+              {/* Row 2: Glowing Dynamic Hero Title with Aura & Transition */}
+              <div className="relative flex justify-center items-center w-full my-3">
                 <div className="title-aura" aria-hidden="true" />
-                <h1 className="relative text-4xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight leading-tight hero-glow-fx">
+                <h1 className="relative text-4xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight leading-tight hero-glow-fx text-center">
                   <span className="hero-title-gradient hover:scale-[1.02] transition-transform duration-300 cursor-default select-none">
                     HireMatrix
                   </span>{' '}
@@ -618,18 +621,20 @@ function DashboardContent() {
                 </h1>
               </div>
 
-              <h2 className="mt-3 text-xl sm:text-2xl lg:text-3xl font-bold tracking-tight text-indigo-200">
+              {/* Row 3: Subtitle */}
+              <h2 className="mt-3 text-xl sm:text-2xl lg:text-3xl font-bold tracking-tight text-indigo-200 text-center">
                 AI Placement &{' '}
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 via-purple-300 to-pink-400">
                   Skill Gap Analyzer
                 </span>
               </h2>
 
-              <p className="mt-5 text-base sm:text-lg text-slate-300 max-w-2xl mx-auto leading-relaxed">
+              {/* Row 4: Description */}
+              <p className="mt-5 text-base sm:text-lg text-slate-300 max-w-2xl mx-auto text-center leading-relaxed">
                 Evaluate placement readiness, parse resumes with NLP, identify missing skills for specific job roles, match against industry opportunities, and follow an explainable 8-week roadmap.
               </p>
 
-              {/* Action Callouts */}
+              {/* Row 5: Action Callouts */}
               <div className="flex flex-wrap items-center justify-center gap-3 mt-7">
                 {!isAuthenticated ? (
                   <>
@@ -659,7 +664,7 @@ function DashboardContent() {
                 )}
               </div>
 
-              {/* Quick Architecture Stack Badges */}
+              {/* Row 6: Quick Architecture Stack Badges */}
               <div className="flex flex-wrap items-center justify-center gap-2 mt-6">
                 {[
                   'FastAPI 0.110+',
