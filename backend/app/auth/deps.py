@@ -91,3 +91,8 @@ def require_role(required_role: UserRole):
         return current_user
 
     return role_checker
+
+
+get_current_admin = require_role(UserRole.ADMIN)
+get_current_student = require_role(UserRole.STUDENT)
+

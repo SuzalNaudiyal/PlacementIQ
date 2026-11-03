@@ -23,6 +23,7 @@ PERSISTED_COLLECTIONS = [
     "interview_sessions",
     "predictions",
     "jobs",
+    "assessment_submissions",
 ]
 
 class DatabaseManager:

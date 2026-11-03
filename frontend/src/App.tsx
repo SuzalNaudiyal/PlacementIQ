@@ -16,12 +16,14 @@ import { AdminDashboard } from './components/admin/AdminDashboard';
 import { MockInterviewView } from './components/interview/MockInterviewView';
 import { UniversityERPView } from './components/erp/UniversityERPView';
 import { CompanyPrepView } from './components/companyprep/CompanyPrepView';
+import { LinkedInOutreachView } from './components/outreach/LinkedInOutreachView';
+import { AssessmentHubView } from './components/assessments/AssessmentHubView';
 import HireMatrixExplainer from './components/HireMatrixExplainer';
 import { CareerCopilotWidget } from './components/copilot/CareerCopilotWidget';
 import { Footer } from './components/Footer';
 import { fetchSystemHealth, pingBackend } from './services/api';
 import type { HealthResponse } from './types/system';
-import { Sparkles, Shield, User, CheckCircle2, ArrowRight, LayoutDashboard, UserCheck, Zap, FileText, Target, Briefcase, Calendar, Mic, Building2, BookOpen } from 'lucide-react';
+import { Sparkles, Shield, User, CheckCircle2, ArrowRight, LayoutDashboard, UserCheck, Zap, FileText, Target, Briefcase, Calendar, Mic, Building2, BookOpen, Share2, Brain } from 'lucide-react';
 
 function DashboardContent() {
   const { user, isAuthenticated, logout } = useAuth();
@@ -30,7 +32,7 @@ function DashboardContent() {
   const [error, setError] = useState<string | null>(null);
   const [latency, setLatency] = useState<number | null>(null);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState<boolean>(false);
-  const [activeView, setActiveView] = useState<'overview' | 'profile' | 'prediction' | 'resume' | 'skillgap' | 'jobs' | 'roadmap' | 'interview' | 'erp' | 'admin' | 'explainer' | 'company_prep'>('overview');
+  const [activeView, setActiveView] = useState<'overview' | 'profile' | 'prediction' | 'resume' | 'skillgap' | 'jobs' | 'roadmap' | 'interview' | 'erp' | 'admin' | 'explainer' | 'company_prep' | 'outreach' | 'assessments'>('overview');
 
   const loadHealthData = useCallback(async () => {
     setLoading(true);
@@ -171,6 +173,26 @@ function DashboardContent() {
                 }`}
               >
                 🏛️ Campus Drives & ERP
+              </button>
+              <button
+                onClick={() => setActiveView('assessments')}
+                className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-colors cursor-pointer ${
+                  activeView === 'assessments'
+                    ? 'bg-indigo-600 text-white shadow-sm'
+                    : 'text-indigo-300 hover:text-white bg-indigo-950/60 hover:bg-indigo-900 border border-indigo-500/30'
+                }`}
+              >
+                🧠 Aptitude & SVAR Test
+              </button>
+              <button
+                onClick={() => setActiveView('outreach')}
+                className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-colors cursor-pointer ${
+                  activeView === 'outreach'
+                    ? 'bg-blue-600 text-white shadow-sm'
+                    : 'text-blue-300 hover:text-white bg-blue-950/60 hover:bg-blue-900 border border-blue-500/30'
+                }`}
+              >
+                💼 LinkedIn Pitch
               </button>
               <button
                 onClick={() => setActiveView('admin')}
@@ -420,6 +442,50 @@ function DashboardContent() {
                 if (!isAuthenticated) {
                   setIsAuthModalOpen(true);
                 } else {
+                  setActiveView('assessments');
+                }
+              }}
+              className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-semibold transition cursor-pointer ${
+                activeView === 'assessments'
+                  ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/30'
+                  : 'text-slate-400 hover:text-white hover:bg-slate-800/50'
+              }`}
+            >
+              <Brain className="w-3.5 h-3.5 text-indigo-400" />
+              Aptitude & SVAR Voice Test
+              {!isAuthenticated && (
+                <span className="text-[10px] px-1.5 py-0.5 bg-slate-800 rounded text-slate-400 border border-slate-700">
+                  Login Req
+                </span>
+              )}
+            </button>
+            <button
+              onClick={() => {
+                if (!isAuthenticated) {
+                  setIsAuthModalOpen(true);
+                } else {
+                  setActiveView('outreach');
+                }
+              }}
+              className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-semibold transition cursor-pointer ${
+                activeView === 'outreach'
+                  ? 'bg-blue-600 text-white shadow-md shadow-blue-600/30'
+                  : 'text-slate-400 hover:text-white hover:bg-slate-800/50'
+              }`}
+            >
+              <Share2 className="w-3.5 h-3.5 text-blue-400" />
+              LinkedIn Referral Pitch
+              {!isAuthenticated && (
+                <span className="text-[10px] px-1.5 py-0.5 bg-slate-800 rounded text-slate-400 border border-slate-700">
+                  Login Req
+                </span>
+              )}
+            </button>
+            <button
+              onClick={() => {
+                if (!isAuthenticated) {
+                  setIsAuthModalOpen(true);
+                } else {
                   setActiveView('admin');
                 }
               }}
@@ -519,6 +585,10 @@ function DashboardContent() {
           <UniversityERPView />
         ) : activeView === 'company_prep' && isAuthenticated ? (
           <CompanyPrepView />
+        ) : activeView === 'assessments' && isAuthenticated ? (
+          <AssessmentHubView />
+        ) : activeView === 'outreach' && isAuthenticated ? (
+          <LinkedInOutreachView />
         ) : activeView === 'admin' && isAuthenticated ? (
           <AdminDashboard />
         ) : isAuthenticated ? (

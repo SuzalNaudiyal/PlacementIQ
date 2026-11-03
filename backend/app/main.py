@@ -21,6 +21,8 @@ from backend.app.routes import (
     coding_profiles,
     copilot,
     company_prep,
+    outreach,
+    assessments,
 )
 
 
@@ -86,6 +88,8 @@ app.include_router(erp.router, prefix=settings.API_V1_PREFIX)
 app.include_router(coding_profiles.router, prefix=settings.API_V1_PREFIX)
 app.include_router(copilot.router, prefix=settings.API_V1_PREFIX)
 app.include_router(company_prep.router, prefix=settings.API_V1_PREFIX)
+app.include_router(outreach.router, prefix=settings.API_V1_PREFIX)
+app.include_router(assessments.router, prefix=settings.API_V1_PREFIX)
 
 
 @app.get("/", tags=["Root"])

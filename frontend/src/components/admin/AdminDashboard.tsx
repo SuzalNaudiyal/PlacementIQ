@@ -18,6 +18,7 @@ import {
   Sparkles,
   BarChart3,
   Layers,
+  Brain,
 } from 'lucide-react';
 import {
   ResponsiveContainer,
@@ -38,9 +39,17 @@ import type {
   JobCreateRequest,
 } from '../../types/admin';
 import { adminService } from '../../services/admin';
+import {
+  fetchAdminAssessmentSubmissions,
+  type AdminAssessmentSubmission,
+} from '../../services/assessments';
 
 export const AdminDashboard: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<'analytics' | 'directory' | 'jobs'>('analytics');
+  const [activeTab, setActiveTab] = useState<'analytics' | 'directory' | 'jobs' | 'assessments'>('analytics');
+  const [assessmentSubmissions, setAssessmentSubmissions] = useState<AdminAssessmentSubmission[]>([]);
+  const [loadingAssessments, setLoadingAssessments] = useState<boolean>(false);
+  const [selectedSubmission, setSelectedSubmission] = useState<AdminAssessmentSubmission | null>(null);
+  const [testTypeFilter, setTestTypeFilter] = useState<string>('all');
   const [stats, setStats] = useState<CohortStatsResponse | null>(null);
   const [students, setStudents] = useState<AdminStudentListItem[]>([]);
   const [jobs, setJobs] = useState<AdminJobItem[]>([]);
@@ -96,6 +105,18 @@ export const AdminDashboard: React.FC = () => {
       setError(err?.response?.data?.detail || 'Failed to load institutional analytics. Ensure you are signed in as Administrator.');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadAssessments = async (type?: string) => {
+    try {
+      setLoadingAssessments(true);
+      const data = await fetchAdminAssessmentSubmissions(type && type !== 'all' ? type : undefined);
+      setAssessmentSubmissions(data);
+    } catch (err) {
+      console.warn('Failed to fetch assessment submissions:', err);
+    } finally {
+      setLoadingAssessments(false);
     }
   };
 
@@ -338,6 +359,20 @@ export const AdminDashboard: React.FC = () => {
           >
             <Briefcase className="w-4 h-4" />
             Campus Drives ({jobs.length})
+          </button>
+          <button
+            onClick={() => {
+              setActiveTab('assessments');
+              loadAssessments(testTypeFilter);
+            }}
+            className={`flex items-center gap-2 px-5 py-3 text-sm font-semibold border-b-2 transition ${
+              activeTab === 'assessments'
+                ? 'border-indigo-500 text-indigo-400 bg-indigo-500/5'
+                : 'border-transparent text-slate-400 hover:text-white'
+            }`}
+          >
+            <Brain className="w-4 h-4" />
+            Assessment & SVAR Telemetry
           </button>
         </div>
       </div>
@@ -764,6 +799,184 @@ export const AdminDashboard: React.FC = () => {
               </div>
             ))}
           </div>
+        </div>
+      )}
+
+      {/* TAB 4: ASSESSMENT & SVAR VOICE TELEMETRY */}
+      {activeTab === 'assessments' && (
+        <div className="space-y-6 animate-fadeIn">
+          {/* Controls Banner */}
+          <div className="p-6 rounded-2xl bg-slate-900/60 border border-slate-800 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div>
+              <h3 className="text-base font-bold text-white flex items-center gap-2">
+                <Brain className="w-5 h-5 text-indigo-400" />
+                Institutional Assessment & SVAR Voice Telemetry
+              </h3>
+              <p className="text-xs text-slate-400 mt-0.5">
+                Review candidate aptitude test grades, AI SVAR voice pronunciation scores, and speech transcripts.
+              </p>
+            </div>
+
+            {/* Filter Pills */}
+            <div className="flex items-center gap-1.5 bg-slate-950 p-1.5 rounded-xl border border-slate-800">
+              {[
+                { id: 'all', label: 'All Tests' },
+                { id: 'aptitude_mcq', label: 'Aptitude MCQs' },
+                { id: 'svar_sentence', label: 'SVAR Voice Repeat' },
+                { id: 'svar_extempore', label: 'Extempore' },
+              ].map((f) => (
+                <button
+                  key={f.id}
+                  onClick={() => {
+                    setTestTypeFilter(f.id);
+                    loadAssessments(f.id);
+                  }}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition ${
+                    testTypeFilter === f.id
+                      ? 'bg-indigo-600 text-white shadow'
+                      : 'text-slate-400 hover:text-white'
+                  }`}
+                >
+                  {f.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Submissions Table */}
+          <div className="bg-slate-900/80 border border-slate-800 rounded-2xl overflow-hidden shadow-xl">
+            {loadingAssessments ? (
+              <div className="py-16 text-center text-slate-400 text-sm">
+                <div className="w-10 h-10 border-4 border-indigo-500/20 border-t-indigo-500 rounded-full animate-spin mx-auto mb-2" />
+                Loading candidate submission telemetry...
+              </div>
+            ) : assessmentSubmissions.length === 0 ? (
+              <div className="py-16 text-center text-slate-500 text-sm">
+                No student assessment records found for this filter.
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-xs">
+                  <thead>
+                    <tr className="border-b border-slate-800 bg-slate-950/60 text-slate-400 font-semibold uppercase tracking-wider">
+                      <th className="py-3.5 px-4">Candidate</th>
+                      <th className="py-3.5 px-4">Test Type</th>
+                      <th className="py-3.5 px-4">AI Score</th>
+                      <th className="py-3.5 px-4">CEFR / Badge</th>
+                      <th className="py-3.5 px-4">Submission Date</th>
+                      <th className="py-3.5 px-4 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-800/60 font-mono">
+                    {assessmentSubmissions.map((sub) => (
+                      <tr key={sub.submission_id} className="hover:bg-slate-950/50 transition-colors">
+                        <td className="py-3.5 px-4 font-sans">
+                          <span className="font-bold text-white block">{sub.student_name}</span>
+                          <span className="text-[11px] text-slate-400 font-mono">{sub.student_email}</span>
+                        </td>
+                        <td className="py-3.5 px-4 font-sans">
+                          <span className="px-2.5 py-1 rounded-md text-[11px] font-semibold bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 capitalize">
+                            {sub.test_type?.replace('_', ' ')}
+                          </span>
+                        </td>
+                        <td className="py-3.5 px-4 font-bold text-white text-sm">
+                          {sub.headline_score}%
+                        </td>
+                        <td className="py-3.5 px-4 font-sans">
+                          <span className="text-emerald-400 font-semibold text-xs">
+                            {sub.rating_or_badge || 'N/A'}
+                          </span>
+                        </td>
+                        <td className="py-3.5 px-4 text-slate-400">
+                          {sub.submitted_at ? new Date(sub.submitted_at).toLocaleDateString() : 'Recent'}
+                        </td>
+                        <td className="py-3.5 px-4 text-right">
+                          <button
+                            onClick={() => setSelectedSubmission(sub)}
+                            className="px-3 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white font-sans text-xs font-medium transition"
+                          >
+                            Inspect AI Audit
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+
+          {/* Submission Inspection Modal */}
+          {selectedSubmission && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fadeIn">
+              <div className="bg-slate-900 border border-slate-800 rounded-3xl max-w-xl w-full p-6 md:p-8 shadow-2xl relative space-y-4">
+                <button
+                  onClick={() => setSelectedSubmission(null)}
+                  className="absolute top-5 right-5 p-2 rounded-full bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+
+                <div className="border-b border-slate-800 pb-3">
+                  <span className="text-xs font-bold text-indigo-400 uppercase tracking-wider block">
+                    Submission Inspection Dossier
+                  </span>
+                  <h3 className="text-xl font-bold text-white">{selectedSubmission.student_name}</h3>
+                  <p className="text-xs text-slate-400">{selectedSubmission.student_email}</p>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3 text-center">
+                  <div className="p-3 rounded-xl bg-slate-950 border border-slate-800">
+                    <span className="text-[11px] text-slate-400 block">Overall Score</span>
+                    <span className="text-lg font-bold text-emerald-400">{selectedSubmission.headline_score}%</span>
+                  </div>
+                  <div className="p-3 rounded-xl bg-slate-950 border border-slate-800">
+                    <span className="text-[11px] text-slate-400 block">Rating / CEFR</span>
+                    <span className="text-lg font-bold text-white">{selectedSubmission.rating_or_badge}</span>
+                  </div>
+                </div>
+
+                {/* Detailed Summary Fields */}
+                <div className="p-4 rounded-xl bg-slate-950/80 border border-slate-800 text-xs font-mono space-y-2 text-slate-300 max-h-60 overflow-y-auto">
+                  {selectedSubmission.summary?.expected_sentence && (
+                    <div>
+                      <span className="text-slate-400 block font-sans font-semibold">Expected Prompt:</span>
+                      <p className="text-slate-200">"{selectedSubmission.summary.expected_sentence}"</p>
+                    </div>
+                  )}
+                  {selectedSubmission.summary?.spoken_transcript && (
+                    <div className="pt-2 border-t border-slate-800">
+                      <span className="text-indigo-400 block font-sans font-semibold">Candidate Spoken Audio:</span>
+                      <p className="text-emerald-300">"{selectedSubmission.summary.spoken_transcript}"</p>
+                    </div>
+                  )}
+                  {selectedSubmission.summary?.feedback && (
+                    <div className="pt-2 border-t border-slate-800">
+                      <span className="text-amber-400 block font-sans font-semibold">AI Evaluation Remarks:</span>
+                      <p className="font-sans text-slate-300">{selectedSubmission.summary.feedback}</p>
+                    </div>
+                  )}
+                  {selectedSubmission.summary?.category_breakdown && (
+                    <div className="pt-2 border-t border-slate-800">
+                      <span className="text-slate-400 block font-sans font-semibold mb-1">Aptitude Breakdown:</span>
+                      <pre className="text-[11px] text-indigo-300">
+                        {JSON.stringify(selectedSubmission.summary.category_breakdown, null, 2)}
+                      </pre>
+                    </div>
+                  )}
+                </div>
+
+                <div className="pt-2 text-right">
+                  <button
+                    onClick={() => setSelectedSubmission(null)}
+                    className="px-5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-white text-xs font-semibold"
+                  >
+                    Close
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       )}
 
