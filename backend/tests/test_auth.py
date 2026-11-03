@@ -157,3 +157,102 @@ async def test_registered_account_persists_across_database_reload():
         data = login_response.json()
         assert data["user"]["email"] == test_email
         assert data["user"]["name"] == "Persistent Candidate"
+
+
+@pytest.mark.asyncio
+async def test_admin_login_suzal_credentials():
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://test") as client:
+        # Email login as admin
+        r1 = await client.post(
+            "/api/auth/login",
+            json={"email": "suzal.php@gmail.com", "password": "suzal@358"},
+        )
+        assert r1.status_code == 200
+        assert r1.json()["user"]["role"] == "admin"
+
+        # Username login as admin
+        r2 = await client.post(
+            "/api/auth/login",
+            json={"email": "Suzal", "password": "suzal@358"},
+        )
+        assert r2.status_code == 200
+        assert r2.json()["user"]["role"] == "admin"
+
+
+@pytest.mark.asyncio
+async def test_forgot_password_and_otp_reset_flow():
+    transport = ASGITransport(app=app)
+    test_email = f"reset_{uuid.uuid4().hex[:8]}@hirematrix.ai"
+    initial_pass = "InitialPass@123"
+    new_pass = "BrandNewPass@999"
+
+    async with AsyncClient(transport=transport, base_url="http://test") as client:
+        # 1. Register test user
+        reg = await client.post(
+            "/api/auth/register",
+            json={
+                "username": f"user_{uuid.uuid4().hex[:6]}",
+                "email": test_email,
+                "password": initial_pass,
+            },
+        )
+        assert reg.status_code == 201
+
+        # 2. Duplicate registration triggers already exists message
+        dup = await client.post(
+            "/api/auth/register",
+            json={
+                "username": f"user2_{uuid.uuid4().hex[:6]}",
+                "email": test_email,
+                "password": initial_pass,
+            },
+        )
+        assert dup.status_code == 400
+        assert "already exists" in dup.json()["detail"]
+
+        # 3. Request OTP for password reset
+        fp = await client.post(
+            "/api/auth/forgot-password",
+            json={"email": test_email},
+        )
+        assert fp.status_code == 200
+        fp_data = fp.json()
+        assert fp_data["success"] is True
+        otp_code = fp_data["otp_debug"]
+        assert len(otp_code) == 6
+
+        # 4. Attempt reset with mismatching passwords fails
+        mismatch = await client.post(
+            "/api/auth/reset-password",
+            json={
+                "email": test_email,
+                "otp": otp_code,
+                "new_password": new_pass,
+                "confirm_password": "DifferentPassword@123",
+            },
+        )
+        assert mismatch.status_code == 400
+        assert "do not match" in mismatch.json()["detail"]
+
+        # 5. Reset with correct matching passwords
+        reset_res = await client.post(
+            "/api/auth/reset-password",
+            json={
+                "email": test_email,
+                "otp": otp_code,
+                "new_password": new_pass,
+                "confirm_password": new_pass,
+            },
+        )
+        assert reset_res.status_code == 200
+        assert reset_res.json()["success"] is True
+
+        # 6. Verify login with the new password succeeds
+        login_res = await client.post(
+            "/api/auth/login",
+            json={"email": test_email, "password": new_pass},
+        )
+        assert login_res.status_code == 200
+        assert login_res.json()["user"]["email"] == test_email
+

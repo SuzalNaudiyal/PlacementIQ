@@ -6,9 +6,15 @@ interface NavbarProps {
   isBackendOnline: boolean;
   latency: number | null;
   onOpenAuth: () => void;
+  onNavigateToTour?: () => void;
 }
 
-export const Navbar: React.FC<NavbarProps> = ({ isBackendOnline, latency, onOpenAuth }) => {
+export const Navbar: React.FC<NavbarProps> = ({
+  isBackendOnline,
+  latency,
+  onOpenAuth,
+  onNavigateToTour,
+}) => {
   const { user, isAuthenticated, logout } = useAuth();
 
   return (
@@ -29,6 +35,17 @@ export const Navbar: React.FC<NavbarProps> = ({ isBackendOnline, latency, onOpen
 
         {/* Status Indicator, Docs & Auth Controls */}
         <div className="flex items-center space-x-3 sm:space-x-4">
+          {/* Watch Tour Marketing Pill (Public - No Login Required) */}
+          {onNavigateToTour && (
+            <button
+              onClick={onNavigateToTour}
+              className="inline-flex items-center gap-1.5 text-xs text-cyan-300 hover:text-white px-3 py-1.5 rounded-lg bg-cyan-950/40 hover:bg-cyan-900/60 border border-cyan-500/30 transition-all cursor-pointer shadow-sm hover:scale-[1.02]"
+            >
+              <Sparkles className="h-3.5 w-3.5 text-cyan-400" />
+              <span>Watch Tour</span>
+            </button>
+          )}
+
           {/* API Health Pill */}
           <div className="hidden sm:flex items-center space-x-2 px-3 py-1.5 rounded-full bg-slate-900 border border-slate-800 text-xs">
             <span className="relative flex h-2.5 w-2.5">

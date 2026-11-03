@@ -16,11 +16,11 @@ export interface LoginCredentials {
 }
 
 export interface RegisterData {
-  name: string;
-  username?: string;
+  username: string;
   email: string;
   password: string;
-  role: UserRole;
+  name?: string;
+  role?: UserRole;
 }
 
 export interface AuthResponse {
@@ -35,4 +35,23 @@ export interface DemoCredentials {
   password: string;
   role: UserRole;
   description: string;
+}
+
+export interface ForgotPasswordResponse {
+  success: boolean;
+  message: string;
+  email: string;
+  otp_debug?: string;
+}
+
+export interface ResetPasswordPayload {
+  email: string;
+  otp: string;
+  new_password: string;
+  confirm_password: string;
+}
+
+export interface AuthMessageResponse {
+  message: string;
+  success: boolean;
 }

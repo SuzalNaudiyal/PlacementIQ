@@ -1,6 +1,7 @@
 import re
 import uuid
-from datetime import datetime, timezone
+import random
+from datetime import datetime, timezone, timedelta
 from typing import Dict, Any
 from fastapi import APIRouter, Depends, HTTPException, status
 
@@ -15,6 +16,9 @@ from backend.app.schemas.auth import (
     UserResponse,
     AuthMessage,
     UserRole,
+    ForgotPasswordRequest,
+    ForgotPasswordResponse,
+    ResetPasswordRequest,
 )
 from backend.app.models.user import user_entity
 
@@ -29,15 +33,15 @@ async def register_user(data: UserRegister) -> TokenResponse:
     """
     db = get_database()
     email_clean = data.email.lower().strip()
-    name_clean = data.name.strip()
     username_clean = data.username.strip() if data.username else email_clean.split("@")[0]
+    name_clean = data.name.strip() if (data.name and data.name.strip()) else username_clean
 
     # Check for duplicate email
     existing_email = await db.users.find_one({"email": email_clean})
     if existing_email:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="An account with this email address already exists. Please sign in.",
+            detail="An account with this email address already exists. Please sign in or use Forgot Password.",
         )
 
     # Check for duplicate username if explicitly specified
@@ -212,3 +216,116 @@ async def get_demo_credentials():
             "description": "Platform Test Harness Administrator",
         },
     }
+
+
+@router.post("/forgot-password", response_model=ForgotPasswordResponse)
+async def request_password_reset_otp(data: ForgotPasswordRequest) -> ForgotPasswordResponse:
+    """
+    Generate and dispatch a 6-digit OTP code to the registered email address.
+    """
+    db = get_database()
+    email_clean = data.email.lower().strip()
+
+    user = await db.users.find_one({"email": email_clean})
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"No account registered with email '{email_clean}'. Please verify your email or create an account.",
+        )
+
+    # Invalidate previous unused OTPs for this email
+    await db.password_resets.update_many(
+        {"email": email_clean, "used": False},
+        {"$set": {"used": True}}
+    )
+
+    otp_code = f"{random.randint(100000, 999999)}"
+    now = datetime.now(timezone.utc)
+    expires_at = now + timedelta(minutes=15)
+
+    reset_doc = {
+        "email": email_clean,
+        "otp": otp_code,
+        "created_at": now,
+        "expires_at": expires_at,
+        "used": False,
+    }
+    await db.password_resets.insert_one(reset_doc)
+    await persist_db_if_fallback()
+
+    return ForgotPasswordResponse(
+        success=True,
+        message=f"A 6-digit verification OTP has been generated for {email_clean}. Use it within 15 minutes.",
+        email=email_clean,
+        otp_debug=otp_code,
+    )
+
+
+@router.post("/reset-password", response_model=AuthMessage)
+async def reset_password_with_otp(data: ResetPasswordRequest) -> AuthMessage:
+    """
+    Verify 6-digit OTP and update account password with confirmation check.
+    """
+    db = get_database()
+    email_clean = data.email.lower().strip()
+    otp_input = data.otp.strip()
+
+    if data.new_password != data.confirm_password:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="New password and confirm password do not match. Please re-enter them carefully.",
+        )
+
+    # Find the most recent active OTP
+    reset_entry = await db.password_resets.find_one({
+        "email": email_clean,
+        "otp": otp_input,
+        "used": False,
+    })
+
+    if not reset_entry:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid or incorrect OTP verification code. Please check and try again.",
+        )
+
+    # Check expiration
+    now = datetime.now(timezone.utc)
+    entry_expires = reset_entry["expires_at"]
+    if isinstance(entry_expires, str):
+        entry_expires = datetime.fromisoformat(entry_expires.replace("Z", "+00:00"))
+    if entry_expires.tzinfo is None:
+        entry_expires = entry_expires.replace(tzinfo=timezone.utc)
+
+    if now > entry_expires:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="This OTP has expired (validity: 15 minutes). Please request a new OTP code.",
+        )
+
+    # Hash new password
+    new_password_hash = get_password_hash(data.new_password)
+
+    # Update user password in database
+    update_res = await db.users.update_one(
+        {"email": email_clean},
+        {"$set": {"password_hash": new_password_hash, "updated_at": now}}
+    )
+    if update_res.matched_count == 0:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User account could not be found to update password.",
+        )
+
+    # Mark OTP as consumed
+    await db.password_resets.update_one(
+        {"_id": reset_entry["_id"]},
+        {"$set": {"used": True, "consumed_at": now}}
+    )
+    await persist_db_if_fallback()
+
+    return AuthMessage(
+        success=True,
+        message="Password has been successfully changed! You can now sign in with your new password.",
+    )
+

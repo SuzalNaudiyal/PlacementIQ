@@ -237,6 +237,15 @@ const PILLARS: Pillar[] = [
     icon: ShieldCheck,
     tools: [
       {
+        id: 'explainer',
+        label: 'HireMatrix Tour & Demo',
+        shortLabel: 'Product Tour',
+        icon: Sparkles,
+        color: 'text-cyan-400',
+        activeBg: 'bg-cyan-600 text-white shadow-md shadow-cyan-600/30',
+        phaseLabel: 'HireMatrix Interactive Architectural Tour',
+      },
+      {
         id: 'admin',
         label: 'Admin Command Center',
         shortLabel: 'Admin Center',
@@ -245,15 +254,6 @@ const PILLARS: Pillar[] = [
         activeBg: 'bg-rose-600 text-white shadow-md shadow-rose-600/30',
         requiresAdmin: true,
         phaseLabel: 'Administration & Assessment Telemetry Hub',
-      },
-      {
-        id: 'explainer',
-        label: 'HireMatrix Tour & Demo',
-        shortLabel: 'Product Tour',
-        icon: Sparkles,
-        color: 'text-cyan-400',
-        activeBg: 'bg-cyan-600 text-white shadow-md shadow-cyan-600/30',
-        phaseLabel: 'HireMatrix Interactive Architectural Tour',
       },
     ],
   },
@@ -331,6 +331,7 @@ function DashboardContent() {
         isBackendOnline={isBackendOnline}
         latency={latency}
         onOpenAuth={() => setIsAuthModalOpen(true)}
+        onNavigateToTour={() => navigateToView('explainer')}
       />
 
       {/* Main Container */}

@@ -44,3 +44,18 @@ export const fetchDemoCredentials = async (): Promise<{ student: DemoCredentials
   const response = await apiClient.get('/auth/demo-credentials');
   return response.data;
 };
+
+export const requestPasswordResetOTP = async (email: string): Promise<any> => {
+  const response = await apiClient.post('/auth/forgot-password', { email });
+  return response.data;
+};
+
+export const resetPasswordWithOTP = async (payload: {
+  email: string;
+  otp: string;
+  new_password: string;
+  confirm_password: string;
+}): Promise<any> => {
+  const response = await apiClient.post('/auth/reset-password', payload);
+  return response.data;
+};
