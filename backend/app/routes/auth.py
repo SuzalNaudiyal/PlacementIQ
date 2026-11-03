@@ -1,6 +1,8 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+import re
+import uuid
 from datetime import datetime, timezone
 from typing import Dict, Any
+from fastapi import APIRouter, Depends, HTTPException, status
 
 from backend.app.database import get_database, persist_db_if_fallback
 from backend.app.auth.security import get_password_hash, verify_password, create_access_token
@@ -23,24 +25,38 @@ router = APIRouter(prefix="/auth", tags=["Authentication & Accounts"])
 async def register_user(data: UserRegister) -> TokenResponse:
     """
     Register a new student or admin account.
-    Validates email uniqueness, securely hashes password, and returns a signed JWT access token.
+    Validates email and username uniqueness, securely hashes password, and returns a signed JWT access token.
     """
     db = get_database()
     email_clean = data.email.lower().strip()
+    name_clean = data.name.strip()
+    username_clean = data.username.strip() if data.username else email_clean.split("@")[0]
 
     # Check for duplicate email
-    existing = await db.users.find_one({"email": email_clean})
-    if existing:
+    existing_email = await db.users.find_one({"email": email_clean})
+    if existing_email:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="An account with this email address already exists. Please sign in.",
         )
 
+    # Check for duplicate username if explicitly specified
+    if data.username:
+        existing_username = await db.users.find_one({
+            "username": {"$regex": f"^{re.escape(username_clean)}$", "$options": "i"}
+        })
+        if existing_username:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Username '{username_clean}' is already taken. Please choose another username.",
+            )
+
     # Hash password with bcrypt
     password_hash = get_password_hash(data.password)
 
     new_user_doc = {
-        "name": data.name.strip(),
+        "name": name_clean,
+        "username": username_clean,
         "email": email_clean,
         "password_hash": password_hash,
         "role": data.role.value,
@@ -78,8 +94,9 @@ async def register_user(data: UserRegister) -> TokenResponse:
     token_payload = {
         "sub": user_id,
         "email": email_clean,
+        "username": username_clean,
         "role": data.role.value,
-        "name": data.name.strip(),
+        "name": name_clean,
     }
     access_token = create_access_token(token_payload)
 
@@ -93,16 +110,26 @@ async def register_user(data: UserRegister) -> TokenResponse:
 @router.post("/login", response_model=TokenResponse)
 async def login_user(credentials: UserLogin) -> TokenResponse:
     """
-    Authenticate user credentials (email & password) and issue a signed JWT token.
+    Authenticate user credentials (email or username with password) and issue a signed JWT token.
+    Supports login via registered email address, username, or display name.
     """
     db = get_database()
-    email_clean = credentials.email.lower().strip()
+    identifier = credentials.email.strip()
+    identifier_lower = identifier.lower()
 
-    user = await db.users.find_one({"email": email_clean})
+    # Search user by email, username, or display name (case-insensitive)
+    user = await db.users.find_one({
+        "$or": [
+            {"email": identifier_lower},
+            {"username": {"$regex": f"^{re.escape(identifier)}$", "$options": "i"}},
+            {"name": {"$regex": f"^{re.escape(identifier)}$", "$options": "i"}},
+        ]
+    })
+
     if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid email or password.",
+            detail="Invalid email or password (or invalid username).",
             headers={"WWW-Authenticate": "Bearer"},
         )
 
@@ -111,7 +138,7 @@ async def login_user(credentials: UserLogin) -> TokenResponse:
     if not verify_password(credentials.password, stored_hash):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid email or password.",
+            detail="Invalid email or password (or invalid username).",
             headers={"WWW-Authenticate": "Bearer"},
         )
 
@@ -125,6 +152,7 @@ async def login_user(credentials: UserLogin) -> TokenResponse:
     token_payload = {
         "sub": user_id,
         "email": user["email"],
+        "username": user.get("username", user["email"].split("@")[0]),
         "role": user.get("role", "student"),
         "name": user.get("name", ""),
     }
@@ -159,20 +187,21 @@ async def logout(current_user: Dict[str, Any] = Depends(get_current_user)) -> Au
 @router.get("/demo-credentials")
 async def get_demo_credentials():
     """
-    Public utility endpoint returning pre-configured demo student and demo admin credentials.
-    Allows reviewers and examiners to test authentication with 1-click.
+    Public utility endpoint returning pre-configured student and admin credentials.
     """
     return {
         "student": {
             "email": DEMO_STUDENT["email"],
+            "username": DEMO_STUDENT["username"],
             "password": DEMO_STUDENT["password"],
             "role": "student",
             "description": "Pre-configured student with CGPA 7.5, 2 projects, 1 internship, and technical skills",
         },
         "admin": {
             "email": DEMO_ADMIN["email"],
+            "username": DEMO_ADMIN["username"],
             "password": DEMO_ADMIN["password"],
             "role": "admin",
-            "description": "Platform administrator with access to dataset management and moderation",
+            "description": "Lead Platform Administrator (Suzal) with full telemetry & assessment audit access",
         },
     }

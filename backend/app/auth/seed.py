@@ -8,6 +8,7 @@ logger = logging.getLogger("uvicorn.error")
 
 DEMO_STUDENT = {
     "name": "Demo Student",
+    "username": "student_demo",
     "email": "student@placementiq.ai",
     "password": "Student@1234",
     "role": UserRole.STUDENT.value,
@@ -15,7 +16,17 @@ DEMO_STUDENT = {
 }
 
 DEMO_ADMIN = {
+    "name": "Suzal",
+    "username": "Suzal",
+    "email": "suzal.php@gmail.com",
+    "password": "suzal@358",
+    "role": UserRole.ADMIN.value,
+    "is_active": True,
+}
+
+LEGACY_ADMIN = {
     "name": "Platform Administrator",
+    "username": "admin",
     "email": "admin@placementiq.ai",
     "password": "Admin@1234",
     "role": UserRole.ADMIN.value,
@@ -25,15 +36,61 @@ DEMO_ADMIN = {
 
 async def seed_demo_users() -> None:
     """
-    Ensure default Demo Student and Demo Admin accounts exist in the database for instant evaluation.
+    Ensure default Student and Admin accounts exist in the database for instant evaluation.
+    Guarantees that Suzal (suzal.php@gmail.com / suzal@358) has full Administrator access.
     """
     try:
         db = get_database()
-        # Seed Demo Student
+        
+        # 1. Seed or Update Primary Admin (Suzal)
+        existing_suzal = await db.users.find_one({"email": DEMO_ADMIN["email"]})
+        if not existing_suzal:
+            suzal_doc = {
+                "name": DEMO_ADMIN["name"],
+                "username": DEMO_ADMIN["username"],
+                "email": DEMO_ADMIN["email"],
+                "password_hash": get_password_hash(DEMO_ADMIN["password"]),
+                "role": DEMO_ADMIN["role"],
+                "is_active": True,
+                "created_at": datetime.now(timezone.utc),
+            }
+            await db.users.insert_one(suzal_doc)
+            logger.info("Admin account seeded (suzal.php@gmail.com / suzal@358 / username: Suzal)")
+        else:
+            # Refresh password hash and admin role to ensure access
+            await db.users.update_one(
+                {"_id": existing_suzal["_id"]},
+                {
+                    "$set": {
+                        "name": "Suzal",
+                        "username": "Suzal",
+                        "password_hash": get_password_hash(DEMO_ADMIN["password"]),
+                        "role": UserRole.ADMIN.value,
+                        "is_active": True,
+                    }
+                }
+            )
+
+        # 2. Seed Legacy Admin for compatibility
+        existing_legacy = await db.users.find_one({"email": LEGACY_ADMIN["email"]})
+        if not existing_legacy:
+            legacy_doc = {
+                "name": LEGACY_ADMIN["name"],
+                "username": LEGACY_ADMIN["username"],
+                "email": LEGACY_ADMIN["email"],
+                "password_hash": get_password_hash(LEGACY_ADMIN["password"]),
+                "role": LEGACY_ADMIN["role"],
+                "is_active": True,
+                "created_at": datetime.now(timezone.utc),
+            }
+            await db.users.insert_one(legacy_doc)
+
+        # 3. Seed Demo Student
         existing_student = await db.users.find_one({"email": DEMO_STUDENT["email"]})
         if not existing_student:
             student_doc = {
                 "name": DEMO_STUDENT["name"],
+                "username": DEMO_STUDENT["username"],
                 "email": DEMO_STUDENT["email"],
                 "password_hash": get_password_hash(DEMO_STUDENT["password"]),
                 "role": DEMO_STUDENT["role"],
@@ -99,19 +156,5 @@ async def seed_demo_users() -> None:
             )
             logger.info("Demo Student account seeded (student@placementiq.ai / Student@1234)")
 
-        # Seed Demo Admin
-        existing_admin = await db.users.find_one({"email": DEMO_ADMIN["email"]})
-        if not existing_admin:
-            admin_doc = {
-                "name": DEMO_ADMIN["name"],
-                "email": DEMO_ADMIN["email"],
-                "password_hash": get_password_hash(DEMO_ADMIN["password"]),
-                "role": DEMO_ADMIN["role"],
-                "is_active": True,
-                "created_at": datetime.now(timezone.utc),
-            }
-            await db.users.insert_one(admin_doc)
-            logger.info("Demo Admin account seeded (admin@placementiq.ai / Admin@1234)")
-
     except Exception as e:
-        logger.warning(f"Demo user seeding skipped or deferred: {e}")
+        logger.warning(f"User seeding error: {e}")

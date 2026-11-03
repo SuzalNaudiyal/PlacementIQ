@@ -3,6 +3,7 @@ export type UserRole = 'student' | 'admin';
 export interface User {
   id: string;
   name: string;
+  username?: string;
   email: string;
   role: UserRole;
   created_at: string;
@@ -10,12 +11,13 @@ export interface User {
 }
 
 export interface LoginCredentials {
-  email: string;
+  email: string; // Accepts registered email OR username
   password: string;
 }
 
 export interface RegisterData {
   name: string;
+  username?: string;
   email: string;
   password: string;
   role: UserRole;
@@ -29,6 +31,7 @@ export interface AuthResponse {
 
 export interface DemoCredentials {
   email: string;
+  username?: string;
   password: string;
   role: UserRole;
   description: string;

@@ -45,10 +45,35 @@ class ExtemporeTopicOut(BaseModel):
     recommended_time_seconds: int
 
 
+class SvarGrammarQuestionOut(BaseModel):
+    id: str
+    category: str
+    question: str
+    options: List[str]
+
+
+class SubmitSvarGrammarRequest(BaseModel):
+    answers: Dict[str, int] = Field(..., description="Mapping of question ID to chosen option index")
+    time_taken_seconds: Optional[int] = None
+
+
+class SvarGrammarResultResponse(BaseModel):
+    submission_id: str
+    total_questions: int
+    correct_answers: int
+    score_percentage: float
+    cefr_band: str
+    badge_awarded: str
+    category_breakdown: Dict[str, Any]
+    detailed_review: List[Dict[str, Any]]
+    submitted_at: datetime
+
+
 class SvarEvaluateSentenceRequest(BaseModel):
     sentence_id: str
     spoken_transcript: str
     duration_seconds: float = 5.0
+    audio_data: Optional[str] = Field(None, description="Base64 encoded audio recording of the candidate voice")
 
 
 class SvarSentenceEvaluationOut(BaseModel):
@@ -64,6 +89,8 @@ class SvarSentenceEvaluationOut(BaseModel):
     missed_words: List[str]
     extra_words: List[str]
     feedback: str
+    has_audio: bool = False
+    audio_data: Optional[str] = None
     submitted_at: datetime
 
 
@@ -71,6 +98,7 @@ class ExtemporeEvaluateRequest(BaseModel):
     topic_id: str
     spoken_transcript: str
     duration_seconds: float = 30.0
+    audio_data: Optional[str] = Field(None, description="Base64 encoded audio recording of extempore speech")
 
 
 class ExtemporeEvaluationOut(BaseModel):
@@ -83,6 +111,8 @@ class ExtemporeEvaluationOut(BaseModel):
     overall_extempore_score: float
     cefr_band: str
     feedback: str
+    has_audio: bool = False
+    audio_data: Optional[str] = None
     submitted_at: datetime
 
 
@@ -91,9 +121,9 @@ class AdminAssessmentSubmissionOut(BaseModel):
     user_id: str
     student_name: str
     student_email: str
-    test_type: str  # "aptitude_mcq" | "svar_sentence" | "svar_extempore"
+    test_type: str  # "aptitude_mcq" | "svar_sentence" | "svar_extempore" | "svar_grammar"
     headline_score: float  # percentage or SVAR score
     rating_or_badge: str
     summary: Dict[str, Any]
+    audio_data: Optional[str] = None
     submitted_at: datetime
-

@@ -1,7 +1,11 @@
 """
 Assessment & SVAR Voice Assessment API Endpoints.
-Provides Quantitative/Logical/Technical MCQ tests, SVAR-style English sentence repeat voice assessments,
-extempore speech evaluation, and centralized administrative telemetry.
+Provides:
+1. Quantitative/Logical/Technical/Data Interpretation MCQ tests with dynamic full randomization
+2. SVAR-style English sentence repeat voice assessments with audio recording & playback
+3. SVAR English Grammar & Sentence Structure tests
+4. Extempore speech evaluation with audio telemetry
+5. Centralized administrative telemetry
 """
 
 from datetime import datetime, timezone
@@ -19,8 +23,11 @@ from backend.app.analytics.aptitude_bank import (
 from backend.app.analytics.svar_evaluator import (
     SVAR_SENTENCE_BANK,
     EXTEMPORE_TOPICS,
+    SVAR_GRAMMAR_BANK,
     evaluate_sentence_repetition,
     evaluate_extempore_speech,
+    get_curated_svar_grammar_test,
+    evaluate_svar_grammar_test,
 )
 from backend.app.schemas.assessments import (
     AptitudeQuestionOut,
@@ -28,6 +35,9 @@ from backend.app.schemas.assessments import (
     AptitudeResultResponse,
     SvarSentenceOut,
     ExtemporeTopicOut,
+    SvarGrammarQuestionOut,
+    SubmitSvarGrammarRequest,
+    SvarGrammarResultResponse,
     SvarEvaluateSentenceRequest,
     SvarSentenceEvaluationOut,
     ExtemporeEvaluateRequest,
@@ -39,7 +49,7 @@ router = APIRouter(prefix="/assessments", tags=["Assessments & SVAR Voice Testin
 
 
 # ==============================================================================
-# 1. Aptitude & Technical MCQ Testing
+# 1. Aptitude & Technical MCQ Testing (Dynamic & Randomized)
 # ==============================================================================
 
 @router.get("/aptitude/questions", response_model=List[AptitudeQuestionOut])
@@ -48,8 +58,9 @@ async def get_aptitude_test_questions(
     current_user: Dict[str, Any] = Depends(get_current_user),
 ):
     """
-    Retrieve randomized, balanced aptitude and CS fundamentals MCQs for a timed assessment.
-    Correct answers are withheld to prevent cheating.
+    Retrieve completely randomized, balanced aptitude MCQs covering Percentages,
+    Ratios, Number/Word Series, Data Interpretation Charts, and Core CS.
+    Guaranteed 'har baar same na ho' (every test attempt is freshly shuffled).
     """
     questions = get_curated_aptitude_test(num_questions=min(count, len(APTITUDE_QUESTIONS)))
     return questions
@@ -122,7 +133,7 @@ async def submit_aptitude_test(
 
 
 # ==============================================================================
-# 2. SVAR / Versant Voice English Assessment
+# 2. SVAR / Versant Voice English Assessment (Audio Recording & Saving)
 # ==============================================================================
 
 @router.get("/svar/exercises")
@@ -149,6 +160,7 @@ async def evaluate_svar_sentence(
     """
     AI evaluates a candidate's spoken repetition of an English prompt sentence.
     Measures accuracy, keyword retention, filler words, and CEFR level.
+    Saves candidate's spoken audio recording for playback and admin inspection.
     """
     db = get_database()
     user_id = str(current_user["id"])
@@ -176,6 +188,8 @@ async def evaluate_svar_sentence(
         "test_type": "svar_sentence",
         "headline_score": eval_result["svar_score"],
         "rating_or_badge": eval_result["cefr_band"],
+        "audio_data": payload.audio_data,  # Save candidate voice recording!
+        "has_audio": bool(payload.audio_data),
         "summary": {
             "sentence_id": payload.sentence_id,
             "expected_sentence": sentence_meta["sentence"],
@@ -184,6 +198,7 @@ async def evaluate_svar_sentence(
             "memory_retention_score": eval_result["memory_retention_score"],
             "fluency_score": eval_result["fluency_score"],
             "duration_seconds": payload.duration_seconds,
+            "has_recorded_audio": bool(payload.audio_data),
             "feedback": eval_result["feedback"],
         },
         "submitted_at": now,
@@ -217,6 +232,8 @@ async def evaluate_svar_sentence(
         missed_words=eval_result["missed_words"],
         extra_words=eval_result["extra_words"],
         feedback=eval_result["feedback"],
+        has_audio=bool(payload.audio_data),
+        audio_data=payload.audio_data,
         submitted_at=now,
     )
 
@@ -229,6 +246,7 @@ async def evaluate_extempore(
     """
     AI evaluates candidate's spontaneous technical extempore speech.
     Scores speaking rate (WPM), vocabulary richness, relevance, and CEFR level.
+    Saves candidate's spoken audio recording.
     """
     db = get_database()
     user_id = str(current_user["id"])
@@ -254,6 +272,8 @@ async def evaluate_extempore(
         "test_type": "svar_extempore",
         "headline_score": eval_result["overall_extempore_score"],
         "rating_or_badge": eval_result["cefr_band"],
+        "audio_data": payload.audio_data,  # Save candidate voice recording!
+        "has_audio": bool(payload.audio_data),
         "summary": {
             "topic_id": payload.topic_id,
             "topic": topic_meta["title"],
@@ -261,6 +281,7 @@ async def evaluate_extempore(
             "word_count": eval_result["word_count"],
             "wpm": eval_result["speaking_rate_wpm"],
             "vocab_richness": eval_result["vocabulary_richness"],
+            "has_recorded_audio": bool(payload.audio_data),
             "feedback": eval_result["feedback"],
         },
         "submitted_at": now,
@@ -279,12 +300,81 @@ async def evaluate_extempore(
         overall_extempore_score=eval_result["overall_extempore_score"],
         cefr_band=eval_result["cefr_band"],
         feedback=eval_result["feedback"],
+        has_audio=bool(payload.audio_data),
+        audio_data=payload.audio_data,
         submitted_at=now,
     )
 
 
 # ==============================================================================
-# 3. Student Assessment History
+# 3. SVAR English Grammar & Sentence Structure Test
+# ==============================================================================
+
+@router.get("/svar/grammar", response_model=List[SvarGrammarQuestionOut])
+async def get_svar_grammar_questions(
+    count: int = 10,
+    current_user: Dict[str, Any] = Depends(get_current_user),
+):
+    """
+    Returns randomized, sanitized SVAR English Grammar questions covering subject-verb agreement,
+    tenses, prepositions, error spotting, and corporate vocabulary.
+    """
+    return get_curated_svar_grammar_test(num_questions=count)
+
+
+@router.post("/svar/grammar/submit", response_model=SvarGrammarResultResponse)
+async def submit_svar_grammar_test(
+    payload: SubmitSvarGrammarRequest,
+    current_user: Dict[str, Any] = Depends(get_current_user),
+) -> SvarGrammarResultResponse:
+    """
+    Grades candidate's SVAR Grammar answers, calculates CEFR Grammar band and accuracy,
+    and stores the test record in MongoDB for student review and admin telemetry.
+    """
+    db = get_database()
+    user_id = str(current_user["id"])
+    eval_result = evaluate_svar_grammar_test(payload.answers)
+
+    submission_id = f"sub_gram_{uuid.uuid4().hex[:10]}"
+    now = datetime.now(timezone.utc)
+
+    submission_doc = {
+        "submission_id": submission_id,
+        "user_id": user_id,
+        "student_name": current_user.get("name", "Student"),
+        "student_email": current_user.get("email", ""),
+        "test_type": "svar_grammar",
+        "headline_score": eval_result["score_percentage"],
+        "rating_or_badge": eval_result["cefr_band"],
+        "summary": {
+            "total_questions": eval_result["total_questions"],
+            "correct_answers": eval_result["correct_answers"],
+            "score_percentage": eval_result["score_percentage"],
+            "category_breakdown": eval_result["category_breakdown"],
+            "time_taken_seconds": payload.time_taken_seconds,
+        },
+        "detailed_review": eval_result["detailed_review"],
+        "submitted_at": now,
+    }
+
+    await db.assessment_submissions.insert_one(submission_doc)
+    await persist_db_if_fallback()
+
+    return SvarGrammarResultResponse(
+        submission_id=submission_id,
+        total_questions=eval_result["total_questions"],
+        correct_answers=eval_result["correct_answers"],
+        score_percentage=eval_result["score_percentage"],
+        cefr_band=eval_result["cefr_band"],
+        badge_awarded=eval_result["badge_awarded"],
+        category_breakdown=eval_result["category_breakdown"],
+        detailed_review=eval_result["detailed_review"],
+        submitted_at=now,
+    )
+
+
+# ==============================================================================
+# 4. Student Assessment History
 # ==============================================================================
 
 @router.get("/my-history")
@@ -312,7 +402,7 @@ async def get_my_assessment_history(
 
 
 # ==============================================================================
-# 4. Centralized Administrative Telemetry
+# 5. Centralized Administrative Telemetry
 # ==============================================================================
 
 @router.get("/admin/submissions", response_model=List[AdminAssessmentSubmissionOut])
@@ -323,7 +413,7 @@ async def get_admin_assessment_submissions(
 ) -> List[AdminAssessmentSubmissionOut]:
     """
     Administrative portal endpoint returning all candidate test attempts, transcripts,
-    MCQ performance metrics, and SVAR voice scores across the cohort.
+    MCQ performance metrics, recorded voice audios, and SVAR voice scores across the cohort.
     """
     db = get_database()
     query = {}
@@ -345,9 +435,9 @@ async def get_admin_assessment_submissions(
                 headline_score=float(d.get("headline_score", 0.0)),
                 rating_or_badge=d.get("rating_or_badge", "N/A"),
                 summary=d.get("summary", {}),
+                audio_data=d.get("audio_data"),  # Attached candidate audio for admin review
                 submitted_at=d.get("submitted_at", datetime.now(timezone.utc)),
             )
         )
 
     return results
-

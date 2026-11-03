@@ -22,6 +22,7 @@ def user_entity(doc: Optional[Dict[str, Any]]) -> Optional[Dict[str, Any]]:
     return {
         "id": str(doc["_id"]),
         "name": doc.get("name", ""),
+        "username": doc.get("username", doc.get("email", "").split("@")[0]),
         "email": doc.get("email", ""),
         "role": doc.get("role", "student"),
         "created_at": created_at_str,

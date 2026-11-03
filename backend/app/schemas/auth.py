@@ -12,6 +12,7 @@ class UserRole(str, Enum):
 class UserBase(BaseModel):
     name: str = Field(..., min_length=2, max_length=100, description="Full Name of the user")
     email: EmailStr = Field(..., description="Unique email address")
+    username: Optional[str] = Field(default=None, max_length=50, description="Unique username or handle")
     role: UserRole = Field(default=UserRole.STUDENT, description="Account role: student or admin")
 
 
@@ -20,7 +21,7 @@ class UserRegister(UserBase):
 
 
 class UserLogin(BaseModel):
-    email: EmailStr = Field(..., description="Registered email address")
+    email: str = Field(..., min_length=1, description="Registered email address or username")
     password: str = Field(..., min_length=1, description="Account password")
 
 
@@ -34,9 +35,10 @@ class UserResponse(UserBase):
         "json_schema_extra": {
             "example": {
                 "id": "6724a1b2c3d4e5f6a7b8c9d0",
-                "name": "Demo Student",
-                "email": "student@placementiq.ai",
-                "role": "student",
+                "name": "Suzal",
+                "username": "Suzal",
+                "email": "suzal.php@gmail.com",
+                "role": "admin",
                 "created_at": "2026-11-01T17:00:00Z",
                 "is_active": True
             }

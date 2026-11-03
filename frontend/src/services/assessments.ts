@@ -66,6 +66,8 @@ export interface SvarSentenceEvaluation {
   missed_words: string[];
   extra_words: string[];
   feedback: string;
+  has_audio?: boolean;
+  audio_data?: string;
   submitted_at: string;
 }
 
@@ -79,6 +81,36 @@ export interface ExtemporeEvaluation {
   overall_extempore_score: number;
   cefr_band: string;
   feedback: string;
+  has_audio?: boolean;
+  audio_data?: string;
+  submitted_at: string;
+}
+
+export interface SvarGrammarQuestion {
+  id: string;
+  category: string;
+  question: string;
+  options: string[];
+}
+
+export interface SvarGrammarResult {
+  submission_id: string;
+  total_questions: number;
+  correct_answers: number;
+  score_percentage: number;
+  cefr_band: string;
+  badge_awarded: string;
+  category_breakdown: Record<string, { total: number; correct: number }>;
+  detailed_review: Array<{
+    question_id: string;
+    category: string;
+    question: string;
+    options: string[];
+    selected_option_index: number | null;
+    correct_option_index: number;
+    is_correct: boolean;
+    explanation: string;
+  }>;
   submitted_at: string;
 }
 
@@ -91,6 +123,7 @@ export interface AdminAssessmentSubmission {
   headline_score: number;
   rating_or_badge: string;
   summary: Record<string, any>;
+  audio_data?: string;
   submitted_at: string;
 }
 
@@ -116,6 +149,7 @@ export const evaluateSvarSentence = async (payload: {
   sentence_id: string;
   spoken_transcript: string;
   duration_seconds: number;
+  audio_data?: string;
 }): Promise<SvarSentenceEvaluation> => {
   const res = await apiClient.post<SvarSentenceEvaluation>('/assessments/svar/evaluate-sentence', payload);
   return res.data;
@@ -125,8 +159,22 @@ export const evaluateSvarExtempore = async (payload: {
   topic_id: string;
   spoken_transcript: string;
   duration_seconds: number;
+  audio_data?: string;
 }): Promise<ExtemporeEvaluation> => {
   const res = await apiClient.post<ExtemporeEvaluation>('/assessments/svar/evaluate-extempore', payload);
+  return res.data;
+};
+
+export const fetchSvarGrammarQuestions = async (count: number = 10): Promise<SvarGrammarQuestion[]> => {
+  const res = await apiClient.get<SvarGrammarQuestion[]>(`/assessments/svar/grammar?count=${count}`);
+  return res.data;
+};
+
+export const submitSvarGrammarAnswers = async (payload: {
+  answers: Record<string, number>;
+  time_taken_seconds?: number;
+}): Promise<SvarGrammarResult> => {
+  const res = await apiClient.post<SvarGrammarResult>('/assessments/svar/grammar/submit', payload);
   return res.data;
 };
 
@@ -140,4 +188,3 @@ export const fetchAdminAssessmentSubmissions = async (testType?: string): Promis
   const res = await apiClient.get<AdminAssessmentSubmission[]>(url);
   return res.data;
 };
-

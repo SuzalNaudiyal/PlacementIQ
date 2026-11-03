@@ -276,3 +276,202 @@ def evaluate_extempore_speech(
         "feedback": feedback,
     }
 
+
+# =========================================================================
+# SVAR ENGLISH GRAMMAR & SENTENCE STRUCTURE BANK
+# =========================================================================
+SVAR_GRAMMAR_BANK: List[Dict[str, Any]] = [
+    {
+        "id": "gram_01",
+        "category": "Subject-Verb Agreement",
+        "question": "Neither the project manager nor the software developers _______ available to attend the sprint retrospective.",
+        "options": ["was", "were", "is", "has been"],
+        "correct_option_index": 1,  # 'were'
+        "explanation": "In 'Neither... nor' sentences, the verb agrees with the subject closest to it. 'The software developers' is plural, so 'were' is correct.",
+    },
+    {
+        "id": "gram_02",
+        "category": "Tenses & Conditionals",
+        "question": "If the DevOps engineer _______ the automated backup script yesterday, the database outage would have been avoided.",
+        "options": ["had executed", "would execute", "has executed", "executed"],
+        "correct_option_index": 0,  # 'had executed'
+        "explanation": "Third conditional structures follow: If + had + past participle (V3), ... would have + past participle.",
+    },
+    {
+        "id": "gram_03",
+        "category": "Prepositions",
+        "question": "All engineering employees must comply _______ the newly established cybersecurity protocol.",
+        "options": ["with", "to", "at", "for"],
+        "correct_option_index": 0,  # 'comply with'
+        "explanation": "The verb 'comply' always takes the preposition 'with' ('comply with the protocol').",
+    },
+    {
+        "id": "gram_04",
+        "category": "Prepositions",
+        "question": "The senior architect congratulated the team _______ successfully deploying the microservices cluster.",
+        "options": ["on", "for", "about", "with"],
+        "correct_option_index": 0,  # 'congratulate on'
+        "explanation": "'Congratulate' takes the preposition 'on' (or 'upon'), not 'for' ('congratulated on successfully deploying').",
+    },
+    {
+        "id": "gram_05",
+        "category": "Error Spotting",
+        "question": "Identify the segment containing a grammatical error:\n(A) Despite of / (B) the heavy network latency / (C) the transaction completed / (D) within SLA.",
+        "options": [
+            "(A) Despite of",
+            "(B) the heavy network latency",
+            "(C) the transaction completed",
+            "(D) within SLA",
+        ],
+        "correct_option_index": 0,  # 'Despite of' is incorrect
+        "explanation": "'Despite' is never followed by 'of'. The correct usage is either 'Despite the heavy network latency' or 'In spite of the heavy network latency'.",
+    },
+    {
+        "id": "gram_06",
+        "category": "Sentence Correction",
+        "question": "Choose the most grammatically accurate sentence for an executive technical document:",
+        "options": [
+            "The committee has decided to postpone the cloud migration until next quarter.",
+            "The committee have decided to postpone the cloud migration until next quarter.",
+            "The committee has decide to postpone the cloud migration until next quarter.",
+            "The committee are deciding to postpone the cloud migration until next quarter.",
+        ],
+        "correct_option_index": 0,
+        "explanation": "'Committee' functions as a collective singular noun acting as a single unit, so the singular auxiliary verb 'has decided' is grammatically correct.",
+    },
+    {
+        "id": "gram_07",
+        "category": "Vocabulary in Context",
+        "question": "The sudden spike in server response time was _______ to an unindexed foreign key in the relational database.",
+        "options": ["attributed", "contributed", "distributed", "constituted"],
+        "correct_option_index": 0,  # 'attributed to'
+        "explanation": "'Attributed to' means regarded as being caused by ('The spike was attributed to an unindexed foreign key').",
+    },
+    {
+        "id": "gram_08",
+        "category": "Subject-Verb Agreement",
+        "question": "A cluster of five Redis cache nodes _______ deployed to minimize database read traffic.",
+        "options": ["was", "were", "are", "have been"],
+        "correct_option_index": 0,  # 'was'
+        "explanation": "The head noun of the subject is 'cluster' (singular), not 'nodes'. Therefore, the singular verb 'was' is required.",
+    },
+    {
+        "id": "gram_09",
+        "category": "Active & Passive Voice",
+        "question": "Convert to passive voice: 'The QA team thoroughly tested all API endpoints before release.'",
+        "options": [
+            "All API endpoints were thoroughly tested by the QA team before release.",
+            "All API endpoints have been thoroughly tested by the QA team before release.",
+            "All API endpoints was thoroughly tested by the QA team before release.",
+            "All API endpoints are thoroughly tested by the QA team before release.",
+        ],
+        "correct_option_index": 0,
+        "explanation": "Simple past 'thoroughly tested' becomes 'were thoroughly tested' because 'All API endpoints' is plural.",
+    },
+    {
+        "id": "gram_10",
+        "category": "Tenses & Conditionals",
+        "question": "By the time the system architect reviews this pull request tomorrow, the pipeline _______ all unit tests.",
+        "options": ["will have executed", "will execute", "has executed", "executed"],
+        "correct_option_index": 0,  # Future perfect 'will have executed'
+        "explanation": "When an action will be completed prior to a specific point in future ('by the time... tomorrow'), future perfect tense ('will have executed') is used.",
+    },
+    {
+        "id": "gram_11",
+        "category": "Vocabulary & Collocations",
+        "question": "The security team conducted a _______ audit of the authentication microservice to uncover vulnerabilities.",
+        "options": ["comprehensive", "comprehensible", "competent", "complacent"],
+        "correct_option_index": 0,  # 'comprehensive'
+        "explanation": "'Comprehensive' means complete and including everything necessary ('a comprehensive audit'). 'Comprehensible' means understandable.",
+    },
+    {
+        "id": "gram_12",
+        "category": "Conjunctions & Clauses",
+        "question": "Scarcely had the production deployment completed _______ the monitoring system triggered a memory alarm.",
+        "options": ["when", "than", "then", "while"],
+        "correct_option_index": 0,  # 'Scarcely... when'
+        "explanation": "Correlative conjunction rule: 'Scarcely / Hardly... when', whereas 'No sooner... than'. Therefore 'when' is the correct correlative pair.",
+    },
+]
+
+
+def get_curated_svar_grammar_test(num_questions: int = 10) -> List[Dict[str, Any]]:
+    """
+    Returns randomized, sanitized SVAR English Grammar questions without answer keys.
+    Randomly shuffles so every assessment session presents a fresh question sequence.
+    """
+    pool = list(SVAR_GRAMMAR_BANK)
+    random.shuffle(pool)
+    selected = pool[:min(num_questions, len(pool))]
+    sanitized = []
+    for q in selected:
+        sanitized.append({
+            "id": q["id"],
+            "category": q["category"],
+            "question": q["question"],
+            "options": q["options"],
+        })
+    return sanitized
+
+
+def evaluate_svar_grammar_test(answers: Dict[str, int]) -> Dict[str, Any]:
+    """
+    Grades student's SVAR Grammar answers, computes CEFR communication band and detailed feedback.
+    """
+    qmap = {q["id"]: q for q in SVAR_GRAMMAR_BANK}
+    test_ids = list(answers.keys()) if answers else [q["id"] for q in SVAR_GRAMMAR_BANK[:10]]
+    total = len(test_ids)
+    correct = 0
+    review = []
+    cat_stats: Dict[str, Dict[str, int]] = {}
+
+    for qid in test_ids:
+        q = qmap.get(qid)
+        if not q:
+            continue
+        cat = q["category"]
+        if cat not in cat_stats:
+            cat_stats[cat] = {"total": 0, "correct": 0}
+        cat_stats[cat]["total"] += 1
+
+        selected = answers.get(qid)
+        is_correct = selected is not None and int(selected) == q["correct_option_index"]
+        if is_correct:
+            correct += 1
+            cat_stats[cat]["correct"] += 1
+
+        review.append({
+            "question_id": qid,
+            "category": cat,
+            "question": q["question"],
+            "options": q["options"],
+            "selected_option_index": selected,
+            "correct_option_index": q["correct_option_index"],
+            "is_correct": is_correct,
+            "explanation": q["explanation"],
+        })
+
+    pct = round((correct / max(total, 1)) * 100, 1)
+    if pct >= 85:
+        cefr = "C1/C2 (Advanced Corporate English)"
+        badge = "Grammar Master"
+    elif pct >= 70:
+        cefr = "B2 (Upper Intermediate)"
+        badge = "Proficient Communicator"
+    elif pct >= 50:
+        cefr = "B1 (Intermediate)"
+        badge = "Developing Communicator"
+    else:
+        cefr = "A2 (Basic English)"
+        badge = "Foundational Stage"
+
+    return {
+        "total_questions": total,
+        "correct_answers": correct,
+        "score_percentage": pct,
+        "cefr_band": cefr,
+        "badge_awarded": badge,
+        "category_breakdown": cat_stats,
+        "detailed_review": review,
+    }
+

@@ -17,6 +17,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   const { login, register, quickDemoLogin } = useAuth();
   const [tab, setTab] = useState<'signin' | 'register'>(initialTab);
   const [name, setName] = useState('');
+  const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [role, setRole] = useState<UserRole>('student');
@@ -32,9 +33,16 @@ export const AuthModal: React.FC<AuthModalProps> = ({
 
     try {
       if (tab === 'signin') {
-        await login({ email, password });
+        // email field can be email OR username
+        await login({ email: email.trim(), password });
       } else {
-        await register({ name, email, password, role });
+        await register({
+          name: name.trim(),
+          username: username.trim() || undefined,
+          email: email.trim(),
+          password,
+          role,
+        });
       }
       onClose();
     } catch (err: any) {
@@ -106,7 +114,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
               className="flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-semibold rounded-lg bg-purple-600/20 hover:bg-purple-600/30 text-purple-300 border border-purple-500/30 transition-all cursor-pointer disabled:opacity-50"
             >
               <Shield className="w-3.5 h-3.5" />
-              Demo Admin
+              Lead Admin (Suzal)
             </button>
           </div>
         </div>
@@ -150,27 +158,42 @@ export const AuthModal: React.FC<AuthModalProps> = ({
         {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-4">
           {tab === 'register' && (
-            <div>
-              <label className="block text-xs font-medium text-slate-300 mb-1">Full Name</label>
-              <input
-                type="text"
-                required
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="Alex Morgan"
-                className="w-full px-3.5 py-2 text-sm bg-slate-950 border border-slate-800 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"
-              />
-            </div>
+            <>
+              <div>
+                <label className="block text-xs font-medium text-slate-300 mb-1">Full Name</label>
+                <input
+                  type="text"
+                  required
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="e.g. Suzal Naudiyal"
+                  className="w-full px-3.5 py-2 text-sm bg-slate-950 border border-slate-800 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-medium text-slate-300 mb-1">Username / Handle</label>
+                <input
+                  type="text"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  placeholder="e.g. Suzal"
+                  className="w-full px-3.5 py-2 text-sm bg-slate-950 border border-slate-800 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"
+                />
+              </div>
+            </>
           )}
 
           <div>
-            <label className="block text-xs font-medium text-slate-300 mb-1">Email Address</label>
+            <label className="block text-xs font-medium text-slate-300 mb-1">
+              {tab === 'signin' ? 'Email Address or Username' : 'Email Address'}
+            </label>
             <input
-              type="email"
+              type={tab === 'signin' ? 'text' : 'email'}
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="candidate@university.edu"
+              placeholder={tab === 'signin' ? 'suzal.php@gmail.com or Suzal' : 'suzal.php@gmail.com'}
               className="w-full px-3.5 py-2 text-sm bg-slate-950 border border-slate-800 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"
             />
           </div>

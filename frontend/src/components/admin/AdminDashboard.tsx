@@ -19,6 +19,8 @@ import {
   BarChart3,
   Layers,
   Brain,
+  Volume2,
+  Mic,
 } from 'lucide-react';
 import {
   ResponsiveContainer,
@@ -818,10 +820,11 @@ export const AdminDashboard: React.FC = () => {
             </div>
 
             {/* Filter Pills */}
-            <div className="flex items-center gap-1.5 bg-slate-950 p-1.5 rounded-xl border border-slate-800">
+            <div className="flex flex-wrap items-center gap-1.5 bg-slate-950 p-1.5 rounded-xl border border-slate-800">
               {[
                 { id: 'all', label: 'All Tests' },
                 { id: 'aptitude_mcq', label: 'Aptitude MCQs' },
+                { id: 'svar_grammar', label: 'SVAR Grammar' },
                 { id: 'svar_sentence', label: 'SVAR Voice Repeat' },
                 { id: 'svar_extempore', label: 'Extempore' },
               ].map((f) => (
@@ -875,9 +878,16 @@ export const AdminDashboard: React.FC = () => {
                           <span className="text-[11px] text-slate-400 font-mono">{sub.student_email}</span>
                         </td>
                         <td className="py-3.5 px-4 font-sans">
-                          <span className="px-2.5 py-1 rounded-md text-[11px] font-semibold bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 capitalize">
-                            {sub.test_type?.replace('_', ' ')}
-                          </span>
+                          <div className="flex flex-wrap items-center gap-1.5">
+                            <span className="px-2.5 py-1 rounded-md text-[11px] font-semibold bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 capitalize">
+                              {sub.test_type?.replace(/_/g, ' ')}
+                            </span>
+                            {(sub.audio_data || sub.summary?.has_recorded_audio) && (
+                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
+                                <Mic className="w-2.5 h-2.5" /> Audio Saved
+                              </span>
+                            )}
+                          </div>
                         </td>
                         <td className="py-3.5 px-4 font-bold text-white text-sm">
                           {sub.headline_score}%
@@ -948,6 +958,15 @@ export const AdminDashboard: React.FC = () => {
                     <div className="pt-2 border-t border-slate-800">
                       <span className="text-indigo-400 block font-sans font-semibold">Candidate Spoken Audio:</span>
                       <p className="text-emerald-300">"{selectedSubmission.summary.spoken_transcript}"</p>
+                    </div>
+                  )}
+                  {selectedSubmission.audio_data && (
+                    <div className="pt-2 border-t border-slate-800 space-y-1.5">
+                      <span className="text-emerald-400 block font-sans font-semibold flex items-center gap-1.5">
+                        <Volume2 className="w-3.5 h-3.5" />
+                        Candidate Voice Recording (Play Audio):
+                      </span>
+                      <audio controls src={selectedSubmission.audio_data} className="w-full h-8 rounded-lg" />
                     </div>
                   )}
                   {selectedSubmission.summary?.feedback && (
