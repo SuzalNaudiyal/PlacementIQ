@@ -1,16 +1,24 @@
 {
   "name": "hirematrix-ai",
+  "private": true,
   "version": "1.0.0",
   "description": "HireMatrix AI - Placement & Skill Gap Analyzer - Institutional Suite",
   "author": "Suzal Naudiyal",
   "license": "MIT",
+  "workspaces": [
+    "frontend"
+  ],
   "scripts": {
-    "dev": "npm --prefix frontend run dev",
+    "dev": "./start.sh",
+    "dev:all": "./start.sh",
+    "dev:frontend": "npm --prefix frontend run dev",
+    "dev:backend": "backend/.venv/bin/uvicorn backend.app.main:app --host 127.0.0.1 --port 8000 --reload",
     "build": "npm --prefix frontend run build",
     "preview": "npm --prefix frontend run preview",
     "lint": "npm --prefix frontend run lint",
     "start": "./start.sh",
     "test:backend": "backend/.venv/bin/pytest -v",
+    "test:frontend": "npm --prefix frontend run build",
     "test": "backend/.venv/bin/pytest -v && npm --prefix frontend run build"
   }
 }
