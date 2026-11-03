@@ -2,9 +2,8 @@ import { useEffect, useState, useCallback } from 'react';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { Navbar } from './components/Navbar';
 import { AuthModal } from './components/AuthModal';
-import { SystemHealthBanner } from './components/SystemHealthBanner';
 import { FeatureGrid } from './components/FeatureGrid';
-import { PhaseTracker } from './components/PhaseTracker';
+import { AnimatedHeroShowcase } from './components/AnimatedHeroShowcase';
 import { ProfileView } from './components/profile/ProfileView';
 import { PredictionDashboard } from './components/prediction/PredictionDashboard';
 import { ResumeAnalyzer } from './components/resume/ResumeAnalyzer';
@@ -14,22 +13,17 @@ import { RoadmapView } from './components/roadmap/RoadmapView';
 import { UnifiedDashboard } from './components/dashboard/UnifiedDashboard';
 import { AdminDashboard } from './components/admin/AdminDashboard';
 import { MockInterviewView } from './components/interview/MockInterviewView';
-import { UniversityERPView } from './components/erp/UniversityERPView';
-import { CompanyPrepView } from './components/companyprep/CompanyPrepView';
 import { LinkedInOutreachView } from './components/outreach/LinkedInOutreachView';
 import { AssessmentHubView } from './components/assessments/AssessmentHubView';
-import HireMatrixExplainer from './components/HireMatrixExplainer';
 import { CareerCopilotWidget } from './components/copilot/CareerCopilotWidget';
 import { Footer } from './components/Footer';
 import { fetchSystemHealth, pingBackend } from './services/api';
 import type { HealthResponse } from './types/system';
 import {
-  Sparkles,
   Shield,
   ShieldCheck,
   User,
   CheckCircle2,
-  ArrowRight,
   LayoutDashboard,
   UserCheck,
   Zap,
@@ -38,8 +32,6 @@ import {
   Briefcase,
   Calendar,
   Mic,
-  Building2,
-  BookOpen,
   Share2,
   Brain,
   BarChart3,
@@ -54,12 +46,9 @@ type ViewId =
   | 'jobs'
   | 'roadmap'
   | 'interview'
-  | 'erp'
-  | 'admin'
-  | 'explainer'
-  | 'company_prep'
   | 'outreach'
-  | 'assessments';
+  | 'assessments'
+  | 'admin';
 
 type PillarId = 'intelligence' | 'preparation' | 'placements' | 'governance';
 
@@ -169,43 +158,23 @@ const PILLARS: Pillar[] = [
         requiresAuth: true,
         phaseLabel: 'Phase 9: Personalized 8-Week Learning Roadmap',
       },
-      {
-        id: 'company_prep',
-        label: 'Company Prep Cheat Sheets',
-        shortLabel: 'Company Cheat Sheets',
-        icon: BookOpen,
-        color: 'text-indigo-400',
-        activeBg: 'bg-indigo-600 text-white shadow-md shadow-indigo-600/30',
-        requiresAuth: true,
-        phaseLabel: 'Phase 18: Tier-1 Company Interview Intelligence',
-      },
     ],
   },
   {
     id: 'placements',
     title: 'Placements & Outreach',
-    subtitle: 'Campus Drives, Jobs & LinkedIn',
+    subtitle: 'Jobs, ATS & LinkedIn',
     icon: Briefcase,
     tools: [
       {
-        id: 'erp',
-        label: 'University ERP & Campus Drives',
-        shortLabel: 'Campus Drives & ERP',
-        icon: Building2,
-        color: 'text-emerald-400',
-        activeBg: 'bg-emerald-600 text-white shadow-md shadow-emerald-600/30',
+        id: 'resume',
+        label: 'Resume Parser & ATS Auditor',
+        shortLabel: 'Resume & ATS',
+        icon: FileText,
+        color: 'text-teal-400',
+        activeBg: 'bg-teal-600 text-white shadow-md shadow-teal-600/30',
         requiresAuth: true,
-        phaseLabel: 'Phase 17: University ERP & Campus Drives',
-      },
-      {
-        id: 'jobs',
-        label: 'Campus Jobs Matcher',
-        shortLabel: 'Jobs Match',
-        icon: Briefcase,
-        color: 'text-amber-400',
-        activeBg: 'bg-amber-600 text-white shadow-md shadow-amber-600/30',
-        requiresAuth: true,
-        phaseLabel: 'Phase 8: Semantic Job Matching Engine',
+        phaseLabel: 'Phase 6: Resume Parser & ATS Engine',
       },
       {
         id: 'outreach',
@@ -219,21 +188,21 @@ const PILLARS: Pillar[] = [
         phaseLabel: 'Phase 20: 1-Click LinkedIn Outreach Engine',
       },
       {
-        id: 'resume',
-        label: 'Resume Parser & ATS Auditor',
-        shortLabel: 'Resume & ATS',
-        icon: FileText,
-        color: 'text-teal-400',
-        activeBg: 'bg-teal-600 text-white shadow-md shadow-teal-600/30',
+        id: 'jobs',
+        label: 'Campus Jobs Matcher',
+        shortLabel: 'Jobs Match',
+        icon: Briefcase,
+        color: 'text-amber-400',
+        activeBg: 'bg-amber-600 text-white shadow-md shadow-amber-600/30',
         requiresAuth: true,
-        phaseLabel: 'Phase 6: Resume Parser & ATS Engine',
+        phaseLabel: 'Phase 8: Semantic Job Matching Engine',
       },
     ],
   },
   {
     id: 'governance',
     title: 'Admin & Governance',
-    subtitle: 'Command Center & Architecture Tour',
+    subtitle: 'Command Center & Telemetry',
     icon: ShieldCheck,
     tools: [
       {
@@ -245,15 +214,6 @@ const PILLARS: Pillar[] = [
         activeBg: 'bg-rose-600 text-white shadow-md shadow-rose-600/30',
         requiresAdmin: true,
         phaseLabel: 'Administration & Assessment Telemetry Hub',
-      },
-      {
-        id: 'explainer',
-        label: 'HireMatrix Tour & Demo',
-        shortLabel: 'Product Tour',
-        icon: Sparkles,
-        color: 'text-cyan-400',
-        activeBg: 'bg-cyan-600 text-white shadow-md shadow-cyan-600/30',
-        phaseLabel: 'HireMatrix Interactive Architectural Tour',
       },
     ],
   },
@@ -271,8 +231,6 @@ function getPillarForView(view: ViewId): PillarId {
 function DashboardContent() {
   const { user, isAuthenticated, logout } = useAuth();
   const [healthData, setHealthData] = useState<HealthResponse | null>(null);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
   const [latency, setLatency] = useState<number | null>(null);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState<boolean>(false);
   const [activeView, setActiveView] = useState<ViewId>('overview');
@@ -281,6 +239,7 @@ function DashboardContent() {
   const navigateToView = (view: ViewId) => {
     setActiveView(view);
     setActivePillarId(getPillarForView(view));
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handleToolClick = (tool: SubTool) => {
@@ -295,8 +254,6 @@ function DashboardContent() {
   const activeTool = PILLARS.flatMap((p) => p.tools).find((t) => t.id === activeView);
 
   const loadHealthData = useCallback(async () => {
-    setLoading(true);
-    setError(null);
     try {
       const pingResult = await pingBackend();
       setLatency(pingResult.latencyMs);
@@ -305,10 +262,7 @@ function DashboardContent() {
       setHealthData(data);
     } catch (err: any) {
       console.warn('Backend probe returned error:', err);
-      setError(err?.message || 'Failed to connect to backend API');
       setLatency(null);
-    } finally {
-      setLoading(false);
     }
   }, []);
 
@@ -316,10 +270,13 @@ function DashboardContent() {
     loadHealthData();
   }, [loadHealthData]);
 
-  const isBackendOnline = healthData !== null && !error;
+  const isBackendOnline = healthData !== null;
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col selection:bg-indigo-500/30 selection:text-indigo-200">
+    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col selection:bg-indigo-500/30 selection:text-indigo-200 relative overflow-x-hidden">
+      {/* Subtle Technical Cyber-Grid Texture Overlay */}
+      <div className="fixed inset-0 cyber-grid pointer-events-none z-0 opacity-40" />
+
       {/* Navigation Header */}
       <Navbar
         isBackendOnline={isBackendOnline}
@@ -328,7 +285,7 @@ function DashboardContent() {
       />
 
       {/* Main Container */}
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-16">
+      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 pt-6 pb-16 relative z-10">
         {/* Authenticated Candidate Status Card */}
         {isAuthenticated && user && (
           <div className="mb-6 p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-slate-900/90 via-indigo-950/40 to-slate-900/90 border border-indigo-500/20 shadow-xl shadow-indigo-950/20 backdrop-blur-md flex flex-col md:flex-row md:items-center justify-between gap-4 animate-in fade-in slide-in-from-top-2 duration-300">
@@ -479,28 +436,14 @@ function DashboardContent() {
             <div className="text-xs text-slate-400 hidden lg:flex items-center gap-2 pr-2 shrink-0">
               <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
               <span className="font-medium text-slate-300">
-                {activeTool?.phaseLabel || 'Architecture & Multi-Phase Control'}
+                {activeTool?.phaseLabel || 'Architecture & Placement Control'}
               </span>
             </div>
           </div>
         </div>
 
         {/* View Body */}
-        {activeView === 'explainer' ? (
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <button
-                onClick={() => navigateToView('overview')}
-                className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-slate-900 border border-slate-800 text-xs text-slate-300 hover:text-white transition cursor-pointer hover:border-slate-700"
-              >
-                ← Back to Overview
-              </button>
-            </div>
-            <div className="rounded-2xl overflow-hidden border border-slate-800/80 shadow-2xl bg-slate-950">
-              <HireMatrixExplainer />
-            </div>
-          </div>
-        ) : activeView === 'profile' && isAuthenticated ? (
+        {activeView === 'profile' && isAuthenticated ? (
           <ProfileView />
         ) : activeView === 'prediction' && isAuthenticated ? (
           <PredictionDashboard />
@@ -514,10 +457,6 @@ function DashboardContent() {
           <RoadmapView />
         ) : activeView === 'interview' && isAuthenticated ? (
           <MockInterviewView />
-        ) : activeView === 'erp' && isAuthenticated ? (
-          <UniversityERPView />
-        ) : activeView === 'company_prep' && isAuthenticated ? (
-          <CompanyPrepView />
         ) : activeView === 'assessments' && isAuthenticated ? (
           <AssessmentHubView />
         ) : activeView === 'outreach' && isAuthenticated ? (
@@ -528,97 +467,15 @@ function DashboardContent() {
           <UnifiedDashboard onNavigate={(view) => navigateToView(view)} />
         ) : (
           <>
-            {/* Hero Section */}
-            <div className="text-center max-w-4xl mx-auto mb-12">
-              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-300 text-xs font-medium mb-6">
-                <Sparkles className="w-3.5 h-3.5 text-indigo-400" />
-                <span>AI Career Intelligence & Placement Readiness SaaS</span>
-              </div>
+            {/* Animated Modern Hero with Interactive Bento Showcase */}
+            <AnimatedHeroShowcase
+              onOpenAuth={() => setIsAuthModalOpen(true)}
+              onNavigateToTool={navigateToView}
+              isAuthenticated={isAuthenticated}
+            />
 
-              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-white leading-tight">
-                HireMatrix{' '}
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-indigo-300 to-purple-400">
-                  AI
-                </span>
-              </h1>
-              <h2 className="mt-2 text-xl sm:text-2xl lg:text-3xl font-bold tracking-tight text-indigo-200">
-                AI Placement &{' '}
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 via-purple-300 to-pink-400">
-                  Skill Gap Analyzer
-                </span>
-              </h2>
-
-              <p className="mt-5 text-base sm:text-lg text-slate-400 max-w-2xl mx-auto leading-relaxed">
-                Evaluate placement readiness, parse resumes with NLP, identify missing skills for specific job roles, match against industry opportunities, and follow an explainable 8-week roadmap.
-              </p>
-
-              {/* Action Callouts */}
-              <div className="flex flex-wrap items-center justify-center gap-3 mt-7">
-                {!isAuthenticated ? (
-                  <>
-                    <button
-                      onClick={() => setIsAuthModalOpen(true)}
-                      className="px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-sm shadow-lg shadow-indigo-600/30 flex items-center gap-2 transition-all cursor-pointer hover:scale-[1.02]"
-                    >
-                      <span>Get Started (Sign In / Register)</span>
-                      <ArrowRight className="w-4 h-4" />
-                    </button>
-                    <button
-                      onClick={() => navigateToView('explainer')}
-                      className="px-5 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-cyan-300 border border-cyan-500/30 font-semibold text-sm shadow-lg flex items-center gap-2 transition-all cursor-pointer hover:scale-[1.02]"
-                    >
-                      <Sparkles className="w-4 h-4 text-cyan-400" />
-                      <span>Watch HireMatrix Tour</span>
-                    </button>
-                  </>
-                ) : (
-                  <button
-                    onClick={() => navigateToView('profile')}
-                    className="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-sm shadow-lg shadow-emerald-600/30 flex items-center gap-2 transition-all cursor-pointer hover:scale-[1.02]"
-                  >
-                    <span>Go to My Student Profile</span>
-                    <ArrowRight className="w-4 h-4" />
-                  </button>
-                )}
-              </div>
-
-              {/* Quick Architecture Stack Badges */}
-              <div className="flex flex-wrap items-center justify-center gap-2 mt-6">
-                {[
-                  'FastAPI 0.110+',
-                  'JWT + Bcrypt (RBAC)',
-                  'MongoDB Motor',
-                  'React 19 + TypeScript',
-                  'Tailwind CSS v4',
-                  'Docker Ready',
-                  'Pydantic v2',
-                ].map((tech) => (
-                  <span
-                    key={tech}
-                    className="text-xs px-2.5 py-1 rounded-md bg-slate-900 border border-slate-800 text-slate-300 font-mono"
-                  >
-                    {tech}
-                  </span>
-                ))}
-              </div>
-            </div>
-
-            {/* Live Backend Telemetry Widget */}
-            <div className="mb-14">
-              <SystemHealthBanner
-                healthData={healthData}
-                loading={loading}
-                error={error}
-                onRefresh={loadHealthData}
-                latency={latency}
-              />
-            </div>
-
-            {/* Architecture & Feature Breakdown */}
-            <FeatureGrid />
-
-            {/* Project Roadmap & Phase Tracker */}
-            <PhaseTracker />
+            {/* Core Superpowers Feature Grid */}
+            <FeatureGrid onSelectFeature={(featId) => navigateToView(featId as any)} />
           </>
         )}
       </main>
