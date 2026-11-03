@@ -21,9 +21,9 @@ export const Navbar: React.FC<NavbarProps> = ({ isBackendOnline, latency, onOpen
           </div>
           <div>
             <span className="text-lg font-bold tracking-tight text-white flex items-center gap-1.5">
-              PlacementIQ <span className="text-indigo-400 font-medium text-xs px-2 py-0.5 rounded-full bg-indigo-500/10 border border-indigo-500/20">AI</span>
+              HireMatrix <span className="text-cyan-400 font-medium text-xs px-2 py-0.5 rounded-full bg-cyan-500/10 border border-cyan-500/20">AI</span>
             </span>
-            <p className="text-[11px] text-slate-400 hidden sm:block">Career Intelligence & Skill Gap Analyzer</p>
+            <p className="text-[11px] text-slate-400 hidden sm:block">Campus Placement & Career Intelligence OS</p>
           </div>
         </div>
 
@@ -59,7 +59,7 @@ export const Navbar: React.FC<NavbarProps> = ({ isBackendOnline, latency, onOpen
           {/* Phase Badge */}
           <div className="hidden lg:inline-flex items-center gap-2 text-xs text-indigo-300 bg-indigo-950/40 border border-indigo-800/50 px-3 py-1.5 rounded-lg">
             <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-            <span className="font-medium text-slate-200">PlacementIQ Placement Intelligence</span>
+            <span className="font-medium text-slate-200">HireMatrix Enterprise OS</span>
           </div>
 
           {/* User Session Profile or Sign In Button */}

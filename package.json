@@ -1,8 +1,8 @@
 {
-  "name": "placementiq-ai",
+  "name": "hirematrix-ai",
   "private": true,
   "version": "1.0.0",
-  "description": "PlacementIQ AI - Placement & Skill Gap Analyzer - Institutional Suite",
+  "description": "HireMatrix AI — Autonomous Campus Placement & Career Intelligence OS",
   "author": "Suzal Naudiyal",
   "license": "MIT",
   "workspaces": [

@@ -8,7 +8,7 @@ import {
 
 const SCENES = [
   { s: 0, e: 8, name: "The Challenge", tag: "Campus Friction", sub: "Every campus placement season, students and colleges face recruitment blindly — without knowing their true hiring readiness." },
-  { s: 8, e: 16, name: "Introducing PlacementIQ", tag: "AI Intelligence", sub: "Meet PlacementIQ AI: the next-generation platform turning placement guesswork into actionable intelligence." },
+  { s: 8, e: 16, name: "Introducing HireMatrix", tag: "AI Intelligence", sub: "Meet HireMatrix AI: the next-generation platform turning placement guesswork into actionable intelligence." },
   { s: 16, e: 25, name: "Readiness Assessment", tag: "TreeSHAP Explained", sub: "No black-box scores. TreeSHAP reveals the exact mathematical drivers behind your readiness — from CGPA to coding skills." },
   { s: 25, e: 34, name: "ATS & Skill Gap", tag: "Role Fit & Audit", sub: "Instant ATS resume audits, paired with three-tier skill gap analysis. We pinpoint exactly what you need to level up." },
   { s: 34, e: 42, name: "Roadmap & Job Match", tag: "8-Week Execution", sub: "Turn missing skills into structured, eight-week action roadmaps — matched semantically to real company job profiles." },
