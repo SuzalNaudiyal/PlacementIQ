@@ -48,6 +48,58 @@ def format_whatsapp_drive_alert(student: Dict[str, Any], drive: Dict[str, Any]) 
     }
 
 
+def format_dcpd_broadcast_whatsapp_alert(drive: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    Format official DCPD / TPO Broadcast WhatsApp announcement for college batch/class groups.
+    Includes verified criteria, deadline, and 1-click apply link with NO manual forms needed.
+    """
+    company = drive.get("company_name", "Target Company")
+    role = drive.get("job_role", "Software Engineer")
+    ctc = drive.get("ctc_lpa", 10.0)
+    location = drive.get("location", "Pan-India")
+    deadline = drive.get("application_deadline", "Upcoming")
+    drive_date = drive.get("drive_date", "Upcoming")
+    min_cgpa = drive.get("min_cgpa", 7.0)
+    max_backlogs = drive.get("max_backlogs", 0)
+    branches = ", ".join(drive.get("eligible_branches", ["Computer Science", "Information Technology"]))
+    min_coding = drive.get("min_coding_score", 60.0)
+
+    text = (
+        f"📢 *CAMPUS RECRUITMENT DRIVE NOTIFICATION* | *Apex Institute DCPD*\n"
+        f"━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+        f"Attention Final Year Candidates! A verified campus placement drive is now officially live on HireMatrix:\n\n"
+        f"🏢 *Recruiter*: *{company}*\n"
+        f"💼 *Designation*: *{role}*\n"
+        f"💰 *Compensation (CTC)*: *₹{ctc} LPA*\n"
+        f"📍 *Work Location*: {location}\n"
+        f"📅 *Drive Date*: {drive_date}\n"
+        f"⏳ *Registration Closes*: {deadline}\n\n"
+        f"🎯 *ACADEMIC ELIGIBILITY CRITERIA*:\n"
+        f"• Minimum CGPA: *{min_cgpa}*\n"
+        f"• Maximum Active Backlogs: *{max_backlogs}*\n"
+        f"• Permitted Disciplines: *{branches}*\n"
+        f"• Minimum Technical Aptitude / Coding: *{min_coding}%*\n"
+        f"━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+        f"⚡ *NO GOOGLE FORM FILLING NEEDED!* ⚡\n"
+        f"Your academic standing, resume, and skills have already been pre-audited. "
+        f"Eligible students can apply in 1-Click via their HireMatrix portal. Your dossier will be instantly transferred to {company} HR.\n\n"
+        f"🔗 *1-Click Student Registration*: http://127.0.0.1:5173\n\n"
+        f"— *Department of Career Planning & Development (DCPD)*\n"
+        f"— *Apex Institute of Technology*"
+    )
+
+    encoded = urllib.parse.quote(text)
+    whatsapp_url = f"https://api.whatsapp.com/send?text={encoded}"
+
+    return {
+        "text": text,
+        "whatsapp_url": whatsapp_url,
+        "company_name": company,
+        "job_role": role,
+        "ctc_lpa": ctc,
+    }
+
+
 def format_email_drive_alert(student: Dict[str, Any], drive: Dict[str, Any]) -> Dict[str, Any]:
     """
     Format a responsive HTML and text email alert for placement drives.

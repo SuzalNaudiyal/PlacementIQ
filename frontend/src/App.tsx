@@ -260,13 +260,43 @@ const PILLARS: Pillar[] = [
   },
 ];
 
-function getPillarForView(view: ViewId): PillarId {
-  for (const pillar of PILLARS) {
+const ADMIN_PILLARS: Pillar[] = [
+  {
+    id: 'governance',
+    title: 'DCPD Placement Directorate',
+    subtitle: 'Campus Recruitment & Shortlisting Hub',
+    icon: Building2,
+    tools: [
+      {
+        id: 'admin',
+        label: 'DCPD Campus Drives & Auto-Shortlisting',
+        shortLabel: 'DCPD Command Center',
+        icon: Building2,
+        color: 'text-indigo-400',
+        activeBg: 'bg-indigo-600 text-white shadow-md shadow-indigo-600/30',
+        requiresAdmin: true,
+        phaseLabel: 'University Recruitment Drives, Auto-Shortlisting & WhatsApp Alerts',
+      },
+      {
+        id: 'explainer',
+        label: 'Platform Architecture & Tour',
+        shortLabel: 'Product Tour',
+        icon: Sparkles,
+        color: 'text-cyan-400',
+        activeBg: 'bg-cyan-600 text-white shadow-md shadow-cyan-600/30',
+        phaseLabel: 'HireMatrix Enterprise Architecture Tour',
+      },
+    ],
+  },
+];
+
+function getPillarForView(view: ViewId, pillars: Pillar[]): PillarId {
+  for (const pillar of pillars) {
     if (pillar.tools.some((t) => t.id === view)) {
       return pillar.id;
     }
   }
-  return 'intelligence';
+  return pillars[0]?.id || 'intelligence';
 }
 
 function DashboardContent() {
@@ -281,9 +311,18 @@ function DashboardContent() {
   const [scrollProgress, setScrollProgress] = useState<number>(0);
   const [showBackToTop, setShowBackToTop] = useState<boolean>(false);
 
+  const currentPillars = user?.role === 'admin' ? ADMIN_PILLARS : PILLARS;
+
+  useEffect(() => {
+    if (user?.role === 'admin') {
+      setActiveView('admin');
+      setActivePillarId('governance');
+    }
+  }, [user?.role]);
+
   const navigateToView = (view: ViewId) => {
     setActiveView(view);
-    setActivePillarId(getPillarForView(view));
+    setActivePillarId(getPillarForView(view, currentPillars));
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -295,8 +334,8 @@ function DashboardContent() {
     navigateToView(tool.id);
   };
 
-  const currentPillar = PILLARS.find((p) => p.id === activePillarId) || PILLARS[0];
-  const activeTool = PILLARS.flatMap((p) => p.tools).find((t) => t.id === activeView);
+  const currentPillar = currentPillars.find((p) => p.id === activePillarId) || currentPillars[0];
+  const activeTool = currentPillars.flatMap((p) => p.tools).find((t) => t.id === activeView);
 
   const loadHealthData = useCallback(async () => {
     try {
@@ -404,7 +443,7 @@ function DashboardContent() {
                       ? 'bg-rose-500/10 text-rose-300 border-rose-500/30' 
                       : 'bg-indigo-500/10 text-indigo-300 border-indigo-500/30'
                   }`}>
-                    {user.role} Session
+                    {user.role === 'admin' ? 'DCPD TPO Administrator' : 'Student Session'}
                   </span>
                   <span className="inline-flex items-center gap-1 text-[11px] text-emerald-400 font-medium">
                     <CheckCircle2 className="w-3.5 h-3.5" />
@@ -412,48 +451,87 @@ function DashboardContent() {
                   </span>
                 </div>
                 <p className="text-xs text-slate-400 mt-0.5 flex items-center gap-2">
-                  <span>Candidate: <code className="text-indigo-300 font-mono">{user.email}</code></span>
-                  <span className="text-slate-600">•</span>
-                  <span className="text-slate-400">HireMatrix Enterprise Workspace</span>
+                  {user.role === 'admin' ? (
+                    <>
+                      <span className="text-rose-300 font-semibold">University Placement Directorate</span>
+                      <span className="text-slate-600">•</span>
+                      <span className="text-slate-400">Apex Institute of Technology</span>
+                    </>
+                  ) : (
+                    <>
+                      <span>Candidate: <code className="text-indigo-300 font-mono">{user.email}</code></span>
+                      <span className="text-slate-600">•</span>
+                      <span className="text-slate-400">HireMatrix Enterprise Workspace</span>
+                    </>
+                  )}
                 </p>
               </div>
             </div>
 
-            {/* Focused Candidate Quick Actions */}
+            {/* Quick Actions (Admin vs Student) */}
             <div className="flex items-center gap-2.5 self-start md:self-auto">
-              <button
-                onClick={() => navigateToView('profile')}
-                className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-colors cursor-pointer flex items-center gap-1.5 ${
-                  activeView === 'profile'
-                    ? 'bg-emerald-600 text-white shadow-sm'
-                    : 'text-emerald-300 hover:text-white bg-emerald-950/40 hover:bg-emerald-900/60 border border-emerald-500/30'
-                }`}
-              >
-                <UserCheck className="w-3.5 h-3.5" />
-                <span>My Profile</span>
-              </button>
-              <button
-                onClick={() => navigateToView('prediction')}
-                className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-colors cursor-pointer flex items-center gap-1.5 ${
-                  activeView === 'prediction'
-                    ? 'bg-indigo-600 text-white shadow-sm'
-                    : 'text-indigo-300 hover:text-white bg-indigo-950/40 hover:bg-indigo-900/60 border border-indigo-500/30'
-                }`}
-              >
-                <Zap className="w-3.5 h-3.5 text-amber-400" />
-                <span>Predictor</span>
-              </button>
-              <button
-                onClick={() => navigateToView('assessments')}
-                className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-colors cursor-pointer flex items-center gap-1.5 ${
-                  activeView === 'assessments'
-                    ? 'bg-indigo-600 text-white shadow-sm'
-                    : 'text-indigo-300 hover:text-white bg-indigo-950/40 hover:bg-indigo-900/60 border border-indigo-500/30'
-                }`}
-              >
-                <Brain className="w-3.5 h-3.5 text-cyan-400" />
-                <span>Assessment</span>
-              </button>
+              {user.role === 'admin' ? (
+                <>
+                  <button
+                    onClick={() => navigateToView('admin')}
+                    className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors cursor-pointer flex items-center gap-1.5 ${
+                      activeView === 'admin'
+                        ? 'bg-indigo-600 text-white shadow-sm'
+                        : 'text-indigo-300 hover:text-white bg-indigo-950/40 hover:bg-indigo-900/60 border border-indigo-500/30'
+                    }`}
+                  >
+                    <Building2 className="w-3.5 h-3.5" />
+                    <span>🏢 Drives & Shortlists</span>
+                  </button>
+                  <button
+                    onClick={() => navigateToView('explainer')}
+                    className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors cursor-pointer flex items-center gap-1.5 ${
+                      activeView === 'explainer'
+                        ? 'bg-cyan-600 text-white shadow-sm'
+                        : 'text-cyan-300 hover:text-white bg-cyan-950/40 hover:bg-cyan-900/60 border border-cyan-500/30'
+                    }`}
+                  >
+                    <Sparkles className="w-3.5 h-3.5" />
+                    <span>Product Tour</span>
+                  </button>
+                </>
+              ) : (
+                <>
+                  <button
+                    onClick={() => navigateToView('profile')}
+                    className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-colors cursor-pointer flex items-center gap-1.5 ${
+                      activeView === 'profile'
+                        ? 'bg-emerald-600 text-white shadow-sm'
+                        : 'text-emerald-300 hover:text-white bg-emerald-950/40 hover:bg-emerald-900/60 border border-emerald-500/30'
+                    }`}
+                  >
+                    <UserCheck className="w-3.5 h-3.5" />
+                    <span>My Profile</span>
+                  </button>
+                  <button
+                    onClick={() => navigateToView('prediction')}
+                    className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-colors cursor-pointer flex items-center gap-1.5 ${
+                      activeView === 'prediction'
+                        ? 'bg-indigo-600 text-white shadow-sm'
+                        : 'text-indigo-300 hover:text-white bg-indigo-950/40 hover:bg-indigo-900/60 border border-indigo-500/30'
+                    }`}
+                  >
+                    <Zap className="w-3.5 h-3.5 text-amber-400" />
+                    <span>Predictor</span>
+                  </button>
+                  <button
+                    onClick={() => navigateToView('assessments')}
+                    className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-colors cursor-pointer flex items-center gap-1.5 ${
+                      activeView === 'assessments'
+                        ? 'bg-indigo-600 text-white shadow-sm'
+                        : 'text-indigo-300 hover:text-white bg-indigo-950/40 hover:bg-indigo-900/60 border border-indigo-500/30'
+                    }`}
+                  >
+                    <Brain className="w-3.5 h-3.5 text-cyan-400" />
+                    <span>Assessment</span>
+                  </button>
+                </>
+              )}
               <button
                 onClick={logout}
                 className="px-3 py-1.5 text-xs font-medium text-slate-400 hover:text-rose-300 bg-slate-900/80 hover:bg-rose-950/40 border border-slate-800 hover:border-rose-800/40 rounded-lg transition-colors cursor-pointer"
@@ -464,11 +542,13 @@ function DashboardContent() {
           </div>
         )}
 
-        {/* Clean 4-Pillar Enterprise Navigation Bar */}
+        {/* Clean Enterprise Navigation Bar */}
         <div className="space-y-3 mb-8">
-          {/* Tier 1: 4 Core Pillars */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 p-1.5 bg-slate-900/90 border border-slate-800/80 rounded-2xl backdrop-blur-md shadow-xl">
-            {PILLARS.map((pillar) => {
+          {/* Tier 1: Core Pillars */}
+          <div className={`grid gap-2 p-1.5 bg-slate-900/90 border border-slate-800/80 rounded-2xl backdrop-blur-md shadow-xl ${
+            currentPillars.length === 1 ? 'grid-cols-1' : currentPillars.length === 2 ? 'grid-cols-1 md:grid-cols-2' : 'grid-cols-2 lg:grid-cols-4'
+          }`}>
+            {currentPillars.map((pillar) => {
               const isPillarActive = currentPillar.id === pillar.id;
               const PillarIcon = pillar.icon;
               return (

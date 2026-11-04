@@ -4,6 +4,7 @@ import type {
   StudentDriveEligibility,
   CreatePlacementDrivePayload,
   RosterIngestionReport,
+  DriveEligibleCandidatesResponse,
 } from '../types/erp';
 
 export const erpService = {
@@ -19,6 +20,16 @@ export const erpService = {
 
   async createDrive(data: CreatePlacementDrivePayload): Promise<PlacementDrive> {
     const res = await apiClient.post<PlacementDrive>('/erp/drives', data);
+    return res.data;
+  },
+
+  async deleteDrive(driveId: string): Promise<{ status: string; message: string }> {
+    const res = await apiClient.delete<{ status: string; message: string }>(`/erp/drives/${driveId}`);
+    return res.data;
+  },
+
+  async getEligibleCandidates(driveId: string): Promise<DriveEligibleCandidatesResponse> {
+    const res = await apiClient.get<DriveEligibleCandidatesResponse>(`/erp/drives/${driveId}/eligible-candidates`);
     return res.data;
   },
 
@@ -43,8 +54,8 @@ export const erpService = {
     return res.data;
   },
 
-  async exportShortlistCsv(driveId: string): Promise<string> {
-    const res = await apiClient.get<string>(`/erp/drives/${driveId}/shortlist-csv`, { responseType: 'text' as any });
+  async exportShortlistCsv(driveId: string, scope: 'eligible' | 'applied' = 'eligible'): Promise<string> {
+    const res = await apiClient.get<string>(`/erp/drives/${driveId}/shortlist-csv?scope=${scope}`, { responseType: 'text' as any });
     return res.data;
   },
 

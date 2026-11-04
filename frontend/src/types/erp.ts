@@ -53,3 +53,29 @@ export interface RosterIngestionReport {
   error_details: string[];
   imported_student_ids: string[];
 }
+
+export interface EligibleCandidate {
+  student_id: string;
+  user_id: string;
+  name: string;
+  email: string;
+  branch: string;
+  cgpa: number;
+  backlogs: number;
+  skills: string[];
+  coding_score: number;
+  placement_odds: number;
+  has_applied: boolean;
+  application_status: string;
+  applied_at: string | null;
+  eligibility_reasons: string[];
+}
+
+export interface DriveEligibleCandidatesResponse {
+  drive_id: string;
+  company_name: string;
+  job_role: string;
+  ctc_lpa: number;
+  total_eligible_count: number;
+  candidates: EligibleCandidate[];
+}
