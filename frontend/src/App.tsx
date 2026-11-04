@@ -475,9 +475,9 @@ function DashboardContent() {
                 <>
                   <button
                     onClick={() => navigateToView('admin')}
-                    className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors cursor-pointer flex items-center gap-1.5 ${
+                    className={`px-3.5 py-1.5 text-xs font-semibold rounded-xl transition-all duration-200 cursor-pointer flex items-center gap-1.5 hover:-translate-y-0.5 hover:scale-[1.02] ${
                       activeView === 'admin'
-                        ? 'bg-indigo-600 text-white shadow-sm'
+                        ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/30'
                         : 'text-indigo-300 hover:text-white bg-indigo-950/40 hover:bg-indigo-900/60 border border-indigo-500/30'
                     }`}
                   >
@@ -486,9 +486,9 @@ function DashboardContent() {
                   </button>
                   <button
                     onClick={() => navigateToView('explainer')}
-                    className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors cursor-pointer flex items-center gap-1.5 ${
+                    className={`px-3.5 py-1.5 text-xs font-semibold rounded-xl transition-all duration-200 cursor-pointer flex items-center gap-1.5 hover:-translate-y-0.5 hover:scale-[1.02] ${
                       activeView === 'explainer'
-                        ? 'bg-cyan-600 text-white shadow-sm'
+                        ? 'bg-cyan-600 text-white shadow-md shadow-cyan-600/30'
                         : 'text-cyan-300 hover:text-white bg-cyan-950/40 hover:bg-cyan-900/60 border border-cyan-500/30'
                     }`}
                   >
@@ -500,9 +500,9 @@ function DashboardContent() {
                 <>
                   <button
                     onClick={() => navigateToView('profile')}
-                    className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-colors cursor-pointer flex items-center gap-1.5 ${
+                    className={`px-3.5 py-1.5 text-xs font-medium rounded-xl transition-all duration-200 cursor-pointer flex items-center gap-1.5 hover:-translate-y-0.5 hover:scale-[1.02] ${
                       activeView === 'profile'
-                        ? 'bg-emerald-600 text-white shadow-sm'
+                        ? 'bg-emerald-600 text-white shadow-md shadow-emerald-600/30'
                         : 'text-emerald-300 hover:text-white bg-emerald-950/40 hover:bg-emerald-900/60 border border-emerald-500/30'
                     }`}
                   >
@@ -511,9 +511,9 @@ function DashboardContent() {
                   </button>
                   <button
                     onClick={() => navigateToView('prediction')}
-                    className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-colors cursor-pointer flex items-center gap-1.5 ${
+                    className={`px-3.5 py-1.5 text-xs font-medium rounded-xl transition-all duration-200 cursor-pointer flex items-center gap-1.5 hover:-translate-y-0.5 hover:scale-[1.02] ${
                       activeView === 'prediction'
-                        ? 'bg-indigo-600 text-white shadow-sm'
+                        ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/30'
                         : 'text-indigo-300 hover:text-white bg-indigo-950/40 hover:bg-indigo-900/60 border border-indigo-500/30'
                     }`}
                   >
@@ -522,9 +522,9 @@ function DashboardContent() {
                   </button>
                   <button
                     onClick={() => navigateToView('assessments')}
-                    className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-colors cursor-pointer flex items-center gap-1.5 ${
+                    className={`px-3.5 py-1.5 text-xs font-medium rounded-xl transition-all duration-200 cursor-pointer flex items-center gap-1.5 hover:-translate-y-0.5 hover:scale-[1.02] ${
                       activeView === 'assessments'
-                        ? 'bg-indigo-600 text-white shadow-sm'
+                        ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/30'
                         : 'text-indigo-300 hover:text-white bg-indigo-950/40 hover:bg-indigo-900/60 border border-indigo-500/30'
                     }`}
                   >
@@ -535,7 +535,7 @@ function DashboardContent() {
               )}
               <button
                 onClick={logout}
-                className="px-3 py-1.5 text-xs font-medium text-slate-400 hover:text-rose-300 bg-slate-900/80 hover:bg-rose-950/40 border border-slate-800 hover:border-rose-800/40 rounded-lg transition-colors cursor-pointer"
+                className="px-3.5 py-1.5 text-xs font-medium text-slate-400 hover:text-rose-300 bg-slate-900/80 hover:bg-rose-950/40 border border-slate-800 hover:border-rose-800/40 rounded-xl transition-all duration-200 cursor-pointer hover:-translate-y-0.5 hover:scale-[1.02]"
               >
                 Sign Out
               </button>
@@ -544,10 +544,14 @@ function DashboardContent() {
         )}
 
         {/* Clean Enterprise Navigation Bar */}
-        <div className="space-y-3 mb-8">
-          {/* Tier 1: Core Pillars */}
-          <div className={`grid gap-2 p-1.5 bg-slate-900/90 border border-slate-800/80 rounded-2xl backdrop-blur-md shadow-xl ${
-            currentPillars.length === 1 ? 'grid-cols-1' : currentPillars.length === 2 ? 'grid-cols-1 md:grid-cols-2' : 'grid-cols-2 lg:grid-cols-4'
+        <div className="space-y-3.5 mb-8">
+          {/* Tier 1: Core Pillars as Distinct Floating Cards */}
+          <div className={`grid gap-3 sm:gap-4 ${
+            currentPillars.length === 1
+              ? 'grid-cols-1'
+              : currentPillars.length === 2
+              ? 'grid-cols-1 sm:grid-cols-2'
+              : 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-4'
           }`}>
             {currentPillars.map((pillar) => {
               const isPillarActive = currentPillar.id === pillar.id;
@@ -561,23 +565,39 @@ function DashboardContent() {
                       handleToolClick(pillar.tools[0]);
                     }
                   }}
-                  className={`flex items-center gap-2.5 p-2.5 rounded-xl transition-all cursor-pointer text-left ${
+                  className={`group relative flex items-center gap-3 p-3.5 sm:p-4 rounded-2xl transition-all duration-300 cursor-pointer text-left ${
                     isPillarActive
-                      ? 'bg-slate-800 text-white shadow-md ring-1 ring-white/10'
-                      : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/40'
+                      ? 'bg-gradient-to-br from-indigo-950/70 via-slate-900/90 to-slate-900 border border-indigo-500/60 text-white shadow-xl shadow-indigo-500/15 ring-1 ring-indigo-500/30 -translate-y-0.5'
+                      : 'bg-slate-900/75 hover:bg-slate-800/85 border border-slate-800/80 hover:border-slate-700/90 text-slate-300 hover:text-white shadow-md hover:shadow-xl hover:shadow-indigo-500/10 hover:-translate-y-1 hover:scale-[1.02]'
                   }`}
                 >
-                  <div className={`p-2 rounded-lg shrink-0 ${isPillarActive ? 'bg-indigo-600/30 text-indigo-300 ring-1 ring-indigo-500/30' : 'bg-slate-800/80 text-slate-400'}`}>
-                    <PillarIcon className="w-4 h-4" />
+                  <div
+                    className={`p-2.5 rounded-xl shrink-0 transition-transform duration-200 group-hover:scale-110 ${
+                      isPillarActive
+                        ? 'bg-gradient-to-br from-indigo-600 to-indigo-700 text-white shadow-md shadow-indigo-600/30 ring-1 ring-indigo-400/40'
+                        : 'bg-slate-800/90 text-indigo-400 group-hover:bg-indigo-600/20 group-hover:text-indigo-300 border border-slate-700/60'
+                    }`}
+                  >
+                    <PillarIcon className="w-4 h-4 sm:w-5 sm:h-5" />
                   </div>
                   <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-1.5">
-                      <span className="text-xs sm:text-sm font-semibold truncate leading-tight">{pillar.title}</span>
-                      <span className={`text-[10px] font-mono px-1.5 py-0.2 rounded-full ${isPillarActive ? 'bg-indigo-500/20 text-indigo-300' : 'bg-slate-800 text-slate-500'}`}>
+                    <div className="flex items-center gap-1.5 justify-between">
+                      <span className="text-xs sm:text-sm font-bold truncate leading-tight group-hover:text-white">
+                        {pillar.title}
+                      </span>
+                      <span
+                        className={`text-[10px] font-mono font-semibold px-2 py-0.5 rounded-full shrink-0 ${
+                          isPillarActive
+                            ? 'bg-indigo-500/30 text-indigo-200 border border-indigo-400/30'
+                            : 'bg-slate-800 text-slate-400 group-hover:text-slate-300 border border-slate-700/60'
+                        }`}
+                      >
                         {pillar.tools.length}
                       </span>
                     </div>
-                    <p className="text-[10px] text-slate-400 truncate mt-0.5">{pillar.subtitle}</p>
+                    <p className="text-[10px] sm:text-[11px] text-slate-400 group-hover:text-slate-300 truncate mt-0.5">
+                      {pillar.subtitle}
+                    </p>
                   </div>
                 </button>
               );
@@ -585,8 +605,8 @@ function DashboardContent() {
           </div>
 
           {/* Tier 2: Contextual Sub-Tool Ribbon */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-2 bg-slate-900/40 border border-slate-800/60 rounded-xl backdrop-blur-sm">
-            <div className="flex flex-wrap items-center gap-1.5">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-2.5 bg-slate-900/60 border border-slate-800/70 rounded-2xl backdrop-blur-md shadow-lg">
+            <div className="flex flex-wrap items-center gap-2">
               {currentPillar.tools.map((tool) => {
                 const isToolActive = activeView === tool.id;
                 const ToolIcon = tool.icon;
@@ -594,10 +614,10 @@ function DashboardContent() {
                   <button
                     key={tool.id}
                     onClick={() => handleToolClick(tool)}
-                    className={`flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium transition cursor-pointer ${
+                    className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-semibold transition-all duration-200 cursor-pointer ${
                       isToolActive
-                        ? tool.activeBg
-                        : 'text-slate-400 hover:text-white hover:bg-slate-800/60 border border-transparent hover:border-slate-700/60'
+                        ? `${tool.activeBg} shadow-md scale-[1.02] ring-1 ring-white/10`
+                        : 'text-slate-400 hover:text-white bg-slate-800/40 hover:bg-slate-800/90 border border-slate-800/80 hover:border-slate-700/80 hover:-translate-y-0.5 hover:scale-[1.02] hover:shadow-sm'
                     }`}
                   >
                     <ToolIcon className={`w-3.5 h-3.5 ${isToolActive ? 'text-white' : tool.color}`} />
@@ -608,12 +628,12 @@ function DashboardContent() {
                       </span>
                     )}
                     {tool.requiresAdmin && !isAuthenticated && (
-                      <span className="text-[9px] px-1.5 py-0.5 rounded bg-slate-800 text-slate-400 border border-slate-700 leading-none">
+                      <span className="text-[9px] px-1.5 py-0.5 rounded-md bg-slate-800 text-slate-400 border border-slate-700 leading-none">
                         Admin Req
                       </span>
                     )}
                     {tool.requiresAuth && !tool.requiresAdmin && !isAuthenticated && (
-                      <span className="text-[9px] px-1.5 py-0.5 rounded bg-slate-800 text-slate-400 border border-slate-700 leading-none">
+                      <span className="text-[9px] px-1.5 py-0.5 rounded-md bg-slate-800 text-slate-400 border border-slate-700 leading-none">
                         Login Req
                       </span>
                     )}
@@ -745,23 +765,22 @@ function DashboardContent() {
                 )}
               </div>
 
-              {/* Row 6: Quick Architecture Stack Badges */}
-              <div className="flex flex-wrap items-center justify-center gap-2 mt-6">
+              {/* Row 6: Key Feature Highlights / Value Propositions */}
+              <div className="flex flex-wrap items-center justify-center gap-2.5 mt-7 max-w-2xl">
                 {[
-                  'FastAPI 0.110+',
-                  'JWT + Bcrypt (RBAC)',
-                  'MongoDB Motor',
-                  'React 19 + TypeScript',
-                  'Tailwind CSS v4',
-                  'Docker Ready',
-                  'Pydantic v2',
-                ].map((tech) => (
-                  <span
-                    key={tech}
-                    className="text-xs px-2.5 py-1 rounded-md bg-slate-900 border border-slate-800 text-slate-300 font-mono"
+                  { label: 'Explainable TreeSHAP ML', icon: '🎯', color: 'border-indigo-500/30 text-indigo-200 bg-indigo-950/30' },
+                  { label: 'SVAR Voice AI & Aptitude', icon: '🎙️', color: 'border-cyan-500/30 text-cyan-200 bg-cyan-950/30' },
+                  { label: 'Zero Google Forms', icon: '🏢', color: 'border-emerald-500/30 text-emerald-200 bg-emerald-950/30' },
+                  { label: '1-Click Campus Apply', icon: '⚡', color: 'border-amber-500/30 text-amber-200 bg-amber-950/30' },
+                  { label: 'Real-Time Recruiter Shortlists', icon: '📊', color: 'border-purple-500/30 text-purple-200 bg-purple-950/30' },
+                ].map((item) => (
+                  <div
+                    key={item.label}
+                    className={`inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-xl border backdrop-blur-sm transition-all duration-200 hover:-translate-y-0.5 hover:scale-[1.02] shadow-sm cursor-default ${item.color}`}
                   >
-                    {tech}
-                  </span>
+                    <span>{item.icon}</span>
+                    <span className="font-medium">{item.label}</span>
+                  </div>
                 ))}
               </div>
             </div>

@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Database, Server, RefreshCw, CheckCircle2, AlertTriangle, Cpu, Terminal, Clock } from 'lucide-react';
+import React from 'react';
+import { Database, Server, RefreshCw, CheckCircle2, AlertTriangle, Cpu, Clock } from 'lucide-react';
 import type { HealthResponse } from '../types/system';
 
 interface SystemHealthBannerProps {
@@ -17,8 +17,6 @@ export const SystemHealthBanner: React.FC<SystemHealthBannerProps> = ({
   onRefresh,
   latency,
 }) => {
-  const [showRawJson, setShowRawJson] = useState(false);
-
   const isDbConnected = healthData?.database?.status === 'connected';
 
   return (
@@ -42,19 +40,13 @@ export const SystemHealthBanner: React.FC<SystemHealthBannerProps> = ({
 
           <div className="flex items-center gap-2">
             <button
-              onClick={() => setShowRawJson(!showRawJson)}
-              className="inline-flex items-center gap-1.5 text-xs text-slate-400 hover:text-white bg-slate-800/80 hover:bg-slate-800 border border-slate-700 px-3 py-2 rounded-lg transition-colors cursor-pointer"
-            >
-              <Terminal className="w-3.5 h-3.5" />
-              {showRawJson ? 'Hide JSON' : 'Inspect JSON'}
-            </button>
-            <button
               onClick={onRefresh}
               disabled={loading}
-              className="inline-flex items-center gap-1.5 text-xs font-medium text-white bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 px-4 py-2 rounded-lg transition-colors shadow-md shadow-indigo-600/20 cursor-pointer"
+              title="Refresh live system telemetry"
+              className="inline-flex items-center gap-1.5 text-xs font-medium text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-800 border border-slate-700/80 hover:border-slate-600 disabled:opacity-50 px-3.5 py-2 rounded-xl transition-all duration-200 shadow-sm hover:shadow-indigo-500/10 hover:-translate-y-0.5 cursor-pointer"
             >
-              <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
-              Test API Latency
+              <RefreshCw className={`w-3.5 h-3.5 text-indigo-400 ${loading ? 'animate-spin' : ''}`} />
+              <span>Refresh Status</span>
             </button>
           </div>
         </div>
@@ -158,19 +150,6 @@ export const SystemHealthBanner: React.FC<SystemHealthBannerProps> = ({
           <div className="mt-4 p-3 rounded-lg bg-amber-500/10 border border-amber-500/30 text-amber-200 text-xs flex items-center gap-2">
             <AlertTriangle className="w-4 h-4 shrink-0 text-amber-400" />
             <span>Connection Notice: {error}. Backend is starting or running on custom port.</span>
-          </div>
-        )}
-
-        {/* Raw JSON Debug Viewer */}
-        {showRawJson && healthData && (
-          <div className="mt-4 p-4 rounded-xl bg-slate-950 border border-slate-800 text-left overflow-x-auto">
-            <div className="flex items-center justify-between text-xs text-slate-400 mb-2 font-mono">
-              <span>GET /api/health Response</span>
-              <span className="text-emerald-400">200 OK</span>
-            </div>
-            <pre className="text-xs text-slate-300 font-mono">
-              {JSON.stringify(healthData, null, 2)}
-            </pre>
           </div>
         )}
       </div>

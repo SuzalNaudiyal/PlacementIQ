@@ -139,7 +139,7 @@ export function UnifiedDashboard({ onNavigate }: UnifiedDashboardProps) {
         {/* KPI 1: ML Placement Likelihood */}
         <div
           onClick={() => onNavigate('prediction')}
-          className="p-5 bg-slate-900/60 rounded-3xl border border-indigo-500/30 hover:border-indigo-400 transition cursor-pointer shadow-md flex flex-col justify-between group"
+          className="p-5 bg-slate-900/60 rounded-3xl border border-indigo-500/30 hover:border-indigo-400 transition-all duration-200 cursor-pointer shadow-md hover:shadow-xl hover:shadow-indigo-500/10 hover:-translate-y-1 hover:scale-[1.02] flex flex-col justify-between group"
         >
           <div className="flex items-center justify-between text-slate-400 text-xs font-semibold">
             <span>Placement Odds</span>
@@ -170,7 +170,7 @@ export function UnifiedDashboard({ onNavigate }: UnifiedDashboardProps) {
         {/* KPI 2: ATS Resume Score */}
         <div
           onClick={() => onNavigate('resume')}
-          className="p-5 bg-slate-900/60 rounded-3xl border border-teal-500/30 hover:border-teal-400 transition cursor-pointer shadow-md flex flex-col justify-between group"
+          className="p-5 bg-slate-900/60 rounded-3xl border border-teal-500/30 hover:border-teal-400 transition-all duration-200 cursor-pointer shadow-md hover:shadow-xl hover:shadow-teal-500/10 hover:-translate-y-1 hover:scale-[1.02] flex flex-col justify-between group"
         >
           <div className="flex items-center justify-between text-slate-400 text-xs font-semibold">
             <span>ATS Resume Score</span>
@@ -193,7 +193,7 @@ export function UnifiedDashboard({ onNavigate }: UnifiedDashboardProps) {
         {/* KPI 3: Top Role Fit */}
         <div
           onClick={() => onNavigate('skillgap')}
-          className="p-5 bg-slate-900/60 rounded-3xl border border-purple-500/30 hover:border-purple-400 transition cursor-pointer shadow-md flex flex-col justify-between group"
+          className="p-5 bg-slate-900/60 rounded-3xl border border-purple-500/30 hover:border-purple-400 transition-all duration-200 cursor-pointer shadow-md hover:shadow-xl hover:shadow-purple-500/10 hover:-translate-y-1 hover:scale-[1.02] flex flex-col justify-between group"
         >
           <div className="flex items-center justify-between text-slate-400 text-xs font-semibold">
             <span>Top Role Fit</span>
@@ -216,7 +216,7 @@ export function UnifiedDashboard({ onNavigate }: UnifiedDashboardProps) {
         {/* KPI 4: Top Target Company */}
         <div
           onClick={() => onNavigate('jobs')}
-          className="p-5 bg-slate-900/60 rounded-3xl border border-amber-500/30 hover:border-amber-400 transition cursor-pointer shadow-md flex flex-col justify-between group"
+          className="p-5 bg-slate-900/60 rounded-3xl border border-amber-500/30 hover:border-amber-400 transition-all duration-200 cursor-pointer shadow-md hover:shadow-xl hover:shadow-amber-500/10 hover:-translate-y-1 hover:scale-[1.02] flex flex-col justify-between group"
         >
           <div className="flex items-center justify-between text-slate-400 text-xs font-semibold">
             <span>Top Match Job</span>
@@ -239,7 +239,7 @@ export function UnifiedDashboard({ onNavigate }: UnifiedDashboardProps) {
         {/* KPI 5: 8-Week Roadmap Sprint */}
         <div
           onClick={() => onNavigate('roadmap')}
-          className="p-5 bg-slate-900/60 rounded-3xl border border-emerald-500/30 hover:border-emerald-400 transition cursor-pointer shadow-md flex flex-col justify-between group"
+          className="p-5 bg-slate-900/60 rounded-3xl border border-emerald-500/30 hover:border-emerald-400 transition-all duration-200 cursor-pointer shadow-md hover:shadow-xl hover:shadow-emerald-500/10 hover:-translate-y-1 hover:scale-[1.02] flex flex-col justify-between group"
         >
           <div className="flex items-center justify-between text-slate-400 text-xs font-semibold">
             <span>8-Wk Roadmap</span>

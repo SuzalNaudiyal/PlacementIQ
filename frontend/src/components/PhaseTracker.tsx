@@ -42,12 +42,12 @@ export const PhaseTracker: React.FC = () => {
             return (
               <div
                 key={phase.number}
-                className={`p-3.5 rounded-xl border text-left transition-all reveal-on-scroll ${delayClass} ${
+                className={`p-3.5 rounded-xl border text-left transition-all duration-200 hover:-translate-y-0.5 hover:scale-[1.01] cursor-default reveal-on-scroll ${delayClass} ${
                   isCompleted
-                    ? 'bg-emerald-950/20 border-emerald-500/30 ring-1 ring-emerald-500/10'
+                    ? 'bg-emerald-950/20 border-emerald-500/30 ring-1 ring-emerald-500/10 hover:border-emerald-500/50 hover:shadow-md hover:shadow-emerald-500/5'
                     : isCurrent
-                    ? 'bg-indigo-950/30 border-indigo-500/40 shadow-sm shadow-indigo-500/10'
-                    : 'bg-slate-900/30 border-slate-800/60 opacity-70'
+                    ? 'bg-indigo-950/30 border-indigo-500/40 shadow-sm shadow-indigo-500/10 hover:border-indigo-400/60'
+                    : 'bg-slate-900/30 border-slate-800/60 opacity-70 hover:opacity-100 hover:border-slate-700'
                 }`}
               >
                 <div className="flex items-center justify-between mb-1.5">

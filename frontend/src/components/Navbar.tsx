@@ -1,5 +1,5 @@
 import React from 'react';
-import { Sparkles, BookOpen, LogIn, LogOut } from 'lucide-react';
+import { Sparkles, LogIn, LogOut } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 interface NavbarProps {
@@ -39,7 +39,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           {onNavigateToTour && (
             <button
               onClick={onNavigateToTour}
-              className="inline-flex items-center gap-1.5 text-xs text-cyan-300 hover:text-white px-3 py-1.5 rounded-lg bg-cyan-950/40 hover:bg-cyan-900/60 border border-cyan-500/30 transition-all cursor-pointer shadow-sm hover:scale-[1.02]"
+              className="inline-flex items-center gap-1.5 text-xs font-semibold text-cyan-300 hover:text-white px-3.5 py-1.5 rounded-xl bg-cyan-950/40 hover:bg-cyan-900/60 border border-cyan-500/30 transition-all duration-200 cursor-pointer shadow-sm hover:shadow-cyan-500/20 hover:-translate-y-0.5 hover:scale-[1.02]"
             >
               <Sparkles className="h-3.5 w-3.5 text-cyan-400" />
               <span>Watch Tour</span>
@@ -47,7 +47,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           )}
 
           {/* API Health Pill */}
-          <div className="hidden sm:flex items-center space-x-2 px-3 py-1.5 rounded-full bg-slate-900 border border-slate-800 text-xs">
+          <div className="hidden sm:flex items-center space-x-2 px-3 py-1.5 rounded-xl bg-slate-900/80 border border-slate-800 text-xs">
             <span className="relative flex h-2.5 w-2.5">
               {isBackendOnline && (
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
@@ -60,23 +60,6 @@ export const Navbar: React.FC<NavbarProps> = ({
             {latency !== null && (
               <span className="text-slate-500 text-[11px]">({latency}ms)</span>
             )}
-          </div>
-
-          {/* Swagger link */}
-          <a
-            href="http://localhost:8000/docs"
-            target="_blank"
-            rel="noreferrer"
-            className="hidden md:inline-flex items-center gap-1.5 text-xs text-slate-300 hover:text-white px-3 py-1.5 rounded-lg hover:bg-slate-800/80 transition-colors border border-transparent hover:border-slate-700"
-          >
-            <BookOpen className="h-3.5 w-3.5 text-indigo-400" />
-            Swagger
-          </a>
-
-          {/* Phase Badge */}
-          <div className="hidden lg:inline-flex items-center gap-2 text-xs text-indigo-300 bg-indigo-950/40 border border-indigo-800/50 px-3 py-1.5 rounded-lg">
-            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-            <span className="font-medium text-slate-200">HireMatrix Enterprise OS</span>
           </div>
 
           {/* User Session Profile or Sign In Button */}
@@ -103,10 +86,10 @@ export const Navbar: React.FC<NavbarProps> = ({
           ) : (
             <button
               onClick={onOpenAuth}
-              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-indigo-600 hover:bg-indigo-500 text-white shadow-md shadow-indigo-600/20 transition-all cursor-pointer"
+              className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-xl text-xs font-semibold bg-indigo-600 hover:bg-indigo-500 text-white shadow-md shadow-indigo-600/30 transition-all duration-200 hover:-translate-y-0.5 hover:scale-[1.02] cursor-pointer"
             >
               <LogIn className="w-3.5 h-3.5" />
-              Sign In / Register
+              <span>Sign In / Register</span>
             </button>
           )}
         </div>
