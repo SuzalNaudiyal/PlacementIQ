@@ -18,7 +18,7 @@ import { UniversityERPView } from './components/erp/UniversityERPView';
 import { CompanyPrepView } from './components/companyprep/CompanyPrepView';
 import { LinkedInOutreachView } from './components/outreach/LinkedInOutreachView';
 import { AssessmentHubView } from './components/assessments/AssessmentHubView';
-import HireMatrixExplainer from './components/HireMatrixExplainer';
+import HireMatrixTourModal from './components/HireMatrixTourModal';
 import { CareerCopilotWidget } from './components/copilot/CareerCopilotWidget';
 import { Footer } from './components/Footer';
 import { fetchSystemHealth, pingBackend } from './services/api';
@@ -306,6 +306,7 @@ function DashboardContent() {
   const [error, setError] = useState<string | null>(null);
   const [latency, setLatency] = useState<number | null>(null);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState<boolean>(false);
+  const [isTourModalOpen, setIsTourModalOpen] = useState<boolean>(false);
   const [activeView, setActiveView] = useState<ViewId>('overview');
   const [activePillarId, setActivePillarId] = useState<PillarId>('intelligence');
   const [scrollProgress, setScrollProgress] = useState<number>(0);
@@ -418,7 +419,7 @@ function DashboardContent() {
         isBackendOnline={isBackendOnline}
         latency={latency}
         onOpenAuth={() => setIsAuthModalOpen(true)}
-        onNavigateToTour={() => navigateToView('explainer')}
+        onNavigateToTour={() => setIsTourModalOpen(true)}
       />
 
       {/* Main Container */}
@@ -643,7 +644,7 @@ function DashboardContent() {
               </button>
             </div>
             <div className="rounded-2xl overflow-hidden border border-slate-800/80 shadow-2xl bg-slate-950">
-              <HireMatrixExplainer />
+              <HireMatrixTourModal isOpen={true} onClose={() => navigateToView('overview')} />
             </div>
           </div>
         ) : activeView === 'profile' && isAuthenticated ? (
@@ -726,7 +727,7 @@ function DashboardContent() {
                       <ArrowRight className="w-4 h-4" />
                     </button>
                     <button
-                      onClick={() => navigateToView('explainer')}
+                      onClick={() => setIsTourModalOpen(true)}
                       className="px-5 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-cyan-300 border border-cyan-500/30 font-semibold text-sm shadow-lg flex items-center gap-2 transition-all cursor-pointer hover:scale-[1.02]"
                     >
                       <Sparkles className="w-4 h-4 text-cyan-400" />
@@ -801,6 +802,13 @@ function DashboardContent() {
       <AuthModal
         isOpen={isAuthModalOpen}
         onClose={() => setIsAuthModalOpen(false)}
+      />
+
+      {/* 60-Second Interactive Tour Video Modal (Marketing / Public Access) */}
+      <HireMatrixTourModal
+        isOpen={isTourModalOpen}
+        onClose={() => setIsTourModalOpen(false)}
+        autoPlay={true}
       />
 
       {/* AI Placement Career Copilot Floating Chatbot */}
