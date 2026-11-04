@@ -26,13 +26,14 @@ export const CareerCopilotWidget: React.FC<CareerCopilotWidgetProps> = ({
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
+  const displayName = studentName && studentName.toLowerCase() !== 'candidate' ? studentName.split(' ')[0] : '';
+  const initialGreeting = displayName ? `Hi ${displayName}! 👋` : 'Hi there! 👋';
+
   const [messages, setMessages] = useState<CopilotMessage[]>([
     {
       id: 'welcome',
       sender: 'assistant',
-      text: `Hello ${
-        studentName ? studentName.split(' ')[0] : 'there'
-      }! 👋 I am your **HireMatrix AI Copilot**.\n\nI can answer any questions about **HireMatrix AI**, our 4 platform pillars, SVAR Spoken English tests, ML placement prediction, or provide personalized placement preparation guidance.\n\nWhat would you like to explore today?`,
+      text: `${initialGreeting} Welcome to **HireMatrix Support**!\n\nHow can I help you today? You can ask me about our AI placement predictor, taking the SVAR voice test, resume ATS check, or any feature on this website.`,
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       suggestedActions: [
         'What is HireMatrix AI?',
@@ -46,6 +47,23 @@ export const CareerCopilotWidget: React.FC<CareerCopilotWidgetProps> = ({
   const [loading, setLoading] = useState(false);
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Dynamically update greeting if student logs in
+  useEffect(() => {
+    if (displayName) {
+      setMessages((prev) => {
+        if (prev.length === 1 && prev[0].id === 'welcome') {
+          return [
+            {
+              ...prev[0],
+              text: `Hi ${displayName}! 👋 Welcome to **HireMatrix Support**!\n\nHow can I help you today? You can ask me about our AI placement predictor, taking the SVAR voice test, resume ATS check, or any feature on this website.`,
+            },
+          ];
+        }
+        return prev;
+      });
+    }
+  }, [displayName]);
 
   useEffect(() => {
     if (isOpen && suggestions.length === 0) {
@@ -198,20 +216,38 @@ export const CareerCopilotWidget: React.FC<CareerCopilotWidgetProps> = ({
 
   return (
     <div className="fixed bottom-6 right-6 z-50">
-      {/* Floating Toggle Button */}
+      {/* Small Animated Chatbot Logo Floating Button */}
       {!isOpen && (
         <button
           onClick={() => setIsOpen(true)}
-          className="group relative flex items-center gap-2.5 px-4 py-3 rounded-full bg-gradient-to-r from-indigo-600 via-indigo-500 to-teal-500 hover:from-indigo-500 hover:to-teal-400 text-white font-bold text-sm shadow-2xl shadow-indigo-500/40 transition-all duration-300 transform hover:scale-105"
+          aria-label="Open HireMatrix AI Support Chatbot"
+          className="group relative flex items-center justify-center w-13 h-13 sm:w-14 sm:h-14 rounded-full bg-gradient-to-tr from-indigo-600 via-purple-600 to-cyan-400 p-[2.5px] shadow-2xl shadow-indigo-600/50 hover:shadow-cyan-400/60 transition-all duration-300 hover:scale-110 active:scale-95 cursor-pointer z-50"
         >
-          <div className="relative">
-            <Bot className="w-5 h-5 text-white animate-pulse" />
-            <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-emerald-400 rounded-full border-2 border-slate-950" />
+          {/* Outer Glowing Pulse Aura */}
+          <span className="absolute -inset-1 rounded-full bg-gradient-to-r from-cyan-400 via-indigo-500 to-purple-600 opacity-60 blur-md group-hover:opacity-100 transition duration-500 group-hover:duration-200 animate-pulse" />
+
+          {/* Inner Circular Surface */}
+          <div className="relative w-full h-full rounded-full bg-slate-950 flex items-center justify-center overflow-hidden">
+            {/* Ambient Inner Gradient */}
+            <div className="absolute inset-0 bg-gradient-to-br from-indigo-950/80 via-slate-950 to-slate-900 opacity-90" />
+
+            {/* Live Green Online Beacon */}
+            <span className="absolute top-1.5 right-1.5 flex h-3 w-3 z-10">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-3 w-3 bg-emerald-500 border-2 border-slate-950"></span>
+            </span>
+
+            {/* Chatbot Bot Icon with Gentle Breathing Motion */}
+            <div className="relative text-cyan-300 group-hover:scale-110 group-hover:rotate-6 transition-all duration-300 animate-float-slow">
+              <Bot className="w-6 h-6 sm:w-7 sm:h-7 drop-shadow-[0_0_8px_rgba(34,211,238,0.7)]" />
+            </div>
           </div>
-          <span className="tracking-wide">AI Career Copilot</span>
-          <span className="px-1.5 py-0.5 rounded text-[10px] bg-white/20 uppercase font-semibold text-white/90">
-            Live
-          </span>
+
+          {/* Clean Floating Pill Tooltip on Hover */}
+          <div className="absolute right-17 px-3 py-1.5 rounded-xl bg-slate-900/95 border border-indigo-500/30 text-slate-200 text-xs font-semibold shadow-2xl shadow-slate-950 backdrop-blur-md opacity-0 group-hover:opacity-100 transition-all duration-200 pointer-events-none whitespace-nowrap hidden sm:flex items-center gap-1.5">
+            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+            <span>HireMatrix Support AI</span>
+          </div>
         </button>
       )}
 

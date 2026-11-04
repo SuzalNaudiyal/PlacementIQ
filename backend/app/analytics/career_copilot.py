@@ -1,5 +1,61 @@
-from typing import Dict, Any, List, Optional
+import os
 import re
+from typing import Dict, Any, List, Optional
+
+
+def try_call_gemini_api(
+    query: str,
+    first_name: str,
+    target_role: str,
+    history: Optional[List[Dict[str, str]]] = None,
+) -> Optional[str]:
+    """
+    Optional live Google Gemini integration if GEMINI_API_KEY is set in environment.
+    Enforces customer-care persona and strict HireMatrix platform boundary.
+    """
+    api_key = os.getenv("GEMINI_API_KEY")
+    if not api_key:
+        return None
+
+    try:
+        import httpx
+
+        system_instruction = (
+            "You are the HireMatrix AI Customer Support Specialist & Career Advisor. "
+            "You speak in a warm, polite, natural customer-care tone. "
+            "You ONLY answer questions related to the HireMatrix AI platform (its 4 pillars, "
+            "AI Placement Predictor, SVAR voice tests, 3-Tier Skill Gap, Resume ATS scanner, "
+            "1-Click LinkedIn Pitch, Company Interview Cheat Sheets, and University ERP) "
+            "and campus placement preparation (DSA, coding rounds, backlogs, HR questions). "
+            "If a user asks something completely outside of HireMatrix or placements (like recipes, "
+            "sports, or movies), politely decline and steer them back to HireMatrix. "
+            "Never repeat robotic greetings or dump profile data repeatedly."
+        )
+
+        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={api_key}"
+        payload = {
+            "contents": [
+                {
+                    "role": "user",
+                    "parts": [{"text": f"{system_instruction}\n\nUser: {query}"}],
+                }
+            ],
+            "generationConfig": {"temperature": 0.4, "maxOutputTokens": 800},
+        }
+
+        with httpx.Client(timeout=8.0) as client:
+            resp = client.post(url, json=payload)
+            if resp.status_code == 200:
+                data = resp.json()
+                candidates = data.get("candidates", [])
+                if candidates:
+                    parts = candidates[0].get("content", {}).get("parts", [])
+                    if parts and "text" in parts[0]:
+                        return parts[0]["text"].strip()
+    except Exception:
+        # Fall back to native local knowledge engine
+        pass
+    return None
 
 
 def generate_copilot_response(
@@ -8,15 +64,17 @@ def generate_copilot_response(
     skill_gap_summary: Optional[Dict[str, Any]] = None,
     prediction_summary: Optional[Dict[str, Any]] = None,
     resume_summary: Optional[Dict[str, Any]] = None,
+    history: Optional[List[Dict[str, str]]] = None,
 ) -> Dict[str, Any]:
     """
-    Advanced, context-aware HireMatrix Career Copilot response engine.
-    Handles general inquiries about the HireMatrix platform, its 4 core pillars,
-    SVAR voice tests, ML placement prediction, ATS resume auditing, company cheat sheets,
-    as well as deeply personalized academic guidance (CGPA, backlogs, DSA, and LeetCode).
+    Natural Customer Care & Career Copilot response engine for HireMatrix.
+    Behaves like a friendly, knowledgeable customer support advisor:
+    - Never repeats robotic 'Hello Candidate' or repetitive snapshot data dumps.
+    - Strictly focuses on HireMatrix AI platform features and placement preparation.
+    - Warmly handles greetings, follow-ups, and off-topic boundaries.
     """
     name = student_profile.get("name", "Candidate")
-    first_name = name.split()[0] if name else "Candidate"
+    first_name = name.split()[0] if name and name.lower() not in ["candidate", "student"] else "there"
     cgpa = student_profile.get("cgpa", 7.5)
     backlogs = student_profile.get("backlogs", 0)
     branch = student_profile.get("education", {}).get("branch", "Computer Science")
@@ -40,7 +98,7 @@ def generate_copilot_response(
         missing_critical = skill_gap_summary.get("missing_critical", [])
         missing_important = skill_gap_summary.get("missing_important", [])
 
-    # Coding Profiles (GitHub / LeetCode)
+    # Coding Profiles
     coding_profiles = student_profile.get("coding_profiles", {})
     leetcode_stats = coding_profiles.get("leetcode_stats") or {}
     total_solved = leetcode_stats.get("total_solved", 0)
@@ -50,6 +108,64 @@ def generate_copilot_response(
 
     q = query.strip()
     q_lower = q.lower()
+
+    # Try live Gemini API if configured
+    gemini_reply = try_call_gemini_api(q, first_name, target_role, history)
+    if gemini_reply:
+        return {
+            "reply": gemini_reply,
+            "suggested_actions": [
+                "What is HireMatrix AI?",
+                "How does the SVAR Voice test work?",
+                "How to boost my readiness score past 90%?",
+                "Show all features on this webpage",
+            ],
+            "context_used": {
+                "name": name,
+                "readiness_percentage": readiness_pct,
+                "target_role": target_role,
+            },
+        }
+
+    # Detect conversational state
+    is_first_interaction = not history or len(history) <= 1
+
+    # --------------------------------------------------------------------------
+    # 0. PURE GREETINGS / CHIT-CHAT ("hi", "hello", "hey", "kaise ho")
+    # --------------------------------------------------------------------------
+    is_pure_greeting = any(
+        re.fullmatch(pattern, q_lower.strip())
+        for pattern in [
+            r"hi+",
+            r"hello+",
+            r"hey+",
+            r"good\s+(morning|afternoon|evening)",
+            r"kaise\s+ho\??",
+            r"namaste",
+            r"sup",
+            r"hola",
+            r"what'?s\s+up",
+        ]
+    )
+
+    if is_pure_greeting:
+        greeting_target = f" {first_name}" if first_name != "there" else ""
+        reply = (
+            f"Hi{greeting_target}! 👋 Welcome to **HireMatrix Support**!\n\n"
+            f"I'm your dedicated placement and platform assistant. I can help you with anything on this webpage—from running the **AI Placement Predictor** and taking the **SVAR Spoken English test** to analyzing your **resume ATS score** and drafting **LinkedIn referral pitches**.\n\n"
+            f"How can I help you today?"
+        )
+        actions = [
+            "What is HireMatrix AI?",
+            "How does the SVAR Voice test work?",
+            "How can I boost my placement readiness past 90%?",
+            "Show all features on this webpage",
+        ]
+        return {
+            "reply": reply,
+            "suggested_actions": actions,
+            "context_used": {"name": name, "readiness_percentage": readiness_pct},
+        }
 
     # --------------------------------------------------------------------------
     # 1. WHAT IS HIREMATRIX / ABOUT THE PLATFORM / WEBPAGE OVERVIEW
@@ -71,22 +187,23 @@ def generate_copilot_response(
             "what does hirematrix do",
             "why hirematrix",
             "purpose of hirematrix",
+            "explain hirematrix",
         ]
     ) or (("what is" in q_lower or "about" in q_lower) and "hirematrix" in q_lower)
 
     if is_about_hirematrix:
         reply = (
-            f"**HireMatrix AI** is an **Autonomous Campus Placement & Career Intelligence Operating System** "
-            f"built to help college students bridge the gap between classroom academics and high-paying tech placements (Tier-1, Tier-2, Product, and Service companies).\n\n"
-            f"### 🚀 **What HireMatrix Does**:\n"
-            f"1. **AI Placement Predictor & What-If Simulator**: Predicts your placement probability (0-100%) and tier using supervised XGBoost classification with TreeSHAP explainability.\n"
-            f"2. **Aptitude & SVAR Voice Assessment (Phase 19)**: Tests Quantitative/Logical MCQs (PYQs from top companies) followed by SVAR spoken English (sentence repetition & extempore speech with AI pronunciation, fluency scoring, and audio playback).\n"
+            f"I'd be happy to explain! **HireMatrix AI** is an **Autonomous Campus Placement & Career Intelligence Operating System** "
+            f"created to help college students successfully crack top-tier technical campus placements (Product companies, Startups, and Tier-1/Tier-2 recruiters).\n\n"
+            f"### 🚀 **Key Modules on this Platform**:\n"
+            f"1. **AI Placement Predictor & Simulator**: Uses supervised machine learning (XGBoost) and TreeSHAP to calculate your placement probability (0-100%) with What-If simulation sliders.\n"
+            f"2. **Aptitude & SVAR Voice Assessment (Phase 19)**: Tests Quantitative/Logical MCQs followed by an automated SVAR spoken English voice test (sentence repetition & 45s extempore speech with audio recordings for admin audit).\n"
             f"3. **3-Tier Skill Gap Analyzer (Phase 7)**: Benchmarks your skills against 10+ standard tech roles (SDE, DevOps, Data Analyst, etc.) into *Critical*, *Important*, and *Good-to-Have* voids.\n"
-            f"4. **Resume Parser & ATS Auditor (Phase 6)**: Evaluates resumes with spaCy NLP, scores compliance out of 100, and formats bullets using Google's XYZ formula.\n"
-            f"5. **1-Click LinkedIn Pitch Generator (Phase 20)**: Generates high-converting referral requests and recruiter cold outreach pitches.\n"
-            f"6. **Company Interview Cheat Sheets (Phase 18)**: Tactical prep blueprints for Google, Amazon, Microsoft, TCS, Infosys, and more.\n"
-            f"7. **University ERP & Campus Drives (Phase 17)**: Centralized tracking of upcoming company drives, CGPA cutoffs, and eligibility shortlists.\n\n"
-            f"Would you like me to walk you through any specific feature or evaluate your profile?"
+            f"4. **Resume Parser & ATS Auditor (Phase 6)**: NLP engine that checks your resume against ATS standards and formats bullet points using Google's XYZ formula.\n"
+            f"5. **1-Click LinkedIn Pitch Generator (Phase 20)**: Generates high-converting referral requests and cold recruiter outreach messages.\n"
+            f"6. **Company Interview Cheat Sheets (Phase 18)**: Curated interview playbooks for Google, Amazon, Microsoft, TCS, Infosys, and more.\n"
+            f"7. **University ERP & Campus Drives (Phase 17)**: Live eligibility matching and drive tracking for college placement offices.\n\n"
+            f"Which of these features would you like to explore first?"
         )
         actions = [
             "How does the AI Placement Predictor work?",
@@ -96,7 +213,7 @@ def generate_copilot_response(
         ]
 
     # --------------------------------------------------------------------------
-    # 2. ALL FEATURES / TOOLS / WEBPAGE NAVIGATION
+    # 2. ALL FEATURES / TOOLS / 4 PILLARS ON WEBPAGE
     # --------------------------------------------------------------------------
     elif any(
         k in q_lower
@@ -111,28 +228,30 @@ def generate_copilot_response(
             "4 pillars",
             "webpage sections",
             "how to navigate",
+            "platform features",
         ]
     ):
         reply = (
-            f"**HireMatrix AI Platform Architecture — 4 Core Pillars**:\n\n"
+            f"Here is a complete breakdown of the **4 Core Pillars** on HireMatrix:\n\n"
             f"### 📊 **1. Intelligence & ML**\n"
-            f"- **Overview & Telemetry**: Real-time system health, API latency, and unified placement stats.\n"
-            f"- **Placement Predictor**: XGBoost machine learning model calculating your tier and probability with interactive sliders.\n"
-            f"- **Student Profile & Skill Graph**: Academic data, verified LeetCode/GitHub stats, and skill matrices.\n"
-            f"- **Skill Gap Analyzer**: 3-tier taxonomy identifying Critical, Important, and Good-to-have skill gaps.\n\n"
+            f"- **Overview & Telemetry**: Live system health, API response latency, and connectivity status.\n"
+            f"- **Placement Predictor**: ML-powered readiness simulation with interactive What-If sliders.\n"
+            f"- **Student Profile & Skill Graph**: Academic records, verified GitHub & LeetCode scraper, and skill taxonomy.\n"
+            f"- **Skill Gap Analyzer**: 3-tier gap breakdown into Critical, Important, and Good-to-have skills.\n\n"
             f"### 🧠 **2. Assessments & Practice**\n"
-            f"- **Aptitude & SVAR Voice**: Timed Quantitative/Logical MCQs + AI Spoken English speech assessment.\n"
-            f"- **Live AI Mock Interviewer**: Voice-driven technical and behavioral interview simulation.\n"
-            f"- **8-Week Roadmap**: Week-by-week learning schedule customized to your missing skills.\n"
-            f"- **Company Cheat Sheets**: Round-by-round interview breakdowns for top tech employers.\n\n"
+            f"- **Aptitude & SVAR Voice**: Timed Quantitative/Logical MCQs + AI Spoken English speech evaluation.\n"
+            f"- **Live AI Mock Interviewer**: Voice-driven technical and behavioral interview practice.\n"
+            f"- **8-Week Roadmap**: Personalized week-by-week study milestones.\n"
+            f"- **Company Cheat Sheets**: Round-by-round interview guides for top employers.\n\n"
             f"### 💼 **3. Placements & Outreach**\n"
-            f"- **University ERP & Drives**: Campus drive management, student eligibility checks, and deadlines.\n"
-            f"- **Campus Jobs Matcher**: Semantic matching of student profiles to industry roles.\n"
-            f"- **LinkedIn Pitch Generator**: 1-click tailored referral requests for alumni and recruiters.\n"
-            f"- **Resume Parser & ATS Auditor**: NLP resume scoring and keyword extraction.\n\n"
+            f"- **University ERP & Drives**: Campus drive listings, eligibility cutoffs, and shortlists.\n"
+            f"- **Campus Jobs Matcher**: Semantic matching of student profiles to industry openings.\n"
+            f"- **LinkedIn Pitch Generator**: 1-click customized cold referral requests.\n"
+            f"- **Resume Parser & ATS Auditor**: Deep NLP resume scoring and keyword extraction.\n\n"
             f"### 🛡️ **4. Admin & Governance**\n"
-            f"- **Admin Command Center**: Roster management, drive creation, and student voice dossier review.\n"
-            f"- **Product Tour**: Interactive tour of platform capabilities without login."
+            f"- **Admin Command Center**: Institutional dashboard for faculty to view student test records and listen to recorded voice audios.\n"
+            f"- **Product Tour**: Guided demo video walkthrough.\n\n"
+            f"You can switch between any of these pillars using the navigation bar at the top!"
         )
         actions = [
             "Tell me about the SVAR Voice test",
@@ -142,7 +261,7 @@ def generate_copilot_response(
         ]
 
     # --------------------------------------------------------------------------
-    # 3. HOW TO GET STARTED / HOW TO USE
+    # 3. HOW TO GET STARTED / USER GUIDE
     # --------------------------------------------------------------------------
     elif any(
         k in q_lower
@@ -159,14 +278,14 @@ def generate_copilot_response(
         ]
     ):
         reply = (
-            f"### 🎯 **Getting Started with HireMatrix AI (Step-by-Step)**:\n\n"
-            f"1. **Sign In or Register**: Click **'Get Started (Sign In / Register)'** at the top right. You can register with your username, email, and password, or click **'Demo Student'** for instant preview.\n"
-            f"2. **Complete Your Profile**: In **'Student Profile & Skill Graph'**, input your CGPA, branch, target role, and connect your GitHub/LeetCode usernames.\n"
-            f"3. **Run AI Placement Predictor**: Navigate to **'AI Placement Predictor'** to see your ML-calculated probability (e.g. {readiness_pct}%) and use the What-If sliders to simulate improvements.\n"
-            f"4. **Analyze Skill Voids**: Open **'3-Tier Skill Gap'** to see what technologies you are missing for {target_role}.\n"
-            f"5. **Take the Aptitude & SVAR Voice Test**: Test your quantitative speed and practice spoken English sentence repetition & extempore speech.\n"
-            f"6. **Audit Your Resume**: Upload your PDF/DOCX resume in **'Resume Parser & ATS'** for a compliance score out of 100.\n"
-            f"7. **Reach Out for Referrals**: Use **'LinkedIn Referral Pitch Generator'** to draft high-converting messages for recruiters."
+            f"Getting started on HireMatrix is simple and takes less than 2 minutes! Here is the recommended path:\n\n"
+            f"1. **Sign In or Try Demo**: Click **'Get Started'** at the top right. You can register your account or click **'Demo Student'** for an instant preview.\n"
+            f"2. **Check Your Placement Probability**: Navigate to the **'AI Placement Predictor'** to see your ML readiness percentage and test What-If scenarios.\n"
+            f"3. **Take the Aptitude & SVAR Voice Assessment**: In the *Assessments & Practice* tab, test your quantitative speed and practice speaking English sentences.\n"
+            f"4. **Audit Your Resume**: Upload your resume to the **'Resume Parser & ATS'** tab to check your ATS score out of 100.\n"
+            f"5. **Follow Your 8-Week Roadmap**: Work through your custom weekly milestones to close your critical skill voids.\n"
+            f"6. **Reach Out for Referrals**: Generate 1-click customized LinkedIn messages in the *Placements & Outreach* tab.\n\n"
+            f"Would you like me to guide you to any specific section right now?"
         )
         actions = [
             "Take the Aptitude & SVAR test",
@@ -195,13 +314,13 @@ def generate_copilot_response(
         ]
     ):
         reply = (
-            f"### 🎙️ **Aptitude & SVAR Spoken English Voice Assessment (Phase 19)**:\n\n"
-            f"HireMatrix includes an automated communication assessment modeled after enterprise screening standards (like Pearson Versant and SVAR tests used by TCS, Infosys, and Cognizant):\n\n"
-            f"1. **Timed Quantitative & Logical MCQs**: Section 1 tests speed on company PYQ questions across Percentages, Ratios, Number Series, and Chart Interpretation.\n"
-            f"2. **Sentence Repetition (Voice AI)**: Listen to a clear native English audio sentence, memorize it, and repeat it into your microphone. The AI evaluates word accuracy, memory retention, and pronunciation.\n"
-            f"3. **45-Second Extempore Speech**: You receive an impromptu technical prompt (e.g. *'Describe a challenging software project you built'*). You speak for 30-45 seconds, and the AI measures Speaking Rate (WPM), Vocabulary Richness, and CEFR proficiency band (A1 through C2).\n"
-            f"4. **Voice Recording Saved for Admin Audit**: Your spoken audio is recorded and encoded natively (MP4/WebM) so placement coordinators and admins can review your playback in the Admin Dossier.\n\n"
-            f"Would you like to practice a sample SVAR sentence right now?"
+            f"I'd love to explain that! Our **Aptitude & SVAR Voice Assessment** (Phase 19) is modeled after the standardized communication screenings used by major tech employers like TCS, Infosys, and Cognizant.\n\n"
+            f"### 🎙️ **How It Works**:\n"
+            f"1. **Section 1: Timed Quantitative & Logical MCQs**: Covers high-frequency campus placement PYQs (Percentages, Ratios, Number Series, and Chart Interpretation).\n"
+            f"2. **Section 2: SVAR Sentence Repetition**: The platform plays a clear English audio prompt. You listen carefully and repeat it into your microphone. Our speech engine calculates your word accuracy, memory retention, and pronunciation clarity.\n"
+            f"3. **Section 2: 45-Second Extempore Speech**: You get a real-world prompt (e.g. *'Describe a challenging software project you worked on'*). You speak for 30-45 seconds, and the AI evaluates your Words-Per-Minute (WPM), vocabulary diversity, and CEFR rating (A1 to C2).\n"
+            f"4. **Audio Saved for Review**: Your spoken audio is securely recorded so college placement coordinators can inspect and replay it inside the Admin Dossier.\n\n"
+            f"You can launch it anytime by clicking **'Aptitude & SVAR Voice Assessment'** under the Assessments pillar!"
         )
         actions = [
             "Give me a sample SVAR test sentence",
@@ -228,12 +347,13 @@ def generate_copilot_response(
         ]
     ):
         reply = (
-            f"### ⚡ **AI Placement Predictor & What-If Simulator (Phase 5)**:\n\n"
-            f"Our predictive engine uses a supervised **XGBoost ensemble classifier** trained on campus placement records to predict candidate readiness and recruitment tier:\n\n"
-            f"- **Evaluated Factors**: Academic CGPA ({cgpa}), Active Backlogs ({backlogs}), Verified Coding Benchmark ({coding_score}/100), Internship Depth, Certifications, and Project Complexity.\n"
-            f"- **Explainable AI (TreeSHAP)**: We don't just output a black-box percentage — SHAP feature attributions show *exactly* which factors are boosting your score (e.g. high CGPA) and which are hurting it (e.g. missing Docker or low LeetCode count).\n"
-            f"- **Interactive What-If Simulation**: You can slide your CGPA from {cgpa} to 8.5 or add an internship to see your placement probability change in real time.\n\n"
-            f"Your current estimated readiness is **{readiness_pct}%** for the **{target_role}** track."
+            f"Great question! The **AI Placement Predictor** (Phase 5) is one of HireMatrix's core innovations.\n\n"
+            f"### ⚡ **How the Machine Learning Engine Works**:\n"
+            f"- **Supervised XGBoost Ensemble**: We trained an ensemble model on verified campus recruitment datasets to predict both your placement probability (0-100%) and your expected hiring tier (Tier 1 Product, Tier 2 Tech, or Mass Recruiter).\n"
+            f"- **Weighted Feature Analysis**: It evaluates your academic CGPA ({cgpa}), active backlogs ({backlogs}), verified coding benchmark ({coding_score}/100), internship experience, and project depth.\n"
+            f"- **TreeSHAP Explainability**: Unlike black-box algorithms, HireMatrix shows you exactly *why* your score is at **{readiness_pct}%**. You can see how much each positive factor (like high coding score) adds, and where you're losing points.\n"
+            f"- **Interactive What-If Simulator**: You can move interactive sliders (e.g., *'What if my CGPA increases to 8.5?'* or *'What if I complete a 3-month internship?'*) and watch your probability update dynamically.\n\n"
+            f"Would you like advice on how to raise your current readiness score into the 90%+ bracket?"
         )
         actions = [
             f"How can I boost my readiness from {readiness_pct}% to 90%+?",
@@ -242,7 +362,7 @@ def generate_copilot_response(
         ]
 
     # --------------------------------------------------------------------------
-    # 6. SKILL GAP ANALYZER & 10+ ROLES
+    # 6. SKILL GAP ANALYZER & ROLES
     # --------------------------------------------------------------------------
     elif any(
         k in q_lower
@@ -265,12 +385,13 @@ def generate_copilot_response(
             else "System Architecture, Advanced SQL"
         )
         reply = (
-            f"### 🎯 **3-Tier Skill Gap & Role Benchmarking (Phase 7)**:\n\n"
-            f"HireMatrix benchmarks your verified skill graph against standard hiring criteria across 10+ tech roles (Software Development Engineer, Frontend, Backend, DevOps, Data Analyst, ML Engineer, Cloud Architect, etc.):\n\n"
-            f"1. **Tier 1 (Critical Skills)**: Hard prerequisites for passing technical rounds. Your gaps: `{critical_str}`.\n"
-            f"2. **Tier 2 (Important Skills)**: Technologies that set top 10% candidates apart in interviews (e.g. Docker, Redis, CI/CD).\n"
-            f"3. **Tier 3 (Good-to-Have)**: Bonus skills like Kubernetes, GraphQL, or Kafka.\n\n"
-            f"Bridging Tier 1 Critical skills yields the fastest boost in both your ML readiness score and recruiter shortlisting rate."
+            f"Here is how our **3-Tier Skill Gap Engine** (Phase 7) helps you target your preparation:\n\n"
+            f"Instead of giving generic study advice, HireMatrix benchmarks your verified skill graph against the exact hiring requirements for **10+ tech roles** (SDE, Frontend, Backend, DevOps, Data Analyst, ML Engineer, Cloud Architect, QA, etc.).\n\n"
+            f"### 🎯 **The 3 Tiers**:\n"
+            f"1. **Tier 1 (Critical Skills)**: Hard technical prerequisites. Without these, resumes are filtered out automatically. For your target track ({target_role}), key gaps include: `{critical_str}`.\n"
+            f"2. **Tier 2 (Important Skills)**: Technologies that set top 10% candidates apart during technical interviews (e.g. Docker, Redis, CI/CD pipelines).\n"
+            f"3. **Tier 3 (Good-to-Have)**: Bonus proficiencies that help in offer negotiation (e.g. Kafka, Kubernetes, GraphQL).\n\n"
+            f"Closing your Tier 1 Critical skills is the single highest-leverage action you can take to increase your placement probability."
         )
         actions = [
             f"Study plan for {missing_critical[0] if missing_critical else 'System Design'}",
@@ -286,14 +407,14 @@ def generate_copilot_response(
         for k in ["resume", "ats", "format", "bullet", "cv", "parser", "spacy", "xyz"]
     ):
         reply = (
-            f"### 📄 **Resume Parser & ATS Auditor (Phase 6)**:\n\n"
-            f"Your current application ATS Score is **{ats_score}/100**.\n\n"
-            f"HireMatrix uses **spaCy NLP** and PyMuPDF to parse candidate resumes, extract tech entities, and check ATS compliance against industry standards:\n\n"
-            f"**3 Proven Tweaks to Guarantee 90+ ATS Score**:\n"
-            f"1. **The Google XYZ Formula**: Write bullet points as: *Accomplished [X] as measured by [Y], by doing [Z]*.\n"
-            f"   * *Example*: 'Built async FastAPI endpoints handling 1,200 req/min, decreasing latency by 34% through Redis caching.'\n"
-            f"2. **Role Keyword Density**: Ensure your Skills section explicitly mentions: `{', '.join(missing_critical[:2]) if missing_critical else 'FastAPI, Docker, PostgreSQL'}`.\n"
-            f"3. **Format Hygiene**: Single-column layout, standard headers (`Education`, `Experience`, `Projects`, `Technical Skills`), zero tables/multi-columns, and clear text encoding."
+            f"Sure! Our **Resume Parser & ATS Auditor** (Phase 6) uses **spaCy NLP** to inspect candidate resumes against the exact criteria that corporate Applicant Tracking Systems (ATS) look for.\n\n"
+            f"### 📄 **How to Guarantee a 90+ ATS Score**:\n"
+            f"1. **Use Google's XYZ Formula**: Frame every project and experience bullet point as:\n"
+            f"   > *Accomplished [X], as measured by [Y], by doing [Z].*\n"
+            f"   * *Example*: 'Built async FastAPI endpoints handling 1,200 req/min, decreasing latency by 34% through Redis connection pooling.'\n"
+            f"2. **Keyword Density**: Ensure keywords for your target role `{target_role}` appear naturally in your technical skills and project descriptions (e.g. `{', '.join(missing_critical[:2]) if missing_critical else 'FastAPI, Docker, PostgreSQL'}`).\n"
+            f"3. **Clean Formatting**: Use standard headers (`Education`, `Experience`, `Projects`, `Technical Skills`), a clean single-column layout, and standard PDF/DOCX formats without multi-column tables.\n\n"
+            f"Your current application ATS Score is **{ats_score}/100**. You can upload an updated resume anytime in the *Resume Parser & ATS* tab for a fresh audit!"
         )
         actions = [
             "Generate sample XYZ project bullet points",
@@ -319,13 +440,12 @@ def generate_copilot_response(
         ]
     ):
         reply = (
-            f"### 🚀 **1-Click LinkedIn Referral Pitch Generator (Phase 20)**:\n\n"
-            f"Reaching out to alumni and hiring managers on LinkedIn is the fastest way to bypass automated ATS filters and secure direct interview loops.\n\n"
-            f"**What the Pitch Generator Produces**:\n"
-            f"1. **Alumni Warm Connection**: Respectful, concise messages connecting over shared university roots and showing genuine project interest.\n"
-            f"2. **Direct Job Referral Request**: Concise pitch with Job ID, matching tech stack, and clear reason why you're a high-signal candidate.\n"
-            f"3. **Recruiter / Engineering Manager Outreach**: Highlights your core metrics (CGPA, LeetCode rating, deployed full-stack capstone).\n\n"
-            f"You can access this anytime under the **'Placements & Outreach'** pillar on the navigation bar."
+            f"Reaching out for referrals on LinkedIn is one of the most effective ways to bypass crowded job portals! Our **1-Click LinkedIn Pitch Generator** (Phase 20) helps you craft customized, high-converting messages.\n\n"
+            f"### 📨 **3 High-Impact Message Templates Available**:\n"
+            f"1. **Alumni Warm Connection**: Connects respectfully over shared college roots, references a shared interest or project, and asks for 10 minutes of guidance.\n"
+            f"2. **Direct Job Referral Request**: Includes the exact Job ID, highlights your matching tech stack, and links your verified GitHub/portfolio with zero fluff.\n"
+            f"3. **Hiring Manager & Recruiter Pitch**: Summarizes your top metrics (CGPA, LeetCode problem count, full-stack deployed projects) in 3 concise bullet points.\n\n"
+            f"You can find this tool under the **'Placements & Outreach'** pillar on the top navigation bar!"
         )
         actions = [
             "Generate sample LinkedIn referral message",
@@ -354,12 +474,12 @@ def generate_copilot_response(
         ]
     ):
         reply = (
-            f"### 🏢 **Tier-1 Company Interview Intelligence (Phase 18)**:\n\n"
-            f"HireMatrix provides curated, battle-tested interview dossiers for major campus recruiters:\n\n"
-            f"- **Product Giants (Google, Microsoft, Amazon)**: Focus heavily on DSA (Binary Trees, DP, Graphs) and Amazon 14 Leadership Principles.\n"
-            f"- **FinTech & High Frequency (Goldman Sachs, Morgan Stanley)**: Emphasize OOP concepts, Java/C++ memory models, and Quant Aptitude.\n"
-            f"- **Mass & IT Leaders (TCS Ninja/Digital, Infosys, Accenture)**: Feature heavy online assessment screening (Aptitude, Verbal SVAR tests, and fundamental coding in Python/Java).\n\n"
-            f"Check out **'Company Prep Cheat Sheets'** in the Assessments pillar to review specific round breakdowns and recurring questions."
+            f"I can certainly help you with that! In our **Company Prep Cheat Sheets** (Phase 18), we provide tactical interview guides for top campus recruiters:\n\n"
+            f"### 🏢 **Interview Patterns by Company Type**:\n"
+            f"- **Product Giants (Google, Microsoft, Amazon)**: Heavy focus on Data Structures (Trees, Dynamic Programming, Graphs) and Amazon's 14 Leadership Principles (evaluated via the STAR method).\n"
+            f"- **FinTech & Investment Banks (Goldman Sachs, Morgan Stanley)**: Emphasize OOP fundamentals, multi-threading in Java/C++, and quantitative aptitude.\n"
+            f"- **IT & Mass Recruiters (TCS Ninja/Digital, Infosys, Accenture)**: Filter candidates via Online Assessments with strict Quantitative Aptitude, SVAR Verbal English tests, and core coding questions.\n\n"
+            f"You can open **'Company Prep Cheat Sheets'** in the Assessments pillar to see round breakdowns and common coding patterns for each company."
         )
         actions = [
             "TCS Digital interview pattern",
@@ -384,11 +504,12 @@ def generate_copilot_response(
         ]
     ):
         reply = (
-            f"### 🏛️ **University ERP & Campus Drives (Phase 17)**:\n\n"
-            f"The ERP module bridges students and college Training & Placement Offices (TPOs):\n\n"
-            f"- **Live Drive Listings**: See visiting companies, salary packages (LPA), minimum CGPA cutoffs, and deadlines.\n"
-            f"- **Automated Eligibility Check**: Instant green/amber/red indicators based on your CGPA ({cgpa}) and active backlogs ({backlogs}).\n"
-            f"- **Batch Roster Import**: TPOs can import CSV rosters and manage candidate applications seamlessly."
+            f"The **University ERP & Campus Drives** module (Phase 17) connects students directly with their college Training & Placement Office (TPO):\n\n"
+            f"### 🏛️ **What You Can Do**:\n"
+            f"- **Track Active Drives**: View visiting companies, job roles, CTC packages (in LPA), application deadlines, and job descriptions.\n"
+            f"- **Automated Eligibility Checks**: The system compares your CGPA ({cgpa}) and active backlogs ({backlogs}) against company requirements, giving you instant green/amber/red indicators.\n"
+            f"- **TPO Management**: Placement coordinators can post drives, export student shortlists, and manage batch eligibility in one place.\n\n"
+            f"You can check active drives anytime in the *Placements & Outreach* tab!"
         )
         actions = [
             f"Which companies accept {cgpa} CGPA with {backlogs} backlogs?",
@@ -412,17 +533,18 @@ def generate_copilot_response(
         ]
     ):
         reply = (
-            f"### 🛡️ **Admin Command Center & Governance (Phase 11 & 19)**:\n\n"
-            f"The Admin Command Center is reserved for college administrators, placement officers, and faculty:\n\n"
-            f"- **Cohort Analytics**: Real-time charts showing student CGPA distribution, placement readiness tiers, and skill gaps.\n"
-            f"- **Student Directory**: Inspect individual student records, update placement status, or reset credentials.\n"
-            f"- **Drive Management**: Post new recruitment drives, set CGPA cutoffs, and monitor applicant cohorts.\n"
-            f"- **Assessment Dossier & Audio Review**: Review every candidate's aptitude score, SVAR verbal pronunciation, and play their live recorded audio files."
+            f"The **Admin Command Center** (Phase 11 & 19) is designed for university administrators, placement officers, and faculty members.\n\n"
+            f"### 🛡️ **Admin Capabilities**:\n"
+            f"- **Cohort Performance Telemetry**: Real-time graphs showing student CGPA distribution, readiness tiers, and skill gaps across departments.\n"
+            f"- **Student Directory**: Inspect individual student records, update placement status, and manage student accounts.\n"
+            f"- **Campus Drive Management**: Post new drives, configure CGPA cutoffs, and monitor application queues.\n"
+            f"- **Assessment Dossier & Audio Player**: Review candidate aptitude test scores, AI SVAR verbal grades, and **listen directly to the candidate's recorded audio files**.\n\n"
+            f"Admin access requires logging in with authorized administrator credentials."
         )
         actions = [
             "How to log in as admin?",
-            "What is the admin email and credentials?",
             "Review institutional assessment telemetry",
+            "What is HireMatrix AI?",
         ]
 
     # --------------------------------------------------------------------------
@@ -443,11 +565,13 @@ def generate_copilot_response(
         ]
     ):
         reply = (
-            f"### 🔐 **HireMatrix Access & Account Security**:\n\n"
-            f"- **Sign In**: You can sign in using either your **Email Address** OR your **Username** with your secure password.\n"
-            f"- **Create Account**: Register in seconds with a unique Username, Email, and Password. If an account already exists with that email, the system safely alerts you.\n"
-            f"- **Forgot Password**: Click *'Forgot password?'* on the Sign In modal. Enter your email, and a **6-digit verification OTP** will be dispatched to reset your password with re-entry confirmation.\n"
-            f"- **Quick Preview**: Want to explore without creating an account? Click **'Demo Student'** in the login modal to test full candidate features immediately."
+            f"Here is how account management and authentication work on HireMatrix:\n\n"
+            f"### 🔐 **Authentication Options**:\n"
+            f"- **Sign In**: You can sign in using either your **Email Address** OR your **Username** with your password.\n"
+            f"- **Create Account**: Register with your username, email, and password. If your email already exists, the system will notify you so you don't create duplicate accounts.\n"
+            f"- **Forgot Password**: Click *'Forgot password?'* on the login modal. Enter your email, and a **6-digit verification OTP** will be dispatched to reset your password with re-entry confirmation.\n"
+            f"- **Quick Preview (Demo Student)**: If you just want to explore the platform without creating an account, click **'Demo Student'** in the modal for instant candidate access!\n\n"
+            f"Would you like me to open the Sign In modal for you?"
         )
         actions = [
             "Take me to Sign In / Register",
@@ -474,7 +598,8 @@ def generate_copilot_response(
         ]
     ):
         reply = (
-            f"### 🛠️ **HireMatrix AI Technology Stack & Architecture**:\n\n"
+            f"HireMatrix is engineered using modern, high-performance cloud and AI technologies:\n\n"
+            f"### 🛠️ **Full Technology Stack**:\n"
             f"- **Backend**: FastAPI 0.110+ (Python 3.14 async ASGI), Pydantic v2 validation.\n"
             f"- **Database**: MongoDB Motor (AsyncIO driver) with local JSON snapshot persistence fallback.\n"
             f"- **Machine Learning**: Supervised XGBoost ensemble model, Scikit-Learn pipelines, TreeSHAP explainability.\n"
@@ -505,7 +630,7 @@ def generate_copilot_response(
     ):
         reply = (
             f"**HireMatrix AI** was engineered and designed by **Suzal Naudiyal** and the HireMatrix core team.\n\n"
-            f"The platform was created to provide a complete, autonomous career operating system for computer science and engineering students, combining ML placement prediction with real-time AI voice testing and recruiter outreach."
+            f"The goal of the project is to provide a complete, autonomous career operating system for computer science and engineering students, combining ML placement prediction with real-time AI voice testing and recruiter outreach."
         )
         actions = [
             "What is HireMatrix AI?",
@@ -535,12 +660,12 @@ def generate_copilot_response(
             if missing_critical
             else "System Architecture, Advanced SQL"
         )
+        name_clause = f", {first_name}," if first_name != "there" else ""
         reply = (
-            f"Hello **{first_name}**! Your current placement readiness stands at **{readiness_pct}%** for the **{target_role}** track.\n\n"
-            f"Here is your personalized roadmap to boost your readiness past **90%+**:\n\n"
-            f"1. **Bridge Critical Skill Voids**: Our 3-tier gap analysis detected gaps in: `{critical_str}`. Dedicating 2 hours daily to these unlocks the highest SHAP feature attribution.\n"
-            f"2. **Calibrate Coding Assessment**: Your current verified coding benchmark is **{coding_score}/100**. Aim to solve 15 Medium DSA problems on LeetCode focusing on Dynamic Programming & Graphs.\n"
-            f"3. **Deploy a Production-Tier Capstone**: Academic evaluators and recruiters prioritize end-to-end deployed projects with Docker and CI/CD over generic tutorials.\n\n"
+            f"To boost your placement readiness score{name_clause} into the top **90%+** bracket, here is the exact 3-step action plan based on your current metrics:\n\n"
+            f"1. **Bridge Critical Skill Voids**: Your 3-tier gap analysis detected missing prerequisites in: `{critical_str}`. Dedicating 2 hours daily to these unlocks the highest SHAP feature attribution in our ML model.\n"
+            f"2. **Calibrate Verified Coding**: Your coding benchmark currently stands at **{coding_score}/100**. Aim to solve 15 Medium DSA problems on LeetCode focusing on Dynamic Programming and Graphs.\n"
+            f"3. **Deploy an End-to-End Capstone Project**: Recruiters and placement cells heavily reward deployed full-stack applications with Docker, CI/CD, and real databases over generic tutorials.\n\n"
             f"Would you like me to generate a tailored 14-day study sprint for `{missing_critical[0] if missing_critical else 'System Design'}`?"
         )
         actions = [
@@ -558,18 +683,17 @@ def generate_copilot_response(
     ):
         if backlogs > 0:
             reply = (
-                f"**Addressing Backlogs in Campus Interviews (Script for {first_name})**:\n\n"
-                f"You currently have **{backlogs} active backlog(s)** with a CGPA of **{cgpa}**. Here is how you explain this confidently to HR without raising red flags:\n\n"
-                f"> *\"During my earlier semesters, I took on a steep learning curve balancing technical fundamentals with academics. While that led to a temporary setback in that subject, I took ownership: I established a disciplined schedule, strengthened my core problem-solving, and have cleared my preparation modules. My focus now is 100% on delivery.\"*\n\n"
-                f"**Strategic Actions**:\n"
-                f"- Never blame faculty or external circumstances.\n"
-                f"- Pivot immediately to what you learned and your practical skills (e.g., your projects and coding rating).\n"
-                f"- Target Tier-2 product and high-growth startup drives where CGPA criteria are flexible (min 6.5–7.0)."
+                f"Handling backlogs in campus interviews is all about ownership and narrative control. Here is a proven script you can adapt:\n\n"
+                f"> *\"During my earlier semesters, I took on a steep learning curve balancing technical fundamentals with academics. While that led to a temporary setback in that subject, I took full ownership: I established a disciplined schedule, strengthened my core problem-solving, and cleared my preparation modules. My focus now is 100% on delivery.\"*\n\n"
+                f"### 💡 **Key Rules for HR Rounds**:\n"
+                f"- Never blame teachers or university circumstances.\n"
+                f"- Pivot immediately to what you learned and your practical skills (projects, LeetCode rating, certifications).\n"
+                f"- Target product startups and tech companies where skills take priority over strict 7.5+ CGPA cutoffs."
             )
         else:
             reply = (
-                f"Great news, **{first_name}**! You have **0 active backlogs** with a solid CGPA of **{cgpa}**.\n\n"
-                f"For campus recruitment drives, you meet the academic cutoff for over **92%** of visiting companies (including Tier 1 Product and Mass recruiters). Your primary focus should be excelling in technical coding rounds and mock interviews."
+                f"You have **0 active backlogs** with a solid CGPA of **{cgpa}**! That means you already qualify for over **92%** of visiting campus companies.\n\n"
+                f"Your primary focus should now be excelling in the technical coding rounds and practicing your verbal communication in our SVAR Voice module."
             )
         actions = [
             "What companies accept CGPA between 7.0 and 8.0?",
@@ -595,14 +719,13 @@ def generate_copilot_response(
         ]
     ):
         reply = (
-            f"**Targeted DSA Blueprint for {branch} Students**:\n\n"
-            f"Currently you have **{total_solved} problems solved** on LeetCode with an assessment coding score of **{coding_score}/100**.\n\n"
-            f"**High-Yield Campus Placement Priority Order**:\n"
-            f"1. **Arrays & Two Pointers** (Sliding Window, Prefix Sums) — *Appears in 85% of OA rounds*\n"
-            f"2. **Hashing & HashMaps** (Subarray Sum equals K, Group Anagrams)\n"
-            f"3. **Trees & Binary Search** (Level Order Traversal, Lowest Common Ancestor)\n"
-            f"4. **Dynamic Programming Basics** (0/1 Knapsack, Longest Common Subsequence)\n\n"
-            f"💡 *Pro-Tip*: Focus on **LeetCode Mediums**. Over 75% of campus technical interview questions are standard Medium patterns, not Hards."
+            f"Here is your targeted **Data Structures & Algorithms (DSA) Blueprint** for campus placements:\n\n"
+            f"### 🏆 **High-Yield Placement Priority Order**:\n"
+            f"1. **Arrays & Two Pointers** (Sliding Window, Prefix Sums) — *Appears in over 85% of online assessments (OAs)*.\n"
+            f"2. **Hashing & HashMaps** (Subarray Sum equals K, Group Anagrams).\n"
+            f"3. **Trees & Binary Search** (Level Order Traversal, Lowest Common Ancestor).\n"
+            f"4. **Dynamic Programming Basics** (0/1 Knapsack, Longest Common Subsequence).\n\n"
+            f"💡 *Pro-Tip*: Focus on **LeetCode Mediums**. Over 75% of campus technical interview questions are standard Medium patterns, not Hards. Consistency (2 problems/day) beats cramming."
         )
         actions = [
             "Give me 5 essential Tree interview questions",
@@ -611,28 +734,53 @@ def generate_copilot_response(
         ]
 
     # --------------------------------------------------------------------------
-    # 18. GENERAL SMART FALLBACK (HIGH-SIGNAL RESPONSE)
+    # 18. OFF-TOPIC BOUNDARY CHECK
     # --------------------------------------------------------------------------
-    else:
-        critical_hint = (
-            f"your missing skills in `{missing_critical[0]}`"
-            if missing_critical
-            else "optimizing your coding score"
-        )
+    elif any(
+        k in q_lower
+        for k in [
+            "recipe",
+            "cook",
+            "movie",
+            "cricket",
+            "football",
+            "song",
+            "weather",
+            "capital of",
+            "joke",
+            "politics",
+            "crypto",
+            "bitcoin",
+            "president",
+        ]
+    ):
         reply = (
-            f"Hello **{first_name}**! I am your **HireMatrix Career & Platform Copilot**, connected directly to our campus placement intelligence system.\n\n"
-            f"### 💡 **How I Can Assist You**:\n"
-            f"- **Platform Knowledge**: Ask me anything about HireMatrix features (*What is HireMatrix?*, *How to use the SVAR voice test?*, *How does the ML placement predictor work?*).\n"
-            f"- **Placement Readiness**: Inquire about boosting your readiness past 90%, handling backlogs, or improving your coding scores.\n"
-            f"- **Resume & Outreach**: Get ATS resume tips (Google XYZ format) and 1-click LinkedIn referral message templates.\n\n"
-            f"**Your Profile Snapshot**: {cgpa} CGPA • {backlogs} backlogs • {readiness_pct}% ML Readiness ({target_role}).\n\n"
-            f"What would you like to explore?"
+            f"I appreciate you asking! But as your **HireMatrix Support Assistant**, I specialize exclusively in the **HireMatrix AI platform** and campus placement preparation (such as SVAR voice tests, ML readiness scores, ATS resumes, and technical interviews). 😊\n\n"
+            f"How can I help you with your placement preparation or our platform features today?"
         )
         actions = [
-            "What is HireMatrix?",
+            "What is HireMatrix AI?",
             "How does the SVAR Voice test work?",
-            f"How to improve readiness for {target_role}?",
-            "Show ATS resume bullet formula",
+            "How to boost my readiness score past 90%?",
+            "Show all features on this webpage",
+        ]
+
+    # --------------------------------------------------------------------------
+    # 19. GENERAL HELPFUL CUSTOMER-CARE FALLBACK
+    # --------------------------------------------------------------------------
+    else:
+        reply = (
+            f"I'm here to help! As your **HireMatrix Support Assistant**, I can assist you with any part of our platform or your campus placement journey:\n\n"
+            f"- **Platform Inquiries**: Ask how the **AI Placement Predictor**, **SVAR Voice tests**, **Resume ATS scanner**, or **ERP Drives** work.\n"
+            f"- **Placement Advisory**: Get customized advice on boosting your readiness score, handling interview backlogs, or practicing LeetCode Mediums.\n"
+            f"- **Referrals & Outreach**: Learn how to use our **1-Click LinkedIn Pitch Generator** to reach recruiters directly.\n\n"
+            f"Could you tell me a bit more about what you're looking for, or choose from one of the quick options below?"
+        )
+        actions = [
+            "What is HireMatrix AI?",
+            "How does the SVAR Voice test work?",
+            "How to improve my placement readiness?",
+            "Show all features on this webpage",
         ]
 
     return {
@@ -640,8 +788,6 @@ def generate_copilot_response(
         "suggested_actions": actions,
         "context_used": {
             "name": name,
-            "cgpa": cgpa,
-            "backlogs": backlogs,
             "readiness_percentage": readiness_pct,
             "target_role": target_role,
         },

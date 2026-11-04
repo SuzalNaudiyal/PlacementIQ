@@ -228,12 +228,12 @@
 .back-to-top-btn {
   position: fixed;
   bottom: 24px;
-  right: 185px; /* Sits cleanly next to the live AI Career Copilot pill */
+  right: 88px; /* Sits cleanly next to the compact circular chatbot logo button */
   z-index: 40;
 }
 @media (max-width: 640px) {
   .back-to-top-btn {
-    bottom: 74px;
-    right: 16px;
+    bottom: 84px;
+    right: 20px;
   }
 }

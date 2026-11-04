@@ -87,6 +87,7 @@ async def chat_with_career_copilot(
         skill_gap_summary=skill_gap_summary,
         prediction_summary=prediction_summary,
         resume_summary=resume_summary,
+        history=payload.history,
     )
 
     return CopilotChatResponse(**copilot_result)
