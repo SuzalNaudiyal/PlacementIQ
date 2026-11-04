@@ -23,6 +23,11 @@ export const erpService = {
     return res.data;
   },
 
+  async updateDrive(driveId: string, data: Partial<CreatePlacementDrivePayload>): Promise<PlacementDrive> {
+    const res = await apiClient.put<PlacementDrive>(`/erp/drives/${driveId}`, data);
+    return res.data;
+  },
+
   async deleteDrive(driveId: string): Promise<{ status: string; message: string }> {
     const res = await apiClient.delete<{ status: string; message: string }>(`/erp/drives/${driveId}`);
     return res.data;

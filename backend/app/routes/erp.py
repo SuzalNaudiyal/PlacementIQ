@@ -28,6 +28,7 @@ from backend.app.erp.engine import (
 from backend.app.schemas.erp import (
     RosterIngestionReport,
     CreatePlacementDriveRequest,
+    UpdatePlacementDriveRequest,
     PlacementDriveOut,
     StudentDriveEligibilityOut,
     ApplyDriveRequest,
@@ -571,6 +572,54 @@ async def get_drive_eligible_candidates(
         "total_eligible_count": len(candidates),
         "candidates": candidates,
     }
+
+
+@router.put("/drives/{drive_id}", response_model=PlacementDriveOut)
+async def update_placement_drive(
+    drive_id: str,
+    payload: UpdatePlacementDriveRequest,
+    current_user: Dict[str, Any] = Depends(get_current_user),
+):
+    """
+    Updates an existing campus recruitment drive and its eligibility criteria.
+    Allows DCPD / TPO admins to adjust CGPA cutoffs, backlogs, branch eligibility, CTC, or deadlines.
+    """
+    db = get_database()
+    drive = await db.placement_drives.find_one({"drive_id": drive_id})
+    if not drive:
+        raise HTTPException(status_code=404, detail="Placement drive not found.")
+
+    update_dict = payload.model_dump(exclude_unset=True)
+    if update_dict:
+        update_dict["updated_at"] = datetime.now(timezone.utc)
+        await db.placement_drives.update_one({"drive_id": drive_id}, {"$set": update_dict})
+        await persist_db_if_fallback()
+
+    updated_drive = await db.placement_drives.find_one({"drive_id": drive_id})
+
+    # Recalculate eligible student count with revised criteria
+    all_students = await db.students.find({}).to_list(length=500)
+    eligible_count = sum(1 for s in all_students if check_student_drive_eligibility(s, updated_drive)[0])
+    app_count = await db.placement_applications.count_documents({"drive_id": drive_id})
+
+    return PlacementDriveOut(
+        drive_id=drive_id,
+        company_name=updated_drive.get("company_name", ""),
+        job_role=updated_drive.get("job_role", ""),
+        ctc_lpa=float(updated_drive.get("ctc_lpa", 10.0)),
+        location=updated_drive.get("location", "Bangalore, India"),
+        min_cgpa=float(updated_drive.get("min_cgpa", 7.0)),
+        max_backlogs=int(updated_drive.get("max_backlogs", 0)),
+        eligible_branches=updated_drive.get("eligible_branches", ["Computer Science"]),
+        min_coding_score=float(updated_drive.get("min_coding_score", 60.0)),
+        application_deadline=str(updated_drive.get("application_deadline", "")),
+        drive_date=str(updated_drive.get("drive_date", "")),
+        description=updated_drive.get("description"),
+        status=updated_drive.get("status", "Active"),
+        total_eligible_students=eligible_count,
+        total_applicants=app_count,
+        created_at=updated_drive.get("created_at", datetime.now(timezone.utc)),
+    )
 
 
 @router.delete("/drives/{drive_id}")

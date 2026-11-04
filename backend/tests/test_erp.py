@@ -178,3 +178,71 @@ async def test_placement_drive_lifecycle_and_apply_flow():
         csv_text = shortlist_res.text
         assert "Application ID,Student Name,Student Email" in csv_text
         assert "student@placementiq.ai" in csv_text
+
+
+@pytest.mark.asyncio
+async def test_update_placement_drive_criteria():
+    """Verify DCPD can dynamically update company criteria (CGPA, CTC, backlogs) and recalculate eligibility."""
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+        # 1. Admin login
+        admin_login = await client.post(
+            "/api/auth/login",
+            json={"email": "admin@placementiq.ai", "password": "Admin@1234"},
+        )
+        admin_headers = {"Authorization": f"Bearer {admin_login.json()['access_token']}"}
+
+        # 2. Create drive with high CGPA cutoff (9.5)
+        create_res = await client.post(
+            "/api/erp/drives",
+            json={
+                "company_name": "Suzal Innovations",
+                "job_role": "AI Architect",
+                "ctc_lpa": 18.0,
+                "location": "Bangalore / Hybrid",
+                "min_cgpa": 9.5,
+                "max_backlogs": 0,
+                "eligible_branches": ["Computer Science"],
+                "min_coding_score": 70.0,
+                "application_deadline": "2026-12-31",
+                "drive_date": "2027-01-15",
+                "description": "Initial criteria with 9.5 CGPA requirement",
+            },
+            headers=admin_headers,
+        )
+        assert create_res.status_code == 200
+        drive_id = create_res.json()["drive_id"]
+
+        # 3. Student (CGPA ~ 8.2) checks eligibility - should be ineligible
+        student_login = await client.post(
+            "/api/auth/login",
+            json={"email": "student@placementiq.ai", "password": "Student@1234"},
+        )
+        student_headers = {"Authorization": f"Bearer {student_login.json()['access_token']}"}
+        s_drives = (await client.get("/api/erp/student-drives", headers=student_headers)).json()
+        target_drive = next(d for d in s_drives if d["drive_id"] == drive_id)
+        assert target_drive["is_eligible"] is False
+
+        # 4. Company updates criteria: relaxes CGPA to 7.5 and boosts package to 22.0 LPA
+        update_res = await client.put(
+            f"/api/erp/drives/{drive_id}",
+            json={
+                "min_cgpa": 7.5,
+                "ctc_lpa": 22.0,
+                "description": "Updated criteria: CGPA relaxed to 7.5 and CTC increased",
+            },
+            headers=admin_headers,
+        )
+        assert update_res.status_code == 200
+        updated_data = update_res.json()
+        assert updated_data["min_cgpa"] == 7.5
+        assert updated_data["ctc_lpa"] == 22.0
+
+        # 5. Student checks eligibility again - now ELIGIBLE!
+        s_drives_after = (await client.get("/api/erp/student-drives", headers=student_headers)).json()
+        target_after = next(d for d in s_drives_after if d["drive_id"] == drive_id)
+        assert target_after["is_eligible"] is True
+        assert target_after["ctc_lpa"] == 22.0
+
+        # 6. Cleanup
+        del_res = await client.delete(f"/api/erp/drives/{drive_id}", headers=admin_headers)
+        assert del_res.status_code == 200

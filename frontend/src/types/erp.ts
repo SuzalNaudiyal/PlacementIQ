@@ -43,6 +43,7 @@ export interface CreatePlacementDrivePayload {
   application_deadline: string;
   drive_date: string;
   description?: string;
+  status?: string;
 }
 
 export interface RosterIngestionReport {

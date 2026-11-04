@@ -50,6 +50,21 @@ class CreatePlacementDriveRequest(BaseModel):
     description: Optional[str] = None
 
 
+class UpdatePlacementDriveRequest(BaseModel):
+    company_name: Optional[str] = Field(None, min_length=2)
+    job_role: Optional[str] = Field(None, min_length=2)
+    ctc_lpa: Optional[float] = Field(None, gt=0.0)
+    location: Optional[str] = None
+    min_cgpa: Optional[float] = Field(None, ge=0.0, le=10.0)
+    max_backlogs: Optional[int] = Field(None, ge=0)
+    eligible_branches: Optional[List[str]] = None
+    min_coding_score: Optional[float] = Field(None, ge=0.0, le=100.0)
+    application_deadline: Optional[str] = None
+    drive_date: Optional[str] = None
+    description: Optional[str] = None
+    status: Optional[str] = None
+
+
 class PlacementDriveOut(BaseModel):
     drive_id: str
     company_name: str
