@@ -3,6 +3,7 @@ import {
   AlertTriangle, Brain, CheckCircle2, Download, FileSpreadsheet, FileText, Maximize2, Mic,
   Minimize2, Pause, Play, RotateCcw, Send, Sparkles, Volume2, VolumeX, X, type LucideIcon,
 } from "lucide-react";
+import { getBestNaturalVoice } from "../utils/audio";
 
 /* ───────── Types & timeline ───────── */
 export interface HireMatrixTourModalProps {
@@ -282,6 +283,7 @@ export default function HireMatrixTourModal({ isOpen = true, onClose, autoPlay =
   const [t, setT] = useState(0);
   const [playing, setPlaying] = useState(autoPlay);
   const [narrate, setNarrate] = useState(false);
+  const [selectedVoice, setSelectedVoice] = useState<string>("Samantha");
   const [fs, setFs] = useState(false);
   const tRef = useRef(0);
   const box = useRef<HTMLDivElement>(null);
@@ -310,11 +312,19 @@ export default function HireMatrixTourModal({ isOpen = true, onClose, autoPlay =
   useEffect(() => {
     if (!narrate || !playing || typeof window === "undefined" || !("speechSynthesis" in window)) return;
     const u = new SpeechSynthesisUtterance(scene.message);
-    u.rate = 1.05;
+    const naturalVoice = getBestNaturalVoice(selectedVoice);
+    if (naturalVoice) {
+      u.voice = naturalVoice;
+      u.lang = naturalVoice.lang;
+    }
+    // High-quality human conversational cadence
+    u.rate = 0.94;
+    u.pitch = 1.0;
+    u.volume = 1.0;
     window.speechSynthesis.cancel();
     window.speechSynthesis.speak(u);
     return () => window.speechSynthesis.cancel();
-  }, [idx, narrate, playing, scene.message]);
+  }, [idx, narrate, playing, scene.message, selectedVoice]);
 
   useEffect(() => {
     const onFs = () => setFs(document.fullscreenElement === box.current);
@@ -378,8 +388,21 @@ export default function HireMatrixTourModal({ isOpen = true, onClose, autoPlay =
               ))}
             </div>
             <button type="button" className={btn} onClick={() => setNarrate((n) => !n)} aria-pressed={narrate} aria-label="Toggle narration">
-              {narrate ? <Volume2 className="h-4 w-4" /> : <VolumeX className="h-4 w-4" />}
+              {narrate ? <Volume2 className="h-4 w-4 text-cyan-300" /> : <VolumeX className="h-4 w-4" />}
             </button>
+            {narrate && (
+              <select
+                value={selectedVoice}
+                onChange={(e) => setSelectedVoice(e.target.value)}
+                className="h-8 rounded-xl bg-slate-900 border border-white/20 px-2.5 text-xs text-cyan-200 focus:outline-none cursor-pointer hover:border-cyan-400 transition"
+                title="Select Natural Voice Actor"
+              >
+                <option value="Samantha" className="bg-slate-900 text-white">🎙️ Samantha (US Studio)</option>
+                <option value="Daniel" className="bg-slate-900 text-white">🎙️ Daniel (UK Executive)</option>
+                <option value="Rishi" className="bg-slate-900 text-white">🎙️ Rishi (IN Corporate)</option>
+                <option value="Karen" className="bg-slate-900 text-white">🎙️ Karen (AU Studio)</option>
+              </select>
+            )}
             <button type="button" className={btn} onClick={toggleFs} aria-label="Toggle fullscreen">
               {fs ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
             </button>

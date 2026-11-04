@@ -37,7 +37,7 @@ import {
   type SvarSentenceEvaluation,
   type ExtemporeEvaluation,
 } from '../../services/assessments';
-import { normalizeAudioSource, getBestRecordingMimeType } from '../../utils/audio';
+import { normalizeAudioSource, getBestRecordingMimeType, speakNaturalText } from '../../utils/audio';
 
 export const AssessmentHubView: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'placement_test' | 'svar_voice' | 'extempore' | 'history'>('placement_test');
@@ -88,6 +88,7 @@ export const AssessmentHubView: React.FC = () => {
   // --- HISTORY STATE ---
   const [historyList, setHistoryList] = useState<any[]>([]);
   const [historyLoading, setHistoryLoading] = useState(false);
+  const [svarVoiceName, setSvarVoiceName] = useState<string>('Samantha');
 
   // Initialize Speech Recognition & Preload High-Quality Voices
   useEffect(() => {
@@ -238,49 +239,14 @@ export const AssessmentHubView: React.FC = () => {
       alert('Speech synthesis is not supported on this device/browser.');
       return;
     }
-    window.speechSynthesis.cancel();
-
-    const utterance = new SpeechSynthesisUtterance(text);
-    const voices = window.speechSynthesis.getVoices();
-
-    const naturalVoice =
-      voices.find(
-        (v) =>
-          v.lang.startsWith('en') &&
-          (v.name.includes('Natural') ||
-            v.name.includes('Neural') ||
-            v.name.includes('Enhanced') ||
-            v.name.includes('Google US English') ||
-            v.name.includes('Google UK English') ||
-            v.name.includes('Samantha') ||
-            v.name.includes('Daniel') ||
-            v.name.includes('Karen') ||
-            v.name.includes('Moira') ||
-            v.name.includes('Serena'))
-      ) ||
-      voices.find((v) => v.lang.startsWith('en')) ||
-      voices[0];
-
-    if (naturalVoice) {
-      utterance.voice = naturalVoice;
-      utterance.lang = naturalVoice.lang;
-    } else {
-      utterance.lang = 'en-US';
-    }
-
-    utterance.rate = 0.88;
-    utterance.pitch = 1.0;
-    utterance.volume = 1.0;
-
     setIsSpeakingSentence(true);
-    utterance.onend = () => {
-      setIsSpeakingSentence(false);
-    };
-    utterance.onerror = () => {
-      setIsSpeakingSentence(false);
-    };
-
-    window.speechSynthesis.speak(utterance);
+    speakNaturalText(text, {
+      preferredVoiceName: svarVoiceName,
+      rate: 0.88, // Clear, deliberate pacing for SVAR listening exercises
+      pitch: 1.0,
+      onEnd: () => setIsSpeakingSentence(false),
+      onError: () => setIsSpeakingSentence(false),
+    });
   };
 
   // --- STT & MEDIARECORDER RECORDING ---
@@ -1076,6 +1042,29 @@ export const AssessmentHubView: React.FC = () => {
                 <p className="text-lg sm:text-xl font-bold text-white px-4 leading-relaxed font-serif">
                   "{svarSentences[selectedSentenceIndex]?.sentence}"
                 </p>
+
+                {/* Voice Persona Accent Selector */}
+                <div className="flex flex-wrap items-center justify-center gap-2 pt-1">
+                  <span className="text-[11px] text-slate-400 font-medium">AI Accent:</span>
+                  {[
+                    { id: 'Samantha', label: '🇺🇸 US (Samantha)' },
+                    { id: 'Daniel', label: '🇬🇧 UK (Daniel)' },
+                    { id: 'Rishi', label: '🇮🇳 Indian (Rishi)' },
+                  ].map((v) => (
+                    <button
+                      key={v.id}
+                      type="button"
+                      onClick={() => setSvarVoiceName(v.id)}
+                      className={`px-2.5 py-1 rounded-lg text-[11px] font-semibold transition cursor-pointer ${
+                        svarVoiceName === v.id
+                          ? 'bg-indigo-600 text-white shadow-sm ring-1 ring-indigo-400/50'
+                          : 'bg-slate-900 text-slate-400 hover:text-white border border-slate-800'
+                      }`}
+                    >
+                      {v.label}
+                    </button>
+                  ))}
+                </div>
 
                 <div className="pt-2">
                   <button

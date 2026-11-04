@@ -28,6 +28,7 @@ import type {
   CompleteInterviewResponse,
   InterviewHistoryItem,
 } from '../../types/interview';
+import { speakNaturalText } from '../../utils/audio';
 
 export const MockInterviewView: React.FC = () => {
   // Setup configuration state
@@ -111,7 +112,7 @@ export const MockInterviewView: React.FC = () => {
     };
   }, [sessionStage, currentQIndex, sessionData]);
 
-  // Web Speech API: Text to Speech
+  // Web Speech API: Text to Speech (Studio-Quality Natural Voice)
   const speakQuestion = (text: string) => {
     if (!('speechSynthesis' in window)) return;
     window.speechSynthesis.cancel();
@@ -121,14 +122,14 @@ export const MockInterviewView: React.FC = () => {
       return;
     }
 
-    const utterance = new SpeechSynthesisUtterance(text);
-    utterance.rate = 0.95;
-    utterance.pitch = 1.0;
-    utterance.onend = () => setIsSpeaking(false);
-    utterance.onerror = () => setIsSpeaking(false);
-
     setIsSpeaking(true);
-    window.speechSynthesis.speak(utterance);
+    speakNaturalText(text, {
+      preferredVoiceName: 'Samantha',
+      rate: 0.94,
+      pitch: 1.0,
+      onEnd: () => setIsSpeaking(false),
+      onError: () => setIsSpeaking(false),
+    });
   };
 
   // Web Speech API: Speech Recognition (Voice Dictation)
