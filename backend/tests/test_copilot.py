@@ -46,6 +46,17 @@ async def test_career_copilot_engine_logic():
     res_dsa = generate_copilot_response("Give me leetcode tips", student_profile)
     assert "leetcode" in res_dsa["reply"].lower() or "dsa" in res_dsa["reply"].lower()
 
+    # Test Platform "What is HireMatrix" query
+    res_hm = generate_copilot_response("What is HireMatrix?", student_profile)
+    assert "hirematrix" in res_hm["reply"].lower()
+    assert "operating system" in res_hm["reply"].lower() or "placement" in res_hm["reply"].lower()
+    assert len(res_hm["suggested_actions"]) >= 2
+
+    # Test SVAR voice test query
+    res_svar = generate_copilot_response("How does the SVAR voice test work?", student_profile)
+    assert "svar" in res_svar["reply"].lower() or "voice" in res_svar["reply"].lower()
+    assert "extempore" in res_svar["reply"].lower() or "sentence repetition" in res_svar["reply"].lower()
+
 
 @pytest.mark.asyncio
 async def test_copilot_chat_endpoint():
@@ -76,3 +87,13 @@ async def test_copilot_chat_endpoint():
         sug_data = sug_resp.json()
         assert "suggestions" in sug_data
         assert len(sug_data["suggestions"]) >= 2
+
+        # Unauthenticated guest visitor asking "What is HireMatrix" without token
+        guest_resp = await client.post(
+            "/api/copilot/chat",
+            json={"message": "What is HireMatrix and what can it do?"},
+        )
+        assert guest_resp.status_code == 200
+        guest_data = guest_resp.json()
+        assert "HireMatrix" in guest_data["reply"]
+        assert len(guest_data["suggested_actions"]) >= 2

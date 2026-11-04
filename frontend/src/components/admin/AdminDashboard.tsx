@@ -45,6 +45,7 @@ import {
   fetchAdminAssessmentSubmissions,
   type AdminAssessmentSubmission,
 } from '../../services/assessments';
+import { normalizeAudioSource } from '../../utils/audio';
 
 export const AdminDashboard: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'analytics' | 'directory' | 'jobs' | 'assessments'>('analytics');
@@ -961,12 +962,26 @@ export const AdminDashboard: React.FC = () => {
                     </div>
                   )}
                   {selectedSubmission.audio_data && (
-                    <div className="pt-2 border-t border-slate-800 space-y-1.5">
-                      <span className="text-emerald-400 block font-sans font-semibold flex items-center gap-1.5">
-                        <Volume2 className="w-3.5 h-3.5" />
-                        Candidate Voice Recording (Play Audio):
-                      </span>
-                      <audio controls src={selectedSubmission.audio_data} className="w-full h-8 rounded-lg" />
+                    <div className="pt-2 border-t border-slate-800 space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-emerald-400 font-sans font-semibold flex items-center gap-1.5">
+                          <Volume2 className="w-3.5 h-3.5" />
+                          Candidate Voice Recording (Play Audio):
+                        </span>
+                        <a
+                          href={normalizeAudioSource(selectedSubmission.audio_data)}
+                          download={`candidate_recording_${selectedSubmission.submission_id}.${selectedSubmission.audio_data.includes('mp4') || selectedSubmission.audio_data.includes('AAAAIGZ0eX') ? 'm4a' : 'webm'}`}
+                          className="text-[11px] text-indigo-400 hover:text-indigo-300 underline flex items-center gap-1 font-sans"
+                        >
+                          Download Audio
+                        </a>
+                      </div>
+                      <audio
+                        controls
+                        src={normalizeAudioSource(selectedSubmission.audio_data)}
+                        className="w-full h-9 rounded-lg bg-slate-900 border border-slate-800"
+                        preload="metadata"
+                      />
                     </div>
                   )}
                   {selectedSubmission.summary?.feedback && (

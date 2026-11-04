@@ -73,6 +73,44 @@ async def get_current_user(
     return user_entity(user)
 
 
+async def get_optional_current_user(
+    credentials: Optional[HTTPAuthorizationCredentials] = Depends(security_scheme),
+) -> Optional[Dict[str, Any]]:
+    """
+    Extracts the current user if a valid Bearer token is provided.
+    Returns None instead of raising 401 if unauthenticated or token is missing/invalid.
+    Allows public / guest visitors to interact with the AI Career Copilot.
+    """
+    if credentials is None or not credentials.credentials:
+        return None
+    try:
+        token = credentials.credentials
+        payload = decode_access_token(token)
+        if not payload:
+            return None
+        user_id = payload.get("sub")
+        if not user_id:
+            return None
+
+        db = get_database()
+        try:
+            query = {"_id": ObjectId(user_id)}
+        except Exception:
+            query = {"_id": user_id}
+
+        user = await db.users.find_one(query)
+        if not user and payload.get("email"):
+            user = await db.users.find_one({"email": payload.get("email")})
+        elif not user:
+            user = await db.users.find_one({"email": user_id})
+
+        if user and user.get("is_active", True):
+            return user_entity(user)
+    except Exception:
+        return None
+    return None
+
+
 def require_role(required_role: UserRole):
     """
     Dependency factory to enforce role-based access control (RBAC).

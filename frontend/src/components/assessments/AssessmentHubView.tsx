@@ -37,6 +37,7 @@ import {
   type SvarSentenceEvaluation,
   type ExtemporeEvaluation,
 } from '../../services/assessments';
+import { normalizeAudioSource, getBestRecordingMimeType } from '../../utils/audio';
 
 export const AssessmentHubView: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'placement_test' | 'svar_voice' | 'extempore' | 'history'>('placement_test');
@@ -312,7 +313,8 @@ export const AssessmentHubView: React.FC = () => {
       try {
         const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
         audioChunksRef.current = [];
-        const mr = new MediaRecorder(stream);
+        const mimeType = getBestRecordingMimeType();
+        const mr = mimeType ? new MediaRecorder(stream, { mimeType }) : new MediaRecorder(stream);
 
         mr.ondataavailable = (event) => {
           if (event.data.size > 0) {
@@ -321,13 +323,15 @@ export const AssessmentHubView: React.FC = () => {
         };
 
         mr.onstop = () => {
-          const blob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+          const finalMime = mr.mimeType || mimeType || 'audio/mp4';
+          const blob = new Blob(audioChunksRef.current, { type: finalMime });
           const audioUrl = URL.createObjectURL(blob);
           setRecordedAudioUrl(audioUrl);
 
           const reader = new FileReader();
           reader.onloadend = () => {
-            setRecordedAudioBase64(reader.result as string);
+            const raw = reader.result as string;
+            setRecordedAudioBase64(normalizeAudioSource(raw));
           };
           reader.readAsDataURL(blob);
 
@@ -394,7 +398,8 @@ export const AssessmentHubView: React.FC = () => {
       try {
         const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
         extemporeAudioChunksRef.current = [];
-        const mr = new MediaRecorder(stream);
+        const mimeType = getBestRecordingMimeType();
+        const mr = mimeType ? new MediaRecorder(stream, { mimeType }) : new MediaRecorder(stream);
 
         mr.ondataavailable = (event) => {
           if (event.data.size > 0) {
@@ -403,13 +408,15 @@ export const AssessmentHubView: React.FC = () => {
         };
 
         mr.onstop = () => {
-          const blob = new Blob(extemporeAudioChunksRef.current, { type: 'audio/webm' });
+          const finalMime = mr.mimeType || mimeType || 'audio/mp4';
+          const blob = new Blob(extemporeAudioChunksRef.current, { type: finalMime });
           const audioUrl = URL.createObjectURL(blob);
           setExtemporeAudioUrl(audioUrl);
 
           const reader = new FileReader();
           reader.onloadend = () => {
-            setExtemporeAudioBase64(reader.result as string);
+            const raw = reader.result as string;
+            setExtemporeAudioBase64(normalizeAudioSource(raw));
           };
           reader.readAsDataURL(blob);
 

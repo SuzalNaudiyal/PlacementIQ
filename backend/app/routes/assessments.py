@@ -55,6 +55,40 @@ from backend.app.schemas.assessments import (
 router = APIRouter(prefix="/assessments", tags=["Assessments & SVAR Voice Testing"])
 
 
+def normalize_audio_data_uri(audio_str: Optional[str]) -> Optional[str]:
+    """
+    Ensure base64 data URIs carry the correct audio MIME type so that all browsers (especially Safari)
+    can decode and play them natively without showing an 'Error'.
+    """
+    if not audio_str or not isinstance(audio_str, str):
+        return None
+    trimmed = audio_str.strip()
+    if not trimmed:
+        return None
+
+    if not trimmed.startswith("data:"):
+        if trimmed.startswith("AAAAIGZ0eX") or "Z0eX" in trimmed[:50]:
+            return f"data:audio/mp4;base64,{trimmed}"
+        elif trimmed.startswith("GkXf"):
+            return f"data:audio/webm;base64,{trimmed}"
+        elif trimmed.startswith("UklGR"):
+            return f"data:audio/wav;base64,{trimmed}"
+        return f"data:audio/mp4;base64,{trimmed}"
+
+    if "," not in trimmed:
+        return trimmed
+
+    header, b64_part = trimmed.split(",", 1)
+    if b64_part.startswith("AAAAIGZ0eX") or "Z0eX" in b64_part[:50]:
+        return f"data:audio/mp4;base64,{b64_part}"
+    elif b64_part.startswith("GkXf"):
+        return f"data:audio/webm;base64,{b64_part}"
+    elif b64_part.startswith("UklGR"):
+        return f"data:audio/wav;base64,{b64_part}"
+
+    return trimmed
+
+
 # ==============================================================================
 # 1. Aptitude & Technical MCQ Testing (Dynamic & Randomized)
 # ==============================================================================
@@ -187,6 +221,8 @@ async def evaluate_svar_sentence(
     submission_id = f"sub_svar_{uuid.uuid4().hex[:10]}"
     now = datetime.now(timezone.utc)
 
+    clean_audio = normalize_audio_data_uri(payload.audio_data)
+
     submission_doc = {
         "submission_id": submission_id,
         "user_id": user_id,
@@ -195,8 +231,8 @@ async def evaluate_svar_sentence(
         "test_type": "svar_sentence",
         "headline_score": eval_result["svar_score"],
         "rating_or_badge": eval_result["cefr_band"],
-        "audio_data": payload.audio_data,  # Save candidate voice recording!
-        "has_audio": bool(payload.audio_data),
+        "audio_data": clean_audio,  # Save candidate voice recording!
+        "has_audio": bool(clean_audio),
         "summary": {
             "sentence_id": payload.sentence_id,
             "expected_sentence": sentence_meta["sentence"],
@@ -205,7 +241,7 @@ async def evaluate_svar_sentence(
             "memory_retention_score": eval_result["memory_retention_score"],
             "fluency_score": eval_result["fluency_score"],
             "duration_seconds": payload.duration_seconds,
-            "has_recorded_audio": bool(payload.audio_data),
+            "has_recorded_audio": bool(clean_audio),
             "feedback": eval_result["feedback"],
         },
         "submitted_at": now,
@@ -271,6 +307,8 @@ async def evaluate_extempore(
     submission_id = f"sub_ext_{uuid.uuid4().hex[:10]}"
     now = datetime.now(timezone.utc)
 
+    clean_audio = normalize_audio_data_uri(payload.audio_data)
+
     submission_doc = {
         "submission_id": submission_id,
         "user_id": user_id,
@@ -279,8 +317,8 @@ async def evaluate_extempore(
         "test_type": "svar_extempore",
         "headline_score": eval_result["overall_extempore_score"],
         "rating_or_badge": eval_result["cefr_band"],
-        "audio_data": payload.audio_data,  # Save candidate voice recording!
-        "has_audio": bool(payload.audio_data),
+        "audio_data": clean_audio,  # Save candidate voice recording!
+        "has_audio": bool(clean_audio),
         "summary": {
             "topic_id": payload.topic_id,
             "topic": topic_meta["title"],
@@ -288,7 +326,7 @@ async def evaluate_extempore(
             "word_count": eval_result["word_count"],
             "wpm": eval_result["speaking_rate_wpm"],
             "vocab_richness": eval_result["vocabulary_richness"],
-            "has_recorded_audio": bool(payload.audio_data),
+            "has_recorded_audio": bool(clean_audio),
             "feedback": eval_result["feedback"],
         },
         "submitted_at": now,
@@ -398,9 +436,11 @@ async def get_my_assessment_history(
         {"user_id": user_id}
     ).sort("submitted_at", -1).to_list(length=50)
 
-    # Clean ObjectIDs
+    # Clean ObjectIDs and normalize audio data
     for s in submissions:
         s["_id"] = str(s["_id"])
+        if s.get("audio_data"):
+            s["audio_data"] = normalize_audio_data_uri(s["audio_data"])
 
     return {
         "total_submissions": len(submissions),
@@ -538,7 +578,7 @@ async def get_admin_assessment_submissions(
                 headline_score=float(d.get("headline_score", 0.0)),
                 rating_or_badge=d.get("rating_or_badge", "N/A"),
                 summary=d.get("summary", {}),
-                audio_data=d.get("audio_data"),  # Attached candidate audio for admin review
+                audio_data=normalize_audio_data_uri(d.get("audio_data")),  # Clean audio URI for all browsers
                 submitted_at=d.get("submitted_at", datetime.now(timezone.utc)),
             )
         )

@@ -32,13 +32,13 @@ export const CareerCopilotWidget: React.FC<CareerCopilotWidgetProps> = ({
       sender: 'assistant',
       text: `Hello ${
         studentName ? studentName.split(' ')[0] : 'there'
-      }! 👋 I am your **HireMatrix Career Copilot**.\n\nI have real-time access to your academic standing, TreeSHAP placement readiness, LeetCode benchmarks, and missing skills. How can I assist your placement preparation today?`,
+      }! 👋 I am your **HireMatrix AI Copilot**.\n\nI can answer any questions about **HireMatrix AI**, our 4 platform pillars, SVAR Spoken English tests, ML placement prediction, or provide personalized placement preparation guidance.\n\nWhat would you like to explore today?`,
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       suggestedActions: [
+        'What is HireMatrix AI?',
+        'How does the SVAR Voice test work?',
         'How can I boost my placement readiness past 90%?',
-        'Give me a 30-day DSA roadmap for LeetCode Mediums',
-        'How should I explain my backlogs to campus interviewers?',
-        'Audit my resume for ATS formatting',
+        'Show all features on this webpage',
       ],
     },
   ]);
@@ -121,10 +121,20 @@ export const CareerCopilotWidget: React.FC<CareerCopilotWidgetProps> = ({
   };
 
   const formatMessageText = (content: string) => {
-    // Quick, clean formatting for markdown bold, lists, quotes, code tags
+    // Quick, clean formatting for markdown bold, lists, quotes, code tags, and headings
     const lines = content.split('\n');
     return lines.map((line, idx) => {
       let formattedLine = line;
+
+      // Handle headings
+      if (formattedLine.startsWith('### ') || formattedLine.startsWith('## ')) {
+        const headerText = formattedLine.replace(/^#{2,3}\s*/, '');
+        return (
+          <h4 key={idx} className="text-xs font-bold text-indigo-300 mt-2 mb-1 flex items-center gap-1">
+            {renderInline(headerText)}
+          </h4>
+        );
+      }
 
       // Handle quotes
       if (formattedLine.startsWith('> ')) {
@@ -222,12 +232,12 @@ export const CareerCopilotWidget: React.FC<CareerCopilotWidgetProps> = ({
               </div>
               <div>
                 <h3 className="font-bold text-sm text-white flex items-center gap-1.5">
-                  PlacementIQ Career Copilot
+                  HireMatrix AI Copilot
                   <Sparkles className="w-3.5 h-3.5 text-amber-400" />
                 </h3>
                 <p className="text-[11px] text-emerald-400 flex items-center gap-1">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping inline-block" />
-                  Live Academic & ML Context Injected
+                  Live Platform & ML Intelligence
                 </p>
               </div>
             </div>
@@ -359,7 +369,7 @@ export const CareerCopilotWidget: React.FC<CareerCopilotWidgetProps> = ({
           >
             <input
               type="text"
-              placeholder="Ask about readiness, backlogs, DSA, or ATS..."
+              placeholder="Ask anything: 'What is HireMatrix?', SVAR voice test, DSA, ATS..."
               value={input}
               onChange={(e) => setInput(e.target.value)}
               disabled={loading}
