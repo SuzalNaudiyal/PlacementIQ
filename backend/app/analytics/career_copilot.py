@@ -47,9 +47,9 @@ def try_call_gemini_api(
             resp = client.post(url, json=payload)
             if resp.status_code == 200:
                 data = resp.json()
-                candidates = data.get("candidates", [])
+                candidates = data.get("candidates") or []
                 if candidates:
-                    parts = candidates[0].get("content", {}).get("parts", [])
+                    parts = (candidates[0].get("content") or {}).get("parts") or []
                     if parts and "text" in parts[0]:
                         return parts[0]["text"].strip()
     except Exception:
@@ -73,13 +73,15 @@ def generate_copilot_response(
     - Strictly focuses on HireMatrix AI platform features and placement preparation.
     - Warmly handles greetings, follow-ups, and off-topic boundaries.
     """
-    name = student_profile.get("name", "Candidate")
+    student_profile = student_profile or {}
+    name = student_profile.get("name") or "Candidate"
     first_name = name.split()[0] if name and name.lower() not in ["candidate", "student"] else "there"
-    cgpa = student_profile.get("cgpa", 7.5)
-    backlogs = student_profile.get("backlogs", 0)
-    branch = student_profile.get("education", {}).get("branch", "Computer Science")
+    cgpa = student_profile.get("cgpa") or 7.5
+    backlogs = student_profile.get("backlogs") or 0
+    education = student_profile.get("education") or {}
+    branch = education.get("branch", "Computer Science")
 
-    assessments = student_profile.get("assessments", {})
+    assessments = student_profile.get("assessments") or {}
     coding_score = assessments.get("coding_score", 70.0)
 
     # ML Readiness
@@ -95,16 +97,16 @@ def generate_copilot_response(
     target_role = "Software Engineer"
     if skill_gap_summary:
         target_role = skill_gap_summary.get("target_role", "Software Engineer")
-        missing_critical = skill_gap_summary.get("missing_critical", [])
-        missing_important = skill_gap_summary.get("missing_important", [])
+        missing_critical = skill_gap_summary.get("missing_critical") or []
+        missing_important = skill_gap_summary.get("missing_important") or []
 
     # Coding Profiles
-    coding_profiles = student_profile.get("coding_profiles", {})
+    coding_profiles = student_profile.get("coding_profiles") or {}
     leetcode_stats = coding_profiles.get("leetcode_stats") or {}
     total_solved = leetcode_stats.get("total_solved", 0)
 
     # ATS score
-    ats_score = resume_summary.get("ats_score", 82) if resume_summary else 82
+    ats_score = (resume_summary or {}).get("ats_score", 82)
 
     q = query.strip()
     q_lower = q.lower()

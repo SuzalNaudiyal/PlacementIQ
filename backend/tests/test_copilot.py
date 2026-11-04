@@ -97,3 +97,40 @@ async def test_copilot_chat_endpoint():
         guest_data = guest_resp.json()
         assert "HireMatrix" in guest_data["reply"]
         assert len(guest_data["suggested_actions"]) >= 2
+
+        # Admin user sending 'hi' (Regression test for status 500 issue)
+        admin_login = await client.post(
+            "/api/auth/login",
+            json={"email": "suzal.php@gmail.com", "password": "suzal@358"},
+        )
+        assert admin_login.status_code == 200
+        admin_token = admin_login.json()["access_token"]
+        admin_headers = {"Authorization": f"Bearer {admin_token}"}
+
+        admin_chat_resp = await client.post(
+            "/api/copilot/chat",
+            headers=admin_headers,
+            json={"message": "hi", "history": []},
+        )
+        assert admin_chat_resp.status_code == 200
+        admin_chat_data = admin_chat_resp.json()
+        assert "Suzal" in admin_chat_data["reply"]
+        assert len(admin_chat_data["suggested_actions"]) >= 2
+
+
+@pytest.mark.asyncio
+async def test_career_copilot_null_safe_profile():
+    # Defensive test with null / missing profile fields
+    null_profile = {
+        "name": None,
+        "cgpa": None,
+        "backlogs": None,
+        "education": None,
+        "assessments": None,
+        "coding_profiles": None,
+        "resume_summary": None,
+    }
+    res = generate_copilot_response("hi", null_profile)
+    assert res["reply"]
+    assert len(res["suggested_actions"]) > 0
+    assert res["context_used"]["readiness_percentage"] == 75

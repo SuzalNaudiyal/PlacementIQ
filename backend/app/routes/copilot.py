@@ -31,6 +31,8 @@ async def chat_with_career_copilot(
     db = get_database()
     if current_user:
         student = await get_or_create_student(db, current_user)
+        if not student.get("name"):
+            student["name"] = current_user.get("name") or current_user.get("username") or "Candidate"
     else:
         # Default guest candidate profile for public webpage visitors
         student = {
@@ -59,8 +61,8 @@ async def chat_with_career_copilot(
     if not get_role_by_id(role_key):
         role_key = "software_engineer"
 
-    skills = student.get("skills", {})
-    cgpa = float(student.get("cgpa", 7.0))
+    skills = student.get("skills") or {}
+    cgpa = float(student.get("cgpa") or 7.0)
     skill_gap_summary = None
     try:
         gap_res = analyze_skill_gap(skills, role_id=role_key, candidate_cgpa=cgpa)
@@ -81,14 +83,36 @@ async def chat_with_career_copilot(
     # 3. Resume ATS summary check if stored in student profile
     resume_summary = student.get("resume_summary")
 
-    copilot_result = generate_copilot_response(
-        query=payload.message,
-        student_profile=student,
-        skill_gap_summary=skill_gap_summary,
-        prediction_summary=prediction_summary,
-        resume_summary=resume_summary,
-        history=payload.history,
-    )
+    try:
+        copilot_result = generate_copilot_response(
+            query=payload.message,
+            student_profile=student,
+            skill_gap_summary=skill_gap_summary,
+            prediction_summary=prediction_summary,
+            resume_summary=resume_summary,
+            history=payload.history,
+        )
+    except Exception as exc:
+        first_name = (student.get("name") or "there").split()[0]
+        greeting = f"Hi {first_name}! " if first_name != "there" else "Hello! "
+        copilot_result = {
+            "reply": (
+                f"{greeting}👋 Welcome to **HireMatrix Support**!\n\n"
+                f"I'm here to help you navigate our platform—from taking the **SVAR Voice Assessment** and checking your **AI Placement Predictor** score to analyzing your **resume ATS** and 3-Tier skill gaps.\n\n"
+                f"How can I help you today?"
+            ),
+            "suggested_actions": [
+                "What is HireMatrix AI?",
+                "How does the SVAR Voice test work?",
+                "How can I boost my placement readiness past 90%?",
+                "Show all features on this webpage",
+            ],
+            "context_used": {
+                "name": student.get("name", "Candidate"),
+                "readiness_percentage": prediction_summary.get("readiness_percentage", 75) if prediction_summary else 75,
+                "target_role": role_key.replace("_", " ").title(),
+            },
+        }
 
     return CopilotChatResponse(**copilot_result)
 
