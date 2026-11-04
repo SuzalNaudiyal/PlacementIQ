@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useAuth } from '../../context/AuthContext';
 import {
   Building2,
   UploadCloud,
@@ -34,9 +35,18 @@ import type {
 } from '../../types/erp';
 
 export const UniversityERPView: React.FC = () => {
+  const { user } = useAuth();
+  const isAdmin = user?.role === 'admin';
 
   // Navigation tab: 'drives' | 'alerts' | 'roster_sync'
   const [activeTab, setActiveTab] = useState<'drives' | 'alerts' | 'roster_sync'>('drives');
+
+  // Force student session strictly to 'drives' tab
+  useEffect(() => {
+    if (!isAdmin && activeTab !== 'drives') {
+      setActiveTab('drives');
+    }
+  }, [isAdmin, activeTab]);
 
   // Student drives state
   const [studentDrives, setStudentDrives] = useState<StudentDriveEligibility[]>([]);
@@ -267,57 +277,68 @@ export const UniversityERPView: React.FC = () => {
           <div>
             <div className="flex items-center gap-2 mb-2">
               <span className="px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 font-mono">
-                Phase 17: University ERP & Roster Sync
+                {isAdmin ? 'Phase 17: University ERP & Roster Sync' : 'Phase 17: Campus Placement Drives'}
               </span>
               <span className="flex items-center gap-1 text-[11px] font-medium text-indigo-400 bg-indigo-950/50 px-2 py-0.5 rounded-full border border-indigo-500/30">
                 <Building2 className="w-3 h-3" />
-                Institutional Placement Portal
+                {isAdmin ? 'Institutional Placement Portal' : 'Student Placement Portal'}
               </span>
             </div>
             <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
-              University ERP & Placement Drive Hub
+              {isAdmin ? 'University ERP & Placement Drive Hub' : 'Campus Placement Drives & Eligibility'}
             </h1>
             <p className="text-sm text-slate-300 mt-1 max-w-2xl">
-              Automated institutional roster CSV ingestion, semester academic grade synchronization, and real-time student placement drive eligibility auditing.
+              {isAdmin
+                ? 'Automated institutional roster CSV ingestion, semester academic grade synchronization, and real-time student placement drive eligibility auditing.'
+                : 'Browse upcoming campus recruitment drives, verify live academic eligibility (CGPA, backlogs, branch, coding rating), and apply with 1-Click directly to recruiters without filling repetitive Google Forms.'}
             </p>
           </div>
 
-          {/* Tab Selector */}
-          <div className="flex items-center p-1 bg-slate-950/80 border border-slate-800 rounded-xl">
-            <button
-              onClick={() => setActiveTab('drives')}
-              className={`px-3.5 py-2 rounded-lg text-xs font-semibold transition cursor-pointer flex items-center gap-1.5 ${
-                activeTab === 'drives'
-                  ? 'bg-emerald-600 text-white shadow-sm'
-                  : 'text-slate-400 hover:text-white'
-              }`}
-            >
-              <Briefcase className="w-3.5 h-3.5" />
-              Campus Drives ({studentDrives.length})
-            </button>
-            <button
-              onClick={() => setActiveTab('alerts')}
-              className={`px-3.5 py-2 rounded-lg text-xs font-semibold transition cursor-pointer flex items-center gap-1.5 ${
-                activeTab === 'alerts'
-                  ? 'bg-teal-600 text-white shadow-sm'
-                  : 'text-slate-400 hover:text-white'
-              }`}
-            >
-              <Bell className="w-3.5 h-3.5" />
-              Drive Alerts (WhatsApp/Email)
-            </button>
-            <button
-              onClick={() => setActiveTab('roster_sync')}
-              className={`px-3.5 py-2 rounded-lg text-xs font-semibold transition cursor-pointer flex items-center gap-1.5 ${
-                activeTab === 'roster_sync'
-                  ? 'bg-indigo-600 text-white shadow-sm'
-                  : 'text-slate-400 hover:text-white'
-              }`}
-            >
-              <FileSpreadsheet className="w-3.5 h-3.5" />
-              ERP Sync & TPO Hub
-            </button>
-          </div>
+          {/* Tab Selector (Restricted to Admin/DCPD only; normal students see their verified drives count) */}
+          {isAdmin ? (
+            <div className="flex items-center p-1 bg-slate-950/80 border border-slate-800 rounded-xl">
+              <button
+                onClick={() => setActiveTab('drives')}
+                className={`px-3.5 py-2 rounded-lg text-xs font-semibold transition cursor-pointer flex items-center gap-1.5 ${
+                  activeTab === 'drives'
+                    ? 'bg-emerald-600 text-white shadow-sm'
+                    : 'text-slate-400 hover:text-white'
+                }`}
+              >
+                <Briefcase className="w-3.5 h-3.5" />
+                Campus Drives ({studentDrives.length})
+              </button>
+              <button
+                onClick={() => setActiveTab('alerts')}
+                className={`px-3.5 py-2 rounded-lg text-xs font-semibold transition cursor-pointer flex items-center gap-1.5 ${
+                  activeTab === 'alerts'
+                    ? 'bg-teal-600 text-white shadow-sm'
+                    : 'text-slate-400 hover:text-white'
+                }`}
+              >
+                <Bell className="w-3.5 h-3.5" />
+                Drive Alerts (WhatsApp/Email)
+              </button>
+              <button
+                onClick={() => setActiveTab('roster_sync')}
+                className={`px-3.5 py-2 rounded-lg text-xs font-semibold transition cursor-pointer flex items-center gap-1.5 ${
+                  activeTab === 'roster_sync'
+                    ? 'bg-indigo-600 text-white shadow-sm'
+                    : 'text-slate-400 hover:text-white'
+                }`}
+              >
+                <FileSpreadsheet className="w-3.5 h-3.5" />
+                ERP Sync & TPO Hub
+              </button>
+            </div>
+          ) : (
+            <div className="flex items-center gap-2">
+              <div className="px-3.5 py-2 rounded-xl bg-slate-950/80 border border-emerald-500/30 text-emerald-300 text-xs font-semibold flex items-center gap-2 shadow-inner">
+                <Briefcase className="w-4 h-4 text-emerald-400" />
+                <span>Verified Drives: <strong className="text-white">{studentDrives.length} Available</strong></span>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
@@ -501,9 +522,9 @@ export const UniversityERPView: React.FC = () => {
       )}
 
       {/* ========================================================= */}
-      {/* TAB: AUTOMATED WHATSAPP & EMAIL DRIVE ALERTS              */}
+      {/* TAB: AUTOMATED WHATSAPP & EMAIL DRIVE ALERTS (ADMIN ONLY) */}
       {/* ========================================================= */}
-      {activeTab === 'alerts' && (
+      {isAdmin && activeTab === 'alerts' && (
         <div className="space-y-8 animate-in fade-in">
           {/* Header & Drive Selector */}
           <div className="p-6 rounded-2xl bg-slate-900/80 border border-slate-800 flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -771,9 +792,9 @@ export const UniversityERPView: React.FC = () => {
       )}
 
       {/* ========================================================= */}
-      {/* TAB 2: UNIVERSITY ERP ROSTER SYNC & TPO HUB               */}
+      {/* TAB 2: UNIVERSITY ERP ROSTER SYNC & TPO HUB (ADMIN ONLY)  */}
       {/* ========================================================= */}
-      {activeTab === 'roster_sync' && (
+      {isAdmin && activeTab === 'roster_sync' && (
         <div className="space-y-8">
           {/* Top Ingestion & Action Row */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
