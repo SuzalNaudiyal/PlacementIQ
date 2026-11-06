@@ -7,7 +7,6 @@ interface NavbarProps {
   latency: number | null;
   onOpenAuth: () => void;
   onNavigateToTour?: () => void;
-  onNavigateToMeadow?: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -15,7 +14,6 @@ export const Navbar: React.FC<NavbarProps> = ({
   latency,
   onOpenAuth,
   onNavigateToTour,
-  onNavigateToMeadow,
 }) => {
   const { user, isAuthenticated, logout } = useAuth();
 
@@ -37,17 +35,6 @@ export const Navbar: React.FC<NavbarProps> = ({
 
         {/* Status Indicator, Docs & Auth Controls */}
         <div className="flex items-center space-x-3 sm:space-x-4">
-          {/* Flower Meadow Hero Pill (21st.dev) */}
-          {onNavigateToMeadow && (
-            <button
-              onClick={onNavigateToMeadow}
-              className="inline-flex items-center gap-1.5 text-xs font-semibold text-rose-300 hover:text-white px-3.5 py-1.5 rounded-xl bg-rose-950/40 hover:bg-rose-900/60 border border-rose-500/30 transition-all duration-200 cursor-pointer shadow-sm hover:shadow-rose-500/20 hover:-translate-y-0.5 hover:scale-[1.02]"
-            >
-              <Sparkles className="h-3.5 w-3.5 text-rose-400" />
-              <span>🌸 Flower Meadow</span>
-            </button>
-          )}
-
           {/* Watch Tour Marketing Pill (Public - No Login Required) */}
           {onNavigateToTour && (
             <button

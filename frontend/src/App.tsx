@@ -19,7 +19,7 @@ import { CompanyPrepView } from './components/companyprep/CompanyPrepView';
 import { LinkedInOutreachView } from './components/outreach/LinkedInOutreachView';
 import { AssessmentHubView } from './components/assessments/AssessmentHubView';
 import HireMatrixTourModal from './components/HireMatrixTourModal';
-import { FlowerMeadowLanding } from './components/meadow/FlowerMeadowLanding';
+import { FlowerMeadowHero } from './components/meadow/FlowerMeadowHero';
 import { CareerCopilotWidget } from './components/copilot/CareerCopilotWidget';
 import { Footer } from './components/Footer';
 import { fetchSystemHealth, pingBackend } from './services/api';
@@ -60,8 +60,7 @@ type ViewId =
   | 'explainer'
   | 'company_prep'
   | 'outreach'
-  | 'assessments'
-  | 'meadow';
+  | 'assessments';
 
 type PillarId = 'intelligence' | 'preparation' | 'placements' | 'governance';
 
@@ -257,16 +256,6 @@ const PILLARS: Pillar[] = [
         requiresAdmin: true,
         phaseLabel: 'Administration & Assessment Telemetry Hub',
       },
-      {
-        id: 'meadow',
-        label: 'Flower Meadow Hero (21st.dev)',
-        shortLabel: 'Flower Meadow',
-        icon: Sparkles,
-        color: 'text-rose-400',
-        activeBg: 'bg-rose-600 text-white shadow-md shadow-rose-600/30',
-        badge: 'NEW',
-        phaseLabel: '21st.dev Fintech Landing Template with Flower Meadow Hero',
-      },
     ],
   },
 ];
@@ -296,16 +285,6 @@ const ADMIN_PILLARS: Pillar[] = [
         color: 'text-cyan-400',
         activeBg: 'bg-cyan-600 text-white shadow-md shadow-cyan-600/30',
         phaseLabel: 'HireMatrix Enterprise Architecture Tour',
-      },
-      {
-        id: 'meadow',
-        label: 'Flower Meadow Hero (21st.dev)',
-        shortLabel: 'Flower Meadow',
-        icon: Sparkles,
-        color: 'text-rose-400',
-        activeBg: 'bg-rose-600 text-white shadow-md shadow-rose-600/30',
-        badge: 'NEW',
-        phaseLabel: '21st.dev Fintech Landing Template with Flower Meadow Hero',
       },
     ],
   },
@@ -441,7 +420,6 @@ function DashboardContent() {
         latency={latency}
         onOpenAuth={() => setIsAuthModalOpen(true)}
         onNavigateToTour={() => setIsTourModalOpen(true)}
-        onNavigateToMeadow={() => navigateToView('meadow')}
       />
 
       {/* Main Container */}
@@ -689,25 +667,6 @@ function DashboardContent() {
               <HireMatrixTourModal isOpen={true} onClose={() => navigateToView('overview')} />
             </div>
           </div>
-        ) : activeView === 'meadow' ? (
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <button
-                onClick={() => navigateToView('overview')}
-                className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-slate-900 border border-slate-800 text-xs text-slate-300 hover:text-white transition cursor-pointer hover:border-slate-700 hover:-translate-y-0.5 hover:scale-[1.02]"
-              >
-                ← Back to Overview
-              </button>
-            </div>
-            <div className="rounded-3xl overflow-hidden border border-slate-800/80 shadow-2xl">
-              <FlowerMeadowLanding
-                mode="career"
-                initialPalette="rose"
-                onGetStarted={() => setIsAuthModalOpen(true)}
-                onWatchTour={() => setIsTourModalOpen(true)}
-              />
-            </div>
-          </div>
         ) : activeView === 'profile' && isAuthenticated ? (
           <ProfileView />
         ) : activeView === 'prediction' && isAuthenticated ? (
@@ -735,17 +694,11 @@ function DashboardContent() {
         ) : isAuthenticated ? (
           <UnifiedDashboard onNavigate={(view) => navigateToView(view as ViewId)} />
         ) : (
-          <div className="space-y-12">
-            {/* 21st.dev Fintech Landing Page Template with Flower Meadow Hero */}
-            <FlowerMeadowLanding
-              mode="career"
-              initialPalette="rose"
+          <>
+            {/* Flower Meadow Hero for HireMatrix AI (Inspired by 21st.dev reference) */}
+            <FlowerMeadowHero
               onGetStarted={() => setIsAuthModalOpen(true)}
               onWatchTour={() => setIsTourModalOpen(true)}
-              onExploreFeatures={() => {
-                const el = document.getElementById('features');
-                el?.scrollIntoView({ behavior: 'smooth' });
-              }}
             />
 
             {/* Live Backend Telemetry Widget */}
@@ -764,7 +717,7 @@ function DashboardContent() {
 
             {/* Project Roadmap & Phase Tracker */}
             <PhaseTracker />
-          </div>
+          </>
         )}
       </main>
 
