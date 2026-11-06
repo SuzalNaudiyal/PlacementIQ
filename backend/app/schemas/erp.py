@@ -100,3 +100,35 @@ class StudentDriveEligibilityOut(BaseModel):
 
 class ApplyDriveRequest(BaseModel):
     drive_id: str
+
+
+class UpdateApplicationStatusRequest(BaseModel):
+    status: str = Field(..., description="Application stage e.g. Shortlisted for Round 1, Technical Interview, Offer Extended, Not Selected")
+    notes: Optional[str] = Field(None, description="Optional feedback or interview details from DCPD / Recruiter")
+    interview_date: Optional[str] = Field(None, description="Date/time of scheduled interview round")
+
+
+class ApplicationTimelineStage(BaseModel):
+    id: str
+    label: str
+    status: str  # completed, in_progress, upcoming, rejected
+    date: Optional[str] = None
+    description: Optional[str] = None
+
+
+class StudentApplicationDetailOut(BaseModel):
+    application_id: str
+    drive_id: str
+    company_name: str
+    job_role: str
+    ctc_lpa: float = 12.0
+    location: str = "Bangalore / Hybrid"
+    drive_date: Optional[str] = None
+    deadline: Optional[str] = None
+    applied_at: datetime
+    status: str = "Applied"
+    current_stage_index: int = 1
+    stages: List[ApplicationTimelineStage] = []
+    interview_notes: Optional[str] = None
+    interview_date: Optional[str] = None
+

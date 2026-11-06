@@ -80,3 +80,46 @@ export interface DriveEligibleCandidatesResponse {
   total_eligible_count: number;
   candidates: EligibleCandidate[];
 }
+
+export interface ApplicationTimelineStage {
+  id: string;
+  label: string;
+  status: 'completed' | 'in_progress' | 'upcoming' | 'rejected';
+  date?: string | null;
+  description?: string | null;
+}
+
+export interface StudentApplicationDetail {
+  application_id: string;
+  drive_id: string;
+  company_name: string;
+  job_role: string;
+  ctc_lpa: number;
+  location: string;
+  drive_date?: string | null;
+  deadline?: string | null;
+  applied_at: string;
+  status: string;
+  current_stage_index: number;
+  stages: ApplicationTimelineStage[];
+  interview_notes?: string | null;
+  interview_date?: string | null;
+}
+
+export interface DispatchLog {
+  dispatch_id: string;
+  id?: string;
+  drive_id: string;
+  company_name: string;
+  job_role: string;
+  ctc_lpa: number;
+  channel: string;
+  recipients_count: number;
+  delivered_whatsapp_count: number;
+  delivered_email_count: number;
+  success_rate: number;
+  sender_admin: string;
+  note?: string;
+  status: string;
+  created_at: string;
+}

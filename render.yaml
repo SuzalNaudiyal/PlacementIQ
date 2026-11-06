@@ -1,0 +1,42 @@
+services:
+  # HireMatrix AI FastAPI Backend Service
+  - type: web
+    name: hirematrix-backend
+    runtime: python
+    buildCommand: pip install --upgrade pip && pip install -r backend/requirements.txt
+    startCommand: uvicorn backend.app.main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: APP_ENV
+        value: production
+      - key: DEBUG
+        value: "false"
+      - key: SERVER_HOST
+        value: 0.0.0.0
+      - key: MONGODB_DB_NAME
+        value: placement_predictor_db
+      - key: MONGODB_URL
+        sync: false
+      - key: JWT_SECRET_KEY
+        generateValue: true
+      - key: CORS_ORIGINS
+        value: "*"
+    healthCheckPath: /api/ping
+    autoDeploy: true
+
+  # HireMatrix AI React Vite Frontend
+  - type: web
+    name: hirematrix-frontend
+    runtime: static
+    buildCommand: npm --prefix frontend install && npm --prefix frontend run build
+    staticPublishPath: frontend/dist
+    envVars:
+      - key: VITE_API_URL
+        fromService:
+          type: web
+          name: hirematrix-backend
+          property: host
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    autoDeploy: true

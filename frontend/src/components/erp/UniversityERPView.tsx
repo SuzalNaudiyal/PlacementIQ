@@ -25,25 +25,32 @@ import {
   ExternalLink,
   Share2,
   Sliders,
+  Clock,
+  FileDown,
+  History,
+  RefreshCw,
 } from 'lucide-react';
 import { erpService } from '../../services/erp';
+import { downloadPlacementReportPdf } from '../../services/student';
 import type {
   PlacementDrive,
   StudentDriveEligibility,
   CreatePlacementDrivePayload,
   RosterIngestionReport,
+  StudentApplicationDetail,
+  DispatchLog,
 } from '../../types/erp';
 
 export const UniversityERPView: React.FC = () => {
   const { user } = useAuth();
   const isAdmin = user?.role === 'admin';
 
-  // Navigation tab: 'drives' | 'alerts' | 'roster_sync'
-  const [activeTab, setActiveTab] = useState<'drives' | 'alerts' | 'roster_sync'>('drives');
+  // Navigation tab: 'drives' | 'applications' | 'broadcast' | 'alerts' | 'roster_sync'
+  const [activeTab, setActiveTab] = useState<'drives' | 'applications' | 'broadcast' | 'alerts' | 'roster_sync'>('drives');
 
-  // Force student session strictly to 'drives' tab
+  // Restrict student sessions to drives or applications tracker
   useEffect(() => {
-    if (!isAdmin && activeTab !== 'drives') {
+    if (!isAdmin && activeTab !== 'drives' && activeTab !== 'applications') {
       setActiveTab('drives');
     }
   }, [isAdmin, activeTab]);
@@ -54,6 +61,24 @@ export const UniversityERPView: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
+
+  // Applications lifecycle tracker state
+  const [myApplications, setMyApplications] = useState<StudentApplicationDetail[]>([]);
+  const [loadingApps, setLoadingApps] = useState<boolean>(false);
+  const [updatingAppId, setUpdatingAppId] = useState<string | null>(null);
+  const [selectedNewStatus, setSelectedNewStatus] = useState<string>('Shortlisted for Round 1');
+  const [interviewNoteInput, setInterviewNoteInput] = useState<string>('');
+  const [interviewDateInput, setInterviewDateInput] = useState<string>('');
+  const [downloadingReportId, setDownloadingReportId] = useState<string | null>(null);
+
+  // Automated WhatsApp & Email Broadcast Dispatcher state
+  const [dispatchLogs, setDispatchLogs] = useState<DispatchLog[]>([]);
+  const [broadcastDriveId, setBroadcastDriveId] = useState<string>('drive_google_sde');
+  const [broadcastChannel, setBroadcastChannel] = useState<'all' | 'whatsapp' | 'email'>('all');
+  const [broadcastCustomNote, setBroadcastCustomNote] = useState<string>(
+    'Round 1 Online Assessment scheduled for this weekend. Please check your candidate portal for system requirements.'
+  );
+  const [isDispatching, setIsDispatching] = useState<boolean>(false);
 
   // Drive Alerts state
   const [selectedAlertDriveId, setSelectedAlertDriveId] = useState<string>('drive_google_sde');
@@ -96,6 +121,7 @@ export const UniversityERPView: React.FC = () => {
 
   useEffect(() => {
     loadData();
+    loadApplications();
   }, []);
 
   const loadData = async () => {
@@ -115,6 +141,83 @@ export const UniversityERPView: React.FC = () => {
       setError(err?.response?.data?.detail || err?.message || 'Failed to fetch placement drive telemetry.');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadApplications = async () => {
+    try {
+      setLoadingApps(true);
+      const apps = await erpService.getMyApplications();
+      setMyApplications(apps);
+    } catch (err: any) {
+      console.error('Failed to load applications:', err);
+    } finally {
+      setLoadingApps(false);
+    }
+  };
+
+  const loadDispatchLogs = async () => {
+    try {
+      const logs = await erpService.getDispatchLogs();
+      setDispatchLogs(logs);
+    } catch (err: any) {
+      console.error('Failed to load broadcast logs:', err);
+    }
+  };
+
+  useEffect(() => {
+    if (activeTab === 'applications') {
+      loadApplications();
+    } else if (activeTab === 'broadcast') {
+      loadDispatchLogs();
+    }
+  }, [activeTab]);
+
+  const handleUpdateStatus = async (applicationId: string) => {
+    try {
+      setUpdatingAppId(applicationId);
+      await erpService.updateApplicationStatus(applicationId, {
+        status: selectedNewStatus,
+        notes: interviewNoteInput || undefined,
+        interview_date: interviewDateInput || undefined,
+      });
+      setSuccessMsg(`Status updated to '${selectedNewStatus}'!`);
+      await loadApplications();
+      setTimeout(() => setSuccessMsg(null), 3500);
+    } catch (err: any) {
+      setError(err?.response?.data?.detail || err?.message || 'Failed to update application status.');
+    } finally {
+      setUpdatingAppId(null);
+    }
+  };
+
+  const handleDispatchBroadcast = async () => {
+    try {
+      setIsDispatching(true);
+      const res = await erpService.dispatchBroadcast(broadcastDriveId, {
+        channel: broadcastChannel,
+        note: broadcastCustomNote,
+      });
+      setSuccessMsg(res.message || 'Automated broadcast successfully dispatched to cohort!');
+      await loadDispatchLogs();
+      setTimeout(() => setSuccessMsg(null), 4000);
+    } catch (err: any) {
+      setError(err?.response?.data?.detail || err?.message || 'Broadcast dispatch failed.');
+    } finally {
+      setIsDispatching(false);
+    }
+  };
+
+  const handleDownloadDossier = async (candidateName?: string) => {
+    try {
+      setDownloadingReportId(candidateName || 'current');
+      await downloadPlacementReportPdf(user?.name || candidateName || 'Candidate');
+      setSuccessMsg('Official Placement Dossier (PDF) generated and downloaded!');
+      setTimeout(() => setSuccessMsg(null), 3500);
+    } catch (err) {
+      setError('Failed to download placement dossier.');
+    } finally {
+      setDownloadingReportId(null);
     }
   };
 
@@ -294,51 +397,70 @@ export const UniversityERPView: React.FC = () => {
             </p>
           </div>
 
-          {/* Tab Selector (Restricted to Admin/DCPD only; normal students see their verified drives count) */}
-          {isAdmin ? (
-            <div className="flex items-center p-1 bg-slate-950/80 border border-slate-800 rounded-xl">
-              <button
-                onClick={() => setActiveTab('drives')}
-                className={`px-3.5 py-2 rounded-lg text-xs font-semibold transition cursor-pointer flex items-center gap-1.5 ${
-                  activeTab === 'drives'
-                    ? 'bg-rose-600 text-white shadow-sm shadow-rose-600/30'
-                    : 'text-slate-400 hover:text-white'
-                }`}
-              >
-                <Briefcase className="w-3.5 h-3.5" />
-                Campus Drives ({studentDrives.length})
-              </button>
-              <button
-                onClick={() => setActiveTab('alerts')}
-                className={`px-3.5 py-2 rounded-lg text-xs font-semibold transition cursor-pointer flex items-center gap-1.5 ${
-                  activeTab === 'alerts'
-                    ? 'bg-gradient-to-r from-rose-600 to-pink-600 text-white shadow-sm shadow-rose-600/30'
-                    : 'text-slate-400 hover:text-white'
-                }`}
-              >
-                <Bell className="w-3.5 h-3.5" />
-                Drive Alerts (WhatsApp/Email)
-              </button>
-              <button
-                onClick={() => setActiveTab('roster_sync')}
-                className={`px-3.5 py-2 rounded-lg text-xs font-semibold transition cursor-pointer flex items-center gap-1.5 ${
-                  activeTab === 'roster_sync'
-                    ? 'bg-purple-600 text-white shadow-sm'
-                    : 'text-slate-400 hover:text-white'
-                }`}
-              >
-                <FileSpreadsheet className="w-3.5 h-3.5" />
-                ERP Sync & TPO Hub
-              </button>
-            </div>
-          ) : (
-            <div className="flex items-center gap-2">
-              <div className="px-3.5 py-2 rounded-xl bg-slate-950/80 border border-rose-500/30 text-rose-300 text-xs font-semibold flex items-center gap-2 shadow-inner">
-                <Briefcase className="w-4 h-4 text-pink-400" />
-                <span>Verified Drives: <strong className="text-white">{studentDrives.length} Available</strong></span>
-              </div>
-            </div>
-          )}
+          {/* Tab Selector */}
+          <div className="flex flex-wrap items-center p-1 bg-slate-950/80 border border-slate-800 rounded-xl gap-1">
+            <button
+              onClick={() => setActiveTab('drives')}
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition cursor-pointer flex items-center gap-1.5 ${
+                activeTab === 'drives'
+                  ? 'bg-rose-600 text-white shadow-sm shadow-rose-600/30'
+                  : 'text-slate-400 hover:text-white'
+              }`}
+            >
+              <Briefcase className="w-3.5 h-3.5" />
+              Campus Drives ({isAdmin ? adminDrives.length : studentDrives.length})
+            </button>
+
+            <button
+              onClick={() => setActiveTab('applications')}
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition cursor-pointer flex items-center gap-1.5 ${
+                activeTab === 'applications'
+                  ? 'bg-gradient-to-r from-rose-600 to-pink-600 text-white shadow-sm shadow-rose-600/30'
+                  : 'text-slate-400 hover:text-white'
+              }`}
+            >
+              <Clock className="w-3.5 h-3.5" />
+              {isAdmin ? 'Candidate Trackers' : 'My Applications'} ({myApplications.length})
+            </button>
+
+            {isAdmin && (
+              <>
+                <button
+                  onClick={() => setActiveTab('broadcast')}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition cursor-pointer flex items-center gap-1.5 ${
+                    activeTab === 'broadcast'
+                      ? 'bg-emerald-600 text-white shadow-sm shadow-emerald-600/30'
+                      : 'text-slate-400 hover:text-white'
+                  }`}
+                >
+                  <Send className="w-3.5 h-3.5" />
+                  Broadcast Dispatch
+                </button>
+                <button
+                  onClick={() => setActiveTab('alerts')}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition cursor-pointer flex items-center gap-1.5 ${
+                    activeTab === 'alerts'
+                      ? 'bg-pink-600 text-white shadow-sm shadow-pink-600/30'
+                      : 'text-slate-400 hover:text-white'
+                  }`}
+                >
+                  <Bell className="w-3.5 h-3.5" />
+                  Alerts Preview
+                </button>
+                <button
+                  onClick={() => setActiveTab('roster_sync')}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition cursor-pointer flex items-center gap-1.5 ${
+                    activeTab === 'roster_sync'
+                      ? 'bg-purple-600 text-white shadow-sm'
+                      : 'text-slate-400 hover:text-white'
+                  }`}
+                >
+                  <FileSpreadsheet className="w-3.5 h-3.5" />
+                  ERP Roster Sync
+                </button>
+              </>
+            )}
+          </div>
         </div>
       </div>
 
@@ -518,6 +640,424 @@ export const UniversityERPView: React.FC = () => {
               })}
             </div>
           )}
+        </div>
+      )}
+
+      {/* ========================================================= */}
+      {/* TAB 2: CANDIDATE APPLICATION LIFECYCLE & STATUS TRACKER   */}
+      {/* ========================================================= */}
+      {activeTab === 'applications' && (
+        <div className="space-y-6 animate-in fade-in">
+          {/* Header */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-800">
+            <div>
+              <h2 className="text-lg font-bold text-white flex items-center gap-2">
+                <Clock className="w-5 h-5 text-rose-400" />
+                {isAdmin ? 'Institutional Candidate Applications' : 'My Placement Applications & Stage Tracker'}
+              </h2>
+              <p className="text-xs text-slate-400 mt-1">
+                {isAdmin
+                  ? 'Review candidate application submissions, track progression across 4 stages, and advance student statuses with recruiter feedback.'
+                  : 'Track your real-time application progression across the 4 stages from initial resume dispatch to final corporate offer.'}
+              </p>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <button
+                onClick={loadApplications}
+                className="px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-700 hover:border-rose-500/50 text-slate-300 hover:text-white text-xs font-semibold flex items-center gap-1.5 transition cursor-pointer"
+              >
+                <RefreshCw className={`w-3.5 h-3.5 ${loadingApps ? 'animate-spin' : ''}`} />
+                <span>Refresh Status</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Admin Status Quick Action Bar */}
+          {isAdmin && (
+            <div className="p-5 rounded-2xl bg-gradient-to-r from-rose-950/40 via-slate-900/90 to-purple-950/30 border border-rose-500/30 shadow-xl space-y-4">
+              <div className="flex items-center justify-between">
+                <h3 className="text-sm font-bold text-white flex items-center gap-2">
+                  <Sliders className="w-4 h-4 text-rose-400" />
+                  Recruiter & TPO Application Stage Control
+                </h3>
+                <span className="text-[11px] font-semibold text-rose-300 bg-rose-500/10 px-2.5 py-1 rounded-full border border-rose-500/20">
+                  Total Tracked: {myApplications.length}
+                </span>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+                <div>
+                  <label className="text-[11px] font-semibold text-slate-400 block mb-1">Target Application</label>
+                  <select
+                    value={updatingAppId || (myApplications[0]?.application_id || '')}
+                    onChange={(e) => setUpdatingAppId(e.target.value)}
+                    className="w-full bg-slate-950 border border-slate-700 text-white text-xs rounded-xl px-3 py-2.5 focus:border-rose-500 outline-none"
+                  >
+                    {myApplications.map((app) => (
+                      <option key={app.application_id} value={app.application_id}>
+                        {app.company_name} — {app.job_role} ({app.status})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="text-[11px] font-semibold text-slate-400 block mb-1">Advance Stage To</label>
+                  <select
+                    value={selectedNewStatus}
+                    onChange={(e) => setSelectedNewStatus(e.target.value)}
+                    className="w-full bg-slate-950 border border-slate-700 text-white text-xs rounded-xl px-3 py-2.5 focus:border-rose-500 outline-none"
+                  >
+                    <option value="Shortlisted for Round 1">Shortlisted for Round 1 (Online Assessment)</option>
+                    <option value="Technical Interview">Technical Interview (1-on-1 Panel)</option>
+                    <option value="Offer Extended">Offer Extended (Letter Issued)</option>
+                    <option value="Not Selected">Not Selected (Cycle Closed)</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="text-[11px] font-semibold text-slate-400 block mb-1">Interview Date & Time</label>
+                  <input
+                    type="text"
+                    placeholder="e.g. 15 Dec 2026, 10:00 AM IST"
+                    value={interviewDateInput}
+                    onChange={(e) => setInterviewDateInput(e.target.value)}
+                    className="w-full bg-slate-950 border border-slate-700 text-white text-xs rounded-xl px-3 py-2.5 focus:border-rose-500 outline-none"
+                  />
+                </div>
+
+                <div className="flex items-end">
+                  <button
+                    onClick={() => handleUpdateStatus(updatingAppId || myApplications[0]?.application_id || '')}
+                    disabled={!myApplications.length}
+                    className="w-full py-2.5 px-4 bg-gradient-to-r from-rose-600 to-pink-600 hover:from-rose-500 hover:to-pink-500 disabled:opacity-50 text-white rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 shadow-md shadow-rose-600/30 cursor-pointer"
+                  >
+                    <CheckCircle2 className="w-4 h-4" />
+                    <span>Advance Stage</span>
+                  </button>
+                </div>
+              </div>
+
+              <div>
+                <input
+                  type="text"
+                  placeholder="Optional Recruiter Feedback / Notes (e.g. Cleared coding round with 92% rating. Focus on distributed databases.)"
+                  value={interviewNoteInput}
+                  onChange={(e) => setInterviewNoteInput(e.target.value)}
+                  className="w-full bg-slate-950 border border-slate-700 text-white text-xs rounded-xl px-3 py-2 focus:border-rose-500 outline-none placeholder:text-slate-600"
+                />
+              </div>
+            </div>
+          )}
+
+          {/* Applications List */}
+          {loadingApps ? (
+            <div className="p-12 text-center text-slate-400 flex flex-col items-center justify-center gap-3">
+              <Loader2 className="w-8 h-8 animate-spin text-rose-500" />
+              <p className="text-sm">Fetching real-time application progression & lifecycle stages...</p>
+            </div>
+          ) : myApplications.length === 0 ? (
+            <div className="p-12 text-center rounded-2xl bg-slate-900/50 border border-slate-800 space-y-4">
+              <Clock className="w-10 h-10 text-rose-400 mx-auto opacity-70" />
+              <h3 className="text-base font-bold text-white">No Active Applications Yet</h3>
+              <p className="text-xs text-slate-400 max-w-md mx-auto">
+                You haven't submitted applications to campus recruitment drives yet. Browse verified institutional drives and apply with 1-click.
+              </p>
+              <button
+                onClick={() => setActiveTab('drives')}
+                className="px-5 py-2.5 bg-rose-600 hover:bg-rose-500 text-white rounded-xl text-xs font-bold transition shadow-lg shadow-rose-600/20 cursor-pointer"
+              >
+                Browse Campus Drives
+              </button>
+            </div>
+          ) : (
+            <div className="space-y-6">
+              {myApplications.map((app) => {
+                const isSelected = app.status.includes('Offer');
+                const isRejected = app.status.includes('Not Selected') || app.status.includes('Reject');
+
+                return (
+                  <div
+                    key={app.application_id}
+                    className="p-6 rounded-2xl bg-slate-900/80 border border-rose-500/20 hover:border-rose-500/40 transition shadow-lg space-y-6 backdrop-blur-md relative overflow-hidden"
+                  >
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-800/80">
+                      <div>
+                        <div className="flex items-center gap-2 mb-1">
+                          <h3 className="text-lg font-black text-white">{app.company_name}</h3>
+                          <span className="px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-500/10 text-emerald-300 border border-emerald-500/20 font-mono">
+                            ₹{app.ctc_lpa} LPA
+                          </span>
+                          <span
+                            className={`px-2.5 py-0.5 rounded-full text-[11px] font-bold border ${
+                              isSelected
+                                ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40'
+                                : isRejected
+                                ? 'bg-rose-950/40 text-rose-300 border-rose-500/30'
+                                : 'bg-rose-500/10 text-rose-300 border-rose-500/30'
+                            }`}
+                          >
+                            {app.status}
+                          </span>
+                        </div>
+                        <p className="text-xs text-slate-300">
+                          {app.job_role} • <span className="text-slate-400">{app.location}</span>
+                        </p>
+                      </div>
+
+                      <div className="flex items-center gap-3">
+                        <button
+                          onClick={() => handleDownloadDossier(app.company_name)}
+                          disabled={downloadingReportId === app.company_name}
+                          className="px-3.5 py-2 rounded-xl bg-gradient-to-r from-rose-600 to-pink-600 hover:from-rose-500 hover:to-pink-500 text-white text-xs font-bold transition flex items-center gap-1.5 shadow-md shadow-rose-600/20 cursor-pointer disabled:opacity-50"
+                        >
+                          {downloadingReportId === app.company_name ? (
+                            <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                          ) : (
+                            <FileDown className="w-3.5 h-3.5" />
+                          )}
+                          <span>Download PDF Dossier</span>
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* 4-Stage Visual Timeline Tracker */}
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between text-xs font-semibold text-slate-400">
+                        <span>Application Progression (Stage {app.current_stage_index} of 4)</span>
+                        <span className="text-rose-400">
+                          {app.current_stage_index === 4
+                            ? '🎉 Offer Received!'
+                            : app.current_stage_index === 3
+                            ? '⚡ Technical Evaluation Active'
+                            : app.current_stage_index === 2
+                            ? '📝 Round 1 Screening'
+                            : '📨 Application Dispatched'}
+                        </span>
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+                        {app.stages.map((st, idx) => {
+                          const isDone = st.status === 'completed';
+                          const isCurrent = st.status === 'in_progress';
+                          const isStRejected = st.status === 'rejected';
+
+                          return (
+                            <div
+                              key={st.id}
+                              className={`p-3.5 rounded-xl border transition relative ${
+                                isDone
+                                  ? 'bg-emerald-950/20 border-emerald-500/40 text-emerald-200'
+                                  : isCurrent
+                                  ? 'bg-rose-950/30 border-rose-500 text-white shadow-md shadow-rose-500/10'
+                                  : isStRejected
+                                  ? 'bg-rose-950/40 border-rose-500/30 text-rose-300'
+                                  : 'bg-slate-950/50 border-slate-800 text-slate-400'
+                              }`}
+                            >
+                              <div className="flex items-center justify-between mb-2">
+                                <span className="text-[10px] font-bold uppercase tracking-wider">
+                                  Stage 0{idx + 1}
+                                </span>
+                                {isDone ? (
+                                  <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                                ) : isCurrent ? (
+                                  <div className="w-2.5 h-2.5 rounded-full bg-rose-500 animate-ping shrink-0" />
+                                ) : isStRejected ? (
+                                  <AlertTriangle className="w-4 h-4 text-rose-400 shrink-0" />
+                                ) : (
+                                  <div className="w-2.5 h-2.5 rounded-full bg-slate-700 shrink-0" />
+                                )}
+                              </div>
+                              <h4 className="text-xs font-bold leading-tight mb-1">{st.label}</h4>
+                              <p className="text-[11px] leading-relaxed opacity-80">{st.description}</p>
+                              {st.date && (
+                                <span className="block mt-2 text-[10px] font-mono text-slate-300 font-semibold">
+                                  📅 {st.date}
+                                </span>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    {/* Interview Notes / Schedule Details */}
+                    {(app.interview_notes || app.interview_date) && (
+                      <div className="p-3.5 rounded-xl bg-slate-950/70 border border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+                        <div className="space-y-0.5">
+                          <span className="text-[10px] font-bold uppercase text-rose-400">
+                            Recruiter & Panel Instructions
+                          </span>
+                          <p className="text-slate-300">{app.interview_notes || 'Proceed to candidate portal.'}</p>
+                        </div>
+                        {app.interview_date && (
+                          <div className="px-3 py-1.5 rounded-lg bg-rose-500/10 border border-rose-500/30 text-rose-300 font-mono text-xs font-bold shrink-0">
+                            🕒 {app.interview_date}
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ========================================================= */}
+      {/* TAB 3: AUTOMATED WHATSAPP & EMAIL BROADCAST DISPATCHER    */}
+      {/* ========================================================= */}
+      {isAdmin && activeTab === 'broadcast' && (
+        <div className="space-y-8 animate-in fade-in">
+          {/* Header */}
+          <div className="p-6 rounded-2xl bg-gradient-to-r from-emerald-950/40 via-slate-900/90 to-rose-950/30 border border-emerald-500/30 flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div>
+              <div className="flex items-center gap-2 mb-1">
+                <span className="px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 font-mono">
+                  Meta WhatsApp Cloud API & SMTP Gateway
+                </span>
+                <span className="text-[11px] font-semibold text-emerald-400 flex items-center gap-1">
+                  <CheckCircle2 className="w-3.5 h-3.5" /> High-Throughput Dispatcher
+                </span>
+              </div>
+              <h2 className="text-xl font-bold text-white">Automated Drive Broadcast Dispatcher</h2>
+              <p className="text-xs text-slate-300 mt-1 max-w-2xl">
+                One-click transactional notification dispatch to all verified eligible candidates via WhatsApp and official university email.
+              </p>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <button
+                onClick={loadDispatchLogs}
+                className="px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-700 text-slate-300 hover:text-white text-xs font-semibold flex items-center gap-1.5 transition cursor-pointer"
+              >
+                <History className="w-3.5 h-3.5" />
+                <span>Refresh Audit Logs</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Broadcast Trigger Box */}
+          <div className="p-6 rounded-2xl bg-slate-900/80 border border-slate-800 space-y-6">
+            <h3 className="text-sm font-bold text-white flex items-center gap-2">
+              <Send className="w-4 h-4 text-emerald-400" />
+              Configure & Dispatch Drive Broadcast
+            </h3>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <label className="text-xs font-semibold text-slate-400 block mb-1.5">Select Campus Drive</label>
+                <select
+                  value={broadcastDriveId}
+                  onChange={(e) => setBroadcastDriveId(e.target.value)}
+                  className="w-full bg-slate-950 border border-slate-700 text-white text-xs rounded-xl px-3 py-2.5 focus:border-emerald-500 outline-none"
+                >
+                  {adminDrives.map((d) => (
+                    <option key={d.drive_id} value={d.drive_id}>
+                      {d.company_name} — {d.job_role} (₹{d.ctc_lpa} LPA)
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="text-xs font-semibold text-slate-400 block mb-1.5">Dispatch Channels</label>
+                <select
+                  value={broadcastChannel}
+                  onChange={(e) => setBroadcastChannel(e.target.value as any)}
+                  className="w-full bg-slate-950 border border-slate-700 text-white text-xs rounded-xl px-3 py-2.5 focus:border-emerald-500 outline-none"
+                >
+                  <option value="all">🟢 Both WhatsApp Cloud API + SMTP Email (Recommended)</option>
+                  <option value="whatsapp">📱 WhatsApp Cloud API Only</option>
+                  <option value="email">✉️ Institutional SMTP Email Only</option>
+                </select>
+              </div>
+
+              <div className="flex items-end">
+                <button
+                  onClick={handleDispatchBroadcast}
+                  disabled={isDispatching}
+                  className="w-full py-2.5 px-4 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 disabled:opacity-50 text-white rounded-xl text-xs font-bold transition flex items-center justify-center gap-2 shadow-lg shadow-emerald-600/30 cursor-pointer"
+                >
+                  {isDispatching ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
+                  <span>{isDispatching ? 'Dispatching Broadcast...' : '🚀 Dispatch Broadcast to Cohort'}</span>
+                </button>
+              </div>
+            </div>
+
+            <div>
+              <label className="text-xs font-semibold text-slate-400 block mb-1.5">
+                Custom Candidate Announcement Note
+              </label>
+              <textarea
+                rows={3}
+                value={broadcastCustomNote}
+                onChange={(e) => setBroadcastCustomNote(e.target.value)}
+                placeholder="Include round details, venue, or online assessment timing..."
+                className="w-full bg-slate-950 border border-slate-700 text-white text-xs rounded-xl p-3 focus:border-emerald-500 outline-none leading-relaxed"
+              />
+            </div>
+          </div>
+
+          {/* Dispatch Telemetry & Audit Logs Table */}
+          <div className="p-6 rounded-2xl bg-slate-900/60 border border-slate-800 space-y-4">
+            <div className="flex items-center justify-between">
+              <h3 className="text-sm font-bold text-white flex items-center gap-2">
+                <History className="w-4 h-4 text-emerald-400" />
+                Broadcast Dispatch History & Delivery Telemetry
+              </h3>
+              <span className="text-xs text-slate-400">Audit logs stored in MongoDB</span>
+            </div>
+
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs text-slate-300">
+                <thead className="text-[11px] uppercase tracking-wider text-slate-400 bg-slate-950/80 border-b border-slate-800">
+                  <tr>
+                    <th className="py-3 px-4">Dispatch ID</th>
+                    <th className="py-3 px-4">Drive & Company</th>
+                    <th className="py-3 px-4">Channel</th>
+                    <th className="py-3 px-4">Recipients</th>
+                    <th className="py-3 px-4">Delivery Rate</th>
+                    <th className="py-3 px-4">Dispatched By</th>
+                    <th className="py-3 px-4 text-right">Timestamp</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-800/80">
+                  {dispatchLogs.map((log) => (
+                    <tr key={log.dispatch_id || log.id} className="hover:bg-slate-950/40 transition">
+                      <td className="py-3 px-4 font-mono font-bold text-rose-300">{log.dispatch_id}</td>
+                      <td className="py-3 px-4 font-semibold text-white">
+                        {log.company_name}
+                        <span className="block text-[11px] text-slate-400">{log.job_role}</span>
+                      </td>
+                      <td className="py-3 px-4">
+                        <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 uppercase font-mono">
+                          {log.channel}
+                        </span>
+                      </td>
+                      <td className="py-3 px-4 font-mono font-bold text-white">
+                        {log.recipients_count} Candidates
+                      </td>
+                      <td className="py-3 px-4">
+                        <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-teal-500/20 text-teal-300 border border-teal-500/30">
+                          {log.success_rate || 100}% Delivered
+                        </span>
+                      </td>
+                      <td className="py-3 px-4 text-slate-400 font-mono text-[11px]">
+                        {log.sender_admin || 'dcpd@apex.edu'}
+                      </td>
+                      <td className="py-3 px-4 text-right text-slate-400 font-mono text-[11px]">
+                        {new Date(log.created_at).toLocaleString()}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
         </div>
       )}
 

@@ -246,3 +246,115 @@ async def test_update_placement_drive_criteria():
         # 6. Cleanup
         del_res = await client.delete(f"/api/erp/drives/{drive_id}", headers=admin_headers)
         assert del_res.status_code == 200
+
+
+@pytest.mark.asyncio
+async def test_application_lifecycle_and_pdf_dossier_and_broadcast():
+    """
+    Comprehensive verification of:
+    1. Student Application Lifecycle & Timeline Tracker
+    2. Candidate PDF Dossier Download API
+    3. Admin WhatsApp & Email Automated Broadcast Dispatch
+    """
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+        # 1. Login as Student
+        student_res = await client.post(
+            "/api/auth/login",
+            json={"email": "student@placementiq.ai", "password": "Student@1234"},
+        )
+        assert student_res.status_code == 200
+        student_headers = {"Authorization": f"Bearer {student_res.json()['access_token']}"}
+
+        # 2. Login as Admin & Create targeted drive
+        admin_res = await client.post(
+            "/api/auth/login",
+            json={"email": "admin@placementiq.ai", "password": "Admin@1234"},
+        )
+        assert admin_res.status_code == 200
+        admin_headers = {"Authorization": f"Bearer {admin_res.json()['access_token']}"}
+
+        create_res = await client.post(
+            "/api/erp/drives",
+            json={
+                "company_name": "Google",
+                "job_role": "Software Development Engineer - I",
+                "ctc_lpa": 24.5,
+                "location": "Bangalore / Hyderabad",
+                "min_cgpa": 7.0,
+                "max_backlogs": 0,
+                "eligible_branches": ["Computer Science", "Information Technology"],
+                "min_coding_score": 60.0,
+                "application_deadline": "2026-12-15",
+                "drive_date": "2026-12-20",
+                "description": "Core software engineering and distributed infrastructure.",
+            },
+            headers=admin_headers,
+        )
+        assert create_res.status_code == 200
+        drive_id = create_res.json()["drive_id"]
+
+        # 3. Apply to a placement drive
+        apply_res = await client.post(
+            "/api/erp/drives/apply",
+            json={"drive_id": drive_id},
+            headers=student_headers,
+        )
+        assert apply_res.status_code == 200
+        app_data = apply_res.json()
+        assert app_data["status"] in ["success", "already_applied"]
+
+        # 4. Check GET /api/erp/my-applications
+        my_apps_res = await client.get("/api/erp/my-applications", headers=student_headers)
+        assert my_apps_res.status_code == 200
+        apps_list = my_apps_res.json()
+        assert len(apps_list) >= 1
+        target_app = next(a for a in apps_list if a["drive_id"] == drive_id)
+        assert len(target_app["stages"]) == 4
+        assert target_app["stages"][0]["status"] == "completed"
+
+        app_id = target_app["application_id"]
+
+        # 5. Admin advances status to 'Technical Interview'
+        patch_res = await client.patch(
+            f"/api/erp/applications/{app_id}/status",
+            json={
+                "status": "Technical Interview",
+                "notes": "Selected for 1-on-1 System Design and Data Structures round with Principal Architect.",
+                "interview_date": "2026-12-22 10:00 AM IST",
+            },
+            headers=admin_headers,
+        )
+        assert patch_res.status_code == 200
+        assert patch_res.json()["new_status"] == "Technical Interview"
+
+        # 6. Verify student tracker reflects updated stage
+        my_apps_updated = (await client.get("/api/erp/my-applications", headers=student_headers)).json()
+        updated_app = next(a for a in my_apps_updated if a["application_id"] == app_id)
+        assert updated_app["status"] == "Technical Interview"
+        assert updated_app["current_stage_index"] == 3
+        assert updated_app["stages"][2]["status"] == "in_progress"
+
+        # 7. Student downloads Official Placement Readiness Report (PDF)
+        pdf_res = await client.get("/api/student/placement-report/pdf", headers=student_headers)
+        assert pdf_res.status_code == 200
+        assert pdf_res.headers["content-type"] == "application/pdf"
+        assert len(pdf_res.content) > 10000
+        assert pdf_res.content[:4] == b"%PDF"
+
+        # 8. Admin dispatches automated broadcast alert
+        broadcast_res = await client.post(
+            f"/api/erp/drives/{drive_id}/broadcast-dispatch",
+            json={"channel": "all", "note": "Mandatory orientation session tomorrow at 9 AM."},
+            headers=admin_headers,
+        )
+        assert broadcast_res.status_code == 200
+        b_data = broadcast_res.json()
+        assert b_data["status"] == "success"
+        assert b_data["recipients_count"] >= 1
+
+        # 9. Verify broadcast logs
+        logs_res = await client.get("/api/erp/dispatch-logs", headers=admin_headers)
+        assert logs_res.status_code == 200
+        logs = logs_res.json()
+        assert len(logs) >= 1
+        assert any(l.get("drive_id") == drive_id for l in logs)

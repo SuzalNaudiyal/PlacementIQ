@@ -14,8 +14,9 @@ import {
   Sparkles,
   RefreshCw,
   GitBranch,
+  FileDown,
 } from 'lucide-react';
-import { getStudentProfile, updateStudentProfile, getSkillTaxonomy } from '../../services/student';
+import { getStudentProfile, updateStudentProfile, getSkillTaxonomy, downloadPlacementReportPdf } from '../../services/student';
 import type { StudentProfile, SkillTaxonomy, ProjectItem, InternshipItem, CertificationItem } from '../../types/student';
 import { CodingProfileCard } from './CodingProfileCard';
 
@@ -29,6 +30,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ onProfileUpdated }) =>
   const [activeTab, setActiveTab] = useState<'academics' | 'skills' | 'experience' | 'assessments' | 'coding'>('academics');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [downloadingPdf, setDownloadingPdf] = useState(false);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
@@ -85,6 +87,21 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ onProfileUpdated }) =>
       setErrorMessage(error.response?.data?.detail || error.message || 'Failed to update profile.');
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleDownloadPdf = async () => {
+    try {
+      setDownloadingPdf(true);
+      setSuccessMessage(null);
+      setErrorMessage(null);
+      await downloadPlacementReportPdf(profile?.name || 'Candidate');
+      setSuccessMessage('Official Placement Readiness Dossier (PDF) successfully generated & downloaded!');
+      setTimeout(() => setSuccessMessage(null), 4000);
+    } catch {
+      setErrorMessage('Failed to generate official PDF report. Please verify backend connection.');
+    } finally {
+      setDownloadingPdf(false);
     }
   };
 
@@ -286,6 +303,17 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ onProfileUpdated }) =>
                 </p>
               </div>
             </div>
+
+            {/* Download Official Dossier Button */}
+            <button
+              onClick={handleDownloadPdf}
+              disabled={downloadingPdf}
+              className="inline-flex items-center gap-2 px-4 py-3 rounded-xl bg-gradient-to-r from-rose-600 to-pink-600 hover:from-rose-500 hover:to-pink-500 text-white font-bold text-sm shadow-lg shadow-rose-600/20 disabled:opacity-50 transition transform hover:-translate-y-0.5 cursor-pointer"
+              title="Download Official 1-Page Placement Dossier (PDF)"
+            >
+              {downloadingPdf ? <RefreshCw className="w-4 h-4 animate-spin" /> : <FileDown className="w-4 h-4" />}
+              {downloadingPdf ? 'Generating PDF...' : 'Download Dossier (PDF)'}
+            </button>
 
             {/* Save Button */}
             <button

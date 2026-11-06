@@ -28,8 +28,10 @@ import {
   Award,
   ChevronRight,
   Compass,
+  FileDown,
 } from 'lucide-react';
 import { dashboardService } from '../../services/dashboard';
+import { downloadPlacementReportPdf } from '../../services/student';
 import type { DashboardSummaryResponse } from '../../types/dashboard';
 
 interface UnifiedDashboardProps {
@@ -43,10 +45,22 @@ export function UnifiedDashboard({ onNavigate }: UnifiedDashboardProps) {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [chartMode, setChartMode] = useState<'radar' | 'bar'>('radar');
+  const [downloadingPdf, setDownloadingPdf] = useState<boolean>(false);
 
   useEffect(() => {
     loadSummary();
   }, []);
+
+  const handleDownloadDossier = async () => {
+    try {
+      setDownloadingPdf(true);
+      await downloadPlacementReportPdf(data?.student_name || 'Candidate');
+    } catch (err) {
+      console.error('Failed to download report:', err);
+    } finally {
+      setDownloadingPdf(false);
+    }
+  };
 
   async function loadSummary() {
     try {
@@ -114,22 +128,34 @@ export function UnifiedDashboard({ onNavigate }: UnifiedDashboardProps) {
             </p>
           </div>
 
-          {/* Quick Profile Completeness Widget */}
-          <div className="p-4 bg-slate-950/70 rounded-2xl border border-slate-800 flex items-center gap-4 flex-shrink-0 self-start lg:self-auto">
-            <div className="text-right">
-              <span className="text-xs text-slate-400 font-semibold block">Profile Completeness</span>
-              <span className="text-xl font-black text-white font-mono">
-                {kpis.profile_completeness}%
-              </span>
-            </div>
+          {/* Action Header: PDF Dossier + Quick Profile Completeness Widget */}
+          <div className="flex flex-wrap items-center gap-3 flex-shrink-0 self-start lg:self-auto">
             <button
-              onClick={() => onNavigate('profile')}
-              className="p-2.5 bg-gradient-to-r from-rose-600 to-pink-600 hover:from-rose-500 hover:to-pink-500 text-white rounded-xl text-xs font-bold transition flex items-center gap-1 cursor-pointer shadow-md shadow-rose-600/20"
-              title="Edit Profile"
+              onClick={handleDownloadDossier}
+              disabled={downloadingPdf}
+              className="px-4 py-3 bg-gradient-to-r from-rose-600 to-pink-600 hover:from-rose-500 hover:to-pink-500 text-white rounded-2xl text-xs font-bold transition flex items-center gap-2 cursor-pointer shadow-lg shadow-rose-600/25 disabled:opacity-50"
+              title="Download Official 1-Page Placement Dossier (PDF)"
             >
-              Update
-              <ChevronRight className="w-3.5 h-3.5" />
+              {downloadingPdf ? <RefreshCw className="w-4 h-4 animate-spin" /> : <FileDown className="w-4 h-4" />}
+              <span>{downloadingPdf ? 'Exporting PDF...' : 'Download PDF Dossier'}</span>
             </button>
+
+            <div className="p-3 sm:p-4 bg-slate-950/70 rounded-2xl border border-slate-800 flex items-center gap-4">
+              <div className="text-right">
+                <span className="text-xs text-slate-400 font-semibold block">Profile Completeness</span>
+                <span className="text-xl font-black text-white font-mono">
+                  {kpis.profile_completeness}%
+                </span>
+              </div>
+              <button
+                onClick={() => onNavigate('profile')}
+                className="p-2.5 bg-slate-800 hover:bg-slate-700 text-white rounded-xl text-xs font-bold transition flex items-center gap-1 cursor-pointer"
+                title="Edit Profile"
+              >
+                Update
+                <ChevronRight className="w-3.5 h-3.5" />
+              </button>
+            </div>
           </div>
         </div>
       </div>

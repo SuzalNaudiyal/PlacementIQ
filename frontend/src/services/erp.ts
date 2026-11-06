@@ -5,6 +5,8 @@ import type {
   CreatePlacementDrivePayload,
   RosterIngestionReport,
   DriveEligibleCandidatesResponse,
+  StudentApplicationDetail,
+  DispatchLog,
 } from '../types/erp';
 
 export const erpService = {
@@ -81,6 +83,32 @@ export const erpService = {
 
   async updateAlertPreferences(prefs: any): Promise<any> {
     const res = await apiClient.put('/erp/alerts/preferences', prefs);
+    return res.data;
+  },
+
+  async getMyApplications(): Promise<StudentApplicationDetail[]> {
+    const res = await apiClient.get<StudentApplicationDetail[]>('/erp/my-applications');
+    return res.data;
+  },
+
+  async updateApplicationStatus(
+    applicationId: string,
+    data: { status: string; notes?: string; interview_date?: string }
+  ): Promise<{ status: string; message: string }> {
+    const res = await apiClient.patch(`/erp/applications/${applicationId}/status`, data);
+    return res.data;
+  },
+
+  async dispatchBroadcast(
+    driveId: string,
+    payload?: { channel?: 'whatsapp' | 'email' | 'all'; note?: string }
+  ): Promise<any> {
+    const res = await apiClient.post(`/erp/drives/${driveId}/broadcast-dispatch`, payload || {});
+    return res.data;
+  },
+
+  async getDispatchLogs(): Promise<DispatchLog[]> {
+    const res = await apiClient.get<DispatchLog[]>('/erp/dispatch-logs');
     return res.data;
   },
 };

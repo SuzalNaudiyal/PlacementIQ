@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Response
 from datetime import datetime, timezone
 from typing import Dict, Any
 
@@ -11,6 +11,7 @@ from backend.app.models.skills_taxonomy import SKILL_TAXONOMY
 from ml.inference.predictor import get_predictor
 from backend.app.analytics.skill_gap import rank_all_roles_for_candidate
 from backend.app.analytics.job_matcher import match_all_jobs_for_candidate
+from backend.app.analytics.report_pdf_generator import generate_placement_readiness_pdf
 
 router = APIRouter(prefix="/student", tags=["Student Profile"])
 
@@ -195,4 +196,49 @@ async def get_student_dashboard_summary(
         top_positive_factors=eval_result.get("positive_factors", []),
         critical_risk_factors=eval_result.get("risk_factors", []),
         next_recommended_actions=next_actions,
+    )
+
+
+@router.get("/placement-report/pdf")
+async def download_placement_report_pdf(
+    current_user: Dict[str, Any] = Depends(get_current_user),
+):
+    """
+    Downloads high-resolution official A4 PDF Placement Dossier & Readiness Report.
+    Embeds explainable TreeSHAP probability, SVAR Spoken English metrics, 3-tier skill gaps,
+    and institutional verification hash.
+    """
+    db = get_database()
+    user_id = str(current_user["id"])
+    student = await get_or_create_student(db, current_user)
+
+    predictor = get_predictor()
+    eval_result = predictor.predict(student)
+
+    # Check for latest SVAR session
+    svar_doc = await db.svar_sessions.find_one({"user_id": user_id}, sort=[("created_at", -1)])
+
+    pdf_bytes = generate_placement_readiness_pdf(
+        student_profile={
+            "name": current_user.get("name", "Student Candidate"),
+            "email": current_user.get("email", "candidate@university.edu"),
+            "branch": student.get("branch", "Computer Science"),
+            "roll_no": student.get("roll_number", "22CS1044"),
+            "cgpa": float(student.get("cgpa", 8.4)),
+            "backlogs": int(student.get("backlogs", 0)),
+            "coding_score": float(student.get("assessments", {}).get("coding_score", 82.0)),
+            "target_role": student.get("target_role", "Software Development Engineer - I"),
+        },
+        prediction_data=eval_result,
+        svar_data=svar_doc,
+    )
+
+    clean_name = current_user.get("name", "Candidate").replace(" ", "_")
+    filename = f"HireMatrix_Placement_Dossier_{clean_name}.pdf"
+    return Response(
+        content=pdf_bytes,
+        media_type="application/pdf",
+        headers={
+            "Content-Disposition": f'attachment; filename="{filename}"'
+        },
     )
