@@ -6,14 +6,14 @@
   --lml-px: 0;
   --lml-py: 0;
   position: relative;
-  min-height: 520px;
+  min-height: clamp(560px, 52vw, 680px);
   border-radius: 28px;
   overflow: hidden;
-  background: radial-gradient(56% 46% at 50% 36%, rgba(244, 63, 94, 0.28), transparent 72%),
-              radial-gradient(40% 40% at 80% 60%, rgba(236, 72, 153, 0.24), transparent 70%),
-              linear-gradient(180deg, #120614 0%, #1c0a20 35%, #2c0e2a 70%, #200922 100%);
+  background: radial-gradient(50% 38% at 50% 28%, rgba(244, 63, 94, 0.12), transparent 72%),
+              radial-gradient(45% 45% at 80% 65%, rgba(236, 72, 153, 0.20), transparent 70%),
+              linear-gradient(180deg, #09030a 0%, #0e0510 38%, #1c081a 75%, #180517 100%);
   isolation: isolate;
-  border: 1px solid rgba(244, 63, 94, 0.32);
+  border: 1px solid rgba(244, 63, 94, 0.28);
   box-shadow: 0 20px 50px -15px rgba(28, 6, 24, 0.75), inset 0 1px 0 rgba(255, 255, 255, 0.12);
 }
 
@@ -93,8 +93,8 @@
 }
 
 .meadow-coin--a {
-  left: 20%;
-  top: 74%;
+  left: 13%;
+  top: 72%;
 }
 
 .meadow-coin--a .meadow-coinbody {
@@ -102,7 +102,7 @@
 }
 
 .meadow-coin--b {
-  left: 82%;
+  left: 87%;
   top: 66%;
 }
 
@@ -207,14 +207,14 @@
 
 @media (max-width: 768px) {
   .meadow-coin--a {
-    left: 16%;
-    top: 78%;
-    width: 90px;
+    left: 12%;
+    top: 80%;
+    width: 80px;
   }
   .meadow-coin--b {
-    left: 84%;
-    top: 74%;
-    width: 90px;
+    left: 88%;
+    top: 76%;
+    width: 80px;
   }
 }
 

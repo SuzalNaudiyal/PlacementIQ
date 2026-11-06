@@ -94,8 +94,8 @@ interface LayerConfig {
 
 const HERO_LAYERS: LayerConfig[] = [
   {
-    base: 0.74,
-    mounds: [[0.06, 0.16, 0.1], [0.3, 0.18, 0.065], [0.55, 0.2, 0.05], [0.78, 0.17, 0.09], [0.98, 0.14, 0.13]],
+    base: 0.82,
+    mounds: [[0.06, 0.16, 0.08], [0.3, 0.18, 0.05], [0.55, 0.2, 0.04], [0.78, 0.17, 0.07], [0.98, 0.14, 0.09]],
     size: [1.3, 2.5],
     density: 1.15,
     band: 70,
@@ -104,8 +104,8 @@ const HERO_LAYERS: LayerConfig[] = [
     wobble: 0.012
   },
   {
-    base: 0.83,
-    mounds: [[0, 0.2, 0.17], [0.2, 0.16, 0.13], [0.44, 0.15, 0.08], [0.64, 0.17, 0.12], [0.92, 0.2, 0.17]],
+    base: 0.89,
+    mounds: [[0, 0.2, 0.12], [0.2, 0.16, 0.09], [0.44, 0.15, 0.06], [0.64, 0.17, 0.09], [0.92, 0.2, 0.12]],
     size: [1.9, 3.5],
     density: 1.2,
     band: 130,
@@ -114,8 +114,8 @@ const HERO_LAYERS: LayerConfig[] = [
     wobble: 0.016
   },
   {
-    base: 0.95,
-    mounds: [[0.1, 0.15, 0.1], [0.31, 0.15, 0.24], [0.52, 0.12, 0.08], [0.7, 0.13, 0.13], [0.87, 0.15, 0.28]],
+    base: 0.96,
+    mounds: [[0.1, 0.15, 0.08], [0.31, 0.15, 0.16], [0.52, 0.12, 0.06], [0.7, 0.13, 0.1], [0.87, 0.15, 0.18]],
     size: [2.2, 4.6],
     density: 1.35,
     band: 999,
@@ -665,11 +665,21 @@ export const FlowerMeadowHero: React.FC<FlowerMeadowHeroProps> = ({
         {/* Drifting Fireflies / Pollen */}
         <PollenParticles count={18} />
 
+        {/* Deep Contrast Scrim behind Center Text & Actions (Prevents text merging into background / flowers) */}
+        <div
+          className="absolute inset-0 pointer-events-none z-[4]"
+          style={{
+            background:
+              'radial-gradient(ellipse 75% 65% at 50% 36%, rgba(9, 3, 10, 0.85) 0%, rgba(9, 3, 10, 0.55) 55%, transparent 88%)',
+          }}
+          aria-hidden="true"
+        />
+
         {/* HireMatrix AI Native Hero Content */}
         <div className="relative z-10 max-w-4xl mx-auto flex flex-col items-center text-center">
           {/* Top Pill Badge */}
           <div className="mb-4 flex justify-center w-full">
-            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-rose-500/15 border border-rose-400/30 text-rose-200 text-xs font-semibold shadow-md backdrop-blur-md animate-float">
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-slate-950/80 border border-rose-400/40 text-rose-200 text-xs font-semibold shadow-xl shadow-black/50 backdrop-blur-md animate-float">
               <Sparkles className="w-3.5 h-3.5 text-pink-400" />
               <span>AI Career Intelligence & Placement Readiness OS</span>
             </div>
@@ -682,7 +692,7 @@ export const FlowerMeadowHero: React.FC<FlowerMeadowHeroProps> = ({
               <span className="hero-title-gradient hover:scale-[1.02] transition-transform duration-300 cursor-default select-none">
                 HireMatrix
               </span>{' '}
-              <span className="relative inline-flex items-center gap-2 px-3 sm:px-4 py-0.5 sm:py-1 rounded-2xl bg-gradient-to-r from-rose-500/25 via-pink-500/30 to-purple-500/25 border border-rose-400/40 shadow-lg shadow-rose-500/30 backdrop-blur-md align-middle text-2xl sm:text-4xl lg:text-5xl text-transparent bg-clip-text bg-gradient-to-r from-pink-200 via-rose-200 to-purple-200 animate-text-shimmer">
+              <span className="relative inline-flex items-center gap-2 px-3 sm:px-4 py-0.5 sm:py-1 rounded-2xl bg-gradient-to-r from-rose-500/20 via-pink-500/25 to-purple-500/20 border border-rose-400/50 shadow-xl shadow-rose-950/50 backdrop-blur-md align-middle text-2xl sm:text-4xl lg:text-5xl text-transparent bg-clip-text bg-gradient-to-r from-pink-100 via-rose-100 to-white animate-text-shimmer">
                 <span className="absolute -top-1 -right-1 flex h-3 w-3">
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-pink-400 opacity-75"></span>
                   <span className="relative inline-flex rounded-full h-3 w-3 bg-rose-500"></span>
@@ -692,52 +702,52 @@ export const FlowerMeadowHero: React.FC<FlowerMeadowHeroProps> = ({
             </h1>
           </div>
 
-          {/* Subtitle */}
-          <h2 className="mt-2 text-xl sm:text-2xl lg:text-3xl font-bold tracking-tight text-rose-100 text-center">
+          {/* Subtitle with Ultra-Crisp White / Rose Contrast */}
+          <h2 className="mt-2 text-xl sm:text-2xl lg:text-3xl font-extrabold tracking-tight text-white drop-shadow-[0_2px_10px_rgba(0,0,0,0.9)] text-center">
             AI Placement &{' '}
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-rose-400 via-pink-300 to-purple-300">
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-pink-300 via-rose-200 to-pink-300 drop-shadow-sm">
               Skill Gap Analyzer
             </span>
           </h2>
 
           {/* Description */}
-          <p className="mt-4 text-sm sm:text-base lg:text-lg text-slate-200/90 max-w-2xl mx-auto text-center leading-relaxed drop-shadow-sm">
+          <p className="mt-3.5 text-sm sm:text-base lg:text-lg text-slate-100 font-medium max-w-2xl mx-auto text-center leading-relaxed drop-shadow-[0_2px_12px_rgba(0,0,0,0.95)]">
             Evaluate placement readiness, parse resumes with NLP, identify missing skills for specific job roles, match against industry opportunities, and follow an explainable 8-week roadmap.
           </p>
 
           {/* Call-to-Action Buttons */}
-          <div className="flex flex-wrap items-center justify-center gap-3 mt-7">
+          <div className="flex flex-wrap items-center justify-center gap-3.5 mt-7">
             <button
               onClick={onGetStarted}
-              className="px-6 py-3 rounded-xl bg-gradient-to-r from-rose-600 via-pink-600 to-rose-600 hover:from-rose-500 hover:to-pink-500 text-white font-semibold text-sm shadow-xl shadow-rose-600/30 flex items-center gap-2 transition-all duration-200 cursor-pointer hover:scale-[1.02] hover:-translate-y-0.5"
+              className="px-6 py-3 rounded-xl bg-gradient-to-r from-rose-600 via-pink-600 to-rose-600 hover:from-rose-500 hover:to-pink-500 text-white font-bold text-sm shadow-2xl shadow-rose-600/40 flex items-center gap-2 transition-all duration-200 cursor-pointer hover:scale-[1.02] hover:-translate-y-0.5 ring-1 ring-white/20"
             >
               <span>Get Started (Sign In / Register)</span>
               <ArrowRight className="w-4 h-4" />
             </button>
             <button
               onClick={onWatchTour}
-              className="px-5 py-3 rounded-xl bg-slate-900/90 hover:bg-slate-800 text-rose-200 border border-rose-500/40 font-semibold text-sm shadow-xl flex items-center gap-2 transition-all duration-200 cursor-pointer hover:scale-[1.02] hover:-translate-y-0.5 backdrop-blur-md"
+              className="px-5 py-3 rounded-xl bg-slate-950/90 hover:bg-black text-white border border-rose-500/50 font-semibold text-sm shadow-2xl shadow-black/60 flex items-center gap-2 transition-all duration-200 cursor-pointer hover:scale-[1.02] hover:-translate-y-0.5 backdrop-blur-md hover:border-rose-400"
             >
               <Sparkles className="w-4 h-4 text-pink-400" />
               <span>Watch HireMatrix Tour</span>
             </button>
           </div>
 
-          {/* Value Proposition Pills */}
-          <div className="flex flex-wrap items-center justify-center gap-2.5 mt-8 max-w-2xl">
+          {/* Value Proposition Pills - Solid High-Contrast Dark Glass */}
+          <div className="flex flex-wrap items-center justify-center gap-2.5 mt-8 max-w-3xl">
             {[
-              { label: 'Explainable TreeSHAP ML', icon: '🎯', color: 'border-rose-500/40 text-rose-200 bg-rose-950/60' },
-              { label: 'SVAR Voice AI & Aptitude', icon: '🎙️', color: 'border-pink-500/40 text-pink-200 bg-pink-950/60' },
-              { label: 'Zero Google Forms', icon: '🏢', color: 'border-emerald-500/40 text-emerald-200 bg-emerald-950/60' },
-              { label: '1-Click Campus Apply', icon: '⚡', color: 'border-amber-500/40 text-amber-200 bg-amber-950/60' },
-              { label: 'Real-Time Recruiter Shortlists', icon: '📊', color: 'border-purple-500/40 text-purple-200 bg-purple-950/60' },
+              { label: 'Explainable TreeSHAP ML', icon: '🎯', color: 'border-rose-500/50 text-rose-100 bg-[#0e0611]/92' },
+              { label: 'SVAR Voice AI & Aptitude', icon: '🎙️', color: 'border-pink-500/50 text-pink-100 bg-[#0e0611]/92' },
+              { label: 'Zero Google Forms', icon: '🏢', color: 'border-emerald-500/50 text-emerald-100 bg-[#0e0611]/92' },
+              { label: '1-Click Campus Apply', icon: '⚡', color: 'border-amber-500/50 text-amber-100 bg-[#0e0611]/92' },
+              { label: 'Real-Time Recruiter Shortlists', icon: '📊', color: 'border-purple-500/50 text-purple-100 bg-[#0e0611]/92' },
             ].map((item) => (
               <div
                 key={item.label}
-                className={`inline-flex items-center gap-1.5 text-xs px-3.5 py-1.5 rounded-xl border backdrop-blur-md transition-all duration-200 hover:-translate-y-0.5 hover:scale-[1.02] shadow-sm cursor-default ${item.color}`}
+                className={`inline-flex items-center gap-1.5 text-xs px-3.5 py-1.5 rounded-xl border backdrop-blur-xl transition-all duration-200 hover:-translate-y-0.5 hover:scale-[1.02] shadow-xl shadow-black/70 cursor-default ${item.color}`}
               >
                 <span>{item.icon}</span>
-                <span className="font-medium">{item.label}</span>
+                <span className="font-semibold">{item.label}</span>
               </div>
             ))}
           </div>
