@@ -18,16 +18,16 @@ export const Navbar: React.FC<NavbarProps> = ({
   const { user, isAuthenticated, logout } = useAuth();
 
   return (
-    <header className="sticky top-0 z-40 backdrop-blur-md bg-slate-950/80 border-b border-slate-800/80">
+    <header className="sticky top-0 z-40 backdrop-blur-md bg-[#0c060d]/90 border-b border-rose-950/60">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
         {/* Brand */}
         <div className="flex items-center space-x-3">
-          <div className="h-10 w-10 rounded-xl bg-gradient-to-tr from-indigo-500 via-indigo-600 to-purple-600 flex items-center justify-center shadow-lg shadow-indigo-500/20 ring-1 ring-white/20">
+          <div className="h-10 w-10 rounded-xl bg-gradient-to-tr from-rose-500 via-rose-600 to-pink-600 flex items-center justify-center shadow-lg shadow-rose-500/25 ring-1 ring-white/20">
             <Sparkles className="h-5 w-5 text-white" />
           </div>
           <div>
             <span className="text-lg font-bold tracking-tight text-white flex items-center gap-1.5">
-              HireMatrix <span className="text-cyan-400 font-medium text-xs px-2 py-0.5 rounded-full bg-cyan-500/10 border border-cyan-500/20">AI</span>
+              HireMatrix <span className="text-rose-300 font-medium text-xs px-2 py-0.5 rounded-full bg-rose-500/15 border border-rose-500/30">AI</span>
             </span>
             <p className="text-[11px] text-slate-400 hidden sm:block">Campus Placement & Career Intelligence OS</p>
           </div>
@@ -39,9 +39,9 @@ export const Navbar: React.FC<NavbarProps> = ({
           {onNavigateToTour && (
             <button
               onClick={onNavigateToTour}
-              className="inline-flex items-center gap-1.5 text-xs font-semibold text-cyan-300 hover:text-white px-3.5 py-1.5 rounded-xl bg-cyan-950/40 hover:bg-cyan-900/60 border border-cyan-500/30 transition-all duration-200 cursor-pointer shadow-sm hover:shadow-cyan-500/20 hover:-translate-y-0.5 hover:scale-[1.02]"
+              className="inline-flex items-center gap-1.5 text-xs font-semibold text-rose-200 hover:text-white px-3.5 py-1.5 rounded-xl bg-rose-950/40 hover:bg-rose-900/60 border border-rose-500/30 transition-all duration-200 cursor-pointer shadow-sm hover:shadow-rose-500/20 hover:-translate-y-0.5 hover:scale-[1.02]"
             >
-              <Sparkles className="h-3.5 w-3.5 text-cyan-400" />
+              <Sparkles className="h-3.5 w-3.5 text-pink-400" />
               <span>Watch Tour</span>
             </button>
           )}
@@ -66,12 +66,12 @@ export const Navbar: React.FC<NavbarProps> = ({
           {isAuthenticated && user ? (
             <div className="flex items-center gap-2 pl-2 border-l border-slate-800">
               <div className="flex items-center gap-2 px-3 py-1 rounded-xl bg-slate-900 border border-slate-800">
-                <div className="h-7 w-7 rounded-lg bg-indigo-600/30 text-indigo-300 border border-indigo-500/30 flex items-center justify-center font-bold text-xs uppercase">
+                <div className="h-7 w-7 rounded-lg bg-rose-600/30 text-rose-300 border border-rose-500/30 flex items-center justify-center font-bold text-xs uppercase">
                   {user.name.charAt(0)}
                 </div>
                 <div className="hidden sm:block text-left text-xs">
                   <div className="font-semibold text-white leading-tight truncate max-w-[120px]">{user.name}</div>
-                  <div className="text-[10px] text-indigo-400 capitalize">{user.role}</div>
+                  <div className="text-[10px] text-rose-400 capitalize">{user.role}</div>
                 </div>
               </div>
 
@@ -86,7 +86,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           ) : (
             <button
               onClick={onOpenAuth}
-              className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-xl text-xs font-semibold bg-indigo-600 hover:bg-indigo-500 text-white shadow-md shadow-indigo-600/30 transition-all duration-200 hover:-translate-y-0.5 hover:scale-[1.02] cursor-pointer"
+              className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-xl text-xs font-semibold bg-gradient-to-r from-rose-600 to-pink-600 hover:from-rose-500 hover:to-pink-500 text-white shadow-md shadow-rose-600/30 transition-all duration-200 hover:-translate-y-0.5 hover:scale-[1.02] cursor-pointer"
             >
               <LogIn className="w-3.5 h-3.5" />
               <span>Sign In / Register</span>

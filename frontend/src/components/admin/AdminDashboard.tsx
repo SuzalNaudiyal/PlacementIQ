@@ -890,7 +890,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ initialTab = 'dr
             </div>
             <button
               onClick={handleOpenCreateModal}
-              className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-700 hover:from-indigo-500 hover:to-purple-500 text-white rounded-xl text-sm font-semibold transition shadow-lg shadow-indigo-600/30 cursor-pointer"
+              className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-rose-600 via-pink-600 to-rose-600 hover:from-rose-500 hover:to-pink-500 text-white rounded-xl text-sm font-semibold transition shadow-lg shadow-rose-600/30 cursor-pointer"
             >
               <Plus className="w-4 h-4" />
               Upload Visiting Company
@@ -1002,10 +1002,10 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ initialTab = 'dr
                       <div className="flex items-center gap-3">
                         <button
                           onClick={() => handleOpenEditModal(drive)}
-                          className="text-[11px] text-teal-400 hover:text-teal-300 flex items-center gap-1 cursor-pointer font-medium"
+                          className="text-[11px] text-pink-300 hover:text-white px-2.5 py-0.5 rounded-lg bg-pink-950/50 hover:bg-pink-900/60 border border-pink-500/30 flex items-center gap-1 cursor-pointer font-medium transition"
                           title="Edit Company Criteria"
                         >
-                          <Edit3 className="w-3 h-3" />
+                          <Edit3 className="w-3 h-3 text-pink-400" />
                           <span>Edit</span>
                         </button>
                         <button

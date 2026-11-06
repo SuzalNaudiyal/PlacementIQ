@@ -97,13 +97,13 @@ export function UnifiedDashboard({ onNavigate }: UnifiedDashboardProps) {
   return (
     <div className="space-y-8 animate-in fade-in duration-300">
       {/* Executive Welcome Hero */}
-      <div className="p-6 sm:p-8 bg-gradient-to-r from-slate-900 via-indigo-950/30 to-purple-950/20 rounded-3xl border border-indigo-500/20 shadow-xl relative overflow-hidden backdrop-blur-md">
-        <div className="absolute top-0 right-0 w-96 h-96 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
+      <div className="p-6 sm:p-8 bg-gradient-to-r from-slate-900 via-rose-950/30 to-pink-950/20 rounded-3xl border border-rose-500/25 shadow-xl relative overflow-hidden backdrop-blur-md">
+        <div className="absolute top-0 right-0 w-96 h-96 bg-rose-500/10 rounded-full blur-3xl pointer-events-none" />
 
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 relative z-10">
           <div className="space-y-2">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/30 text-indigo-300 text-xs font-semibold">
-              <Sparkles className="w-3.5 h-3.5 text-indigo-400" />
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs font-semibold">
+              <Sparkles className="w-3.5 h-3.5 text-pink-400" />
               <span>Phase 10: Unified Career Intelligence Dashboard</span>
             </div>
             <h1 className="text-2xl sm:text-4xl font-black text-white tracking-tight">
@@ -124,7 +124,7 @@ export function UnifiedDashboard({ onNavigate }: UnifiedDashboardProps) {
             </div>
             <button
               onClick={() => onNavigate('profile')}
-              className="p-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-bold transition flex items-center gap-1 cursor-pointer"
+              className="p-2.5 bg-gradient-to-r from-rose-600 to-pink-600 hover:from-rose-500 hover:to-pink-500 text-white rounded-xl text-xs font-bold transition flex items-center gap-1 cursor-pointer shadow-md shadow-rose-600/20"
               title="Edit Profile"
             >
               Update
@@ -139,7 +139,7 @@ export function UnifiedDashboard({ onNavigate }: UnifiedDashboardProps) {
         {/* KPI 1: ML Placement Likelihood */}
         <div
           onClick={() => onNavigate('prediction')}
-          className="p-5 bg-slate-900/60 rounded-3xl border border-indigo-500/30 hover:border-indigo-400 transition-all duration-200 cursor-pointer shadow-md hover:shadow-xl hover:shadow-indigo-500/10 hover:-translate-y-1 hover:scale-[1.02] flex flex-col justify-between group"
+          className="p-5 bg-slate-900/60 rounded-3xl border border-rose-500/30 hover:border-rose-400 transition-all duration-200 cursor-pointer shadow-md hover:shadow-xl hover:shadow-rose-500/10 hover:-translate-y-1 hover:scale-[1.02] flex flex-col justify-between group"
         >
           <div className="flex items-center justify-between text-slate-400 text-xs font-semibold">
             <span>Placement Odds</span>

@@ -97,8 +97,8 @@ const PILLARS: Pillar[] = [
         label: 'Platform Overview & Telemetry',
         shortLabel: 'Overview',
         icon: LayoutDashboard,
-        color: 'text-indigo-400',
-        activeBg: 'bg-indigo-600 text-white shadow-md shadow-indigo-600/30',
+        color: 'text-rose-400',
+        activeBg: 'bg-gradient-to-r from-rose-600 to-pink-600 text-white shadow-md shadow-rose-600/30',
         phaseLabel: 'Unified Career Telemetry & System Health',
       },
       {
@@ -144,8 +144,8 @@ const PILLARS: Pillar[] = [
         label: 'Aptitude & SVAR Voice Assessment',
         shortLabel: 'Aptitude & SVAR',
         icon: Brain,
-        color: 'text-indigo-400',
-        activeBg: 'bg-indigo-600 text-white shadow-md shadow-indigo-600/30',
+        color: 'text-pink-400',
+        activeBg: 'bg-gradient-to-r from-rose-600 to-pink-600 text-white shadow-md shadow-rose-600/30',
         badge: 'NEW',
         requiresAuth: true,
         phaseLabel: 'Phase 19: SVAR Voice English & Multi-Section Company PYQs',
@@ -175,8 +175,8 @@ const PILLARS: Pillar[] = [
         label: 'Company Prep Cheat Sheets',
         shortLabel: 'Company Cheat Sheets',
         icon: BookOpen,
-        color: 'text-indigo-400',
-        activeBg: 'bg-indigo-600 text-white shadow-md shadow-indigo-600/30',
+        color: 'text-rose-300',
+        activeBg: 'bg-gradient-to-r from-rose-600 to-purple-600 text-white shadow-md shadow-rose-600/30',
         requiresAuth: true,
         phaseLabel: 'Phase 18: Tier-1 Company Interview Intelligence',
       },
@@ -401,7 +401,7 @@ function DashboardContent() {
   const isBackendOnline = healthData !== null && error === null;
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col selection:bg-indigo-500/30 selection:text-indigo-200 relative overflow-x-hidden">
+    <div className="min-h-screen bg-[#0c060d] text-slate-100 flex flex-col selection:bg-rose-500/35 selection:text-rose-200 relative overflow-x-hidden">
       {/* Sticky Top Scroll Progress Glow Line */}
       <div
         className="scroll-progress-line"
@@ -411,8 +411,8 @@ function DashboardContent() {
 
       {/* Background Animated Glow Orbs & Cyber-Grid */}
       <div className="fixed inset-0 cyber-grid pointer-events-none z-0 opacity-40" />
-      <div className="absolute top-10 left-1/4 w-96 h-96 bg-indigo-600/10 rounded-full blur-3xl pointer-events-none animate-pulse-glow" />
-      <div className="absolute top-40 right-1/4 w-80 h-80 bg-purple-600/10 rounded-full blur-3xl pointer-events-none animate-float-slow" />
+      <div className="absolute top-10 left-1/4 w-96 h-96 bg-rose-600/15 rounded-full blur-3xl pointer-events-none animate-pulse-glow" />
+      <div className="absolute top-40 right-1/4 w-80 h-80 bg-pink-600/15 rounded-full blur-3xl pointer-events-none animate-float-slow" />
 
       {/* Navigation Header */}
       <Navbar
@@ -426,13 +426,13 @@ function DashboardContent() {
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 pt-6 pb-16 relative z-10">
         {/* Authenticated Candidate Status Card */}
         {isAuthenticated && user && (
-          <div className="mb-6 p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-slate-900/90 via-indigo-950/40 to-slate-900/90 border border-indigo-500/20 shadow-xl shadow-indigo-950/20 backdrop-blur-md flex flex-col md:flex-row md:items-center justify-between gap-4 animate-in fade-in slide-in-from-top-2 duration-300">
+          <div className="mb-6 p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-rose-950/40 via-slate-900/90 to-pink-950/30 border border-rose-500/25 shadow-xl shadow-rose-950/30 backdrop-blur-md flex flex-col md:flex-row md:items-center justify-between gap-4 animate-in fade-in slide-in-from-top-2 duration-300">
             <div className="flex items-center space-x-3.5">
               <div className="relative">
-                <div className="h-11 w-11 rounded-xl bg-gradient-to-tr from-indigo-500 to-purple-600 flex items-center justify-center font-bold text-white shadow-md ring-2 ring-indigo-500/30">
-                  {user.role === 'admin' ? <Shield className="w-5 h-5 text-rose-200" /> : <User className="w-5 h-5 text-indigo-100" />}
+                <div className="h-11 w-11 rounded-xl bg-gradient-to-tr from-rose-500 via-rose-600 to-pink-600 flex items-center justify-center font-bold text-white shadow-md ring-2 ring-rose-500/30">
+                  {user.role === 'admin' ? <Shield className="w-5 h-5 text-rose-100" /> : <User className="w-5 h-5 text-pink-100" />}
                 </div>
-                <span className="absolute -bottom-1 -right-1 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-slate-950">
+                <span className="absolute -bottom-1 -right-1 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-[#0c060d]">
                   <span className="h-2 w-2 rounded-full bg-emerald-400 ring-2 ring-emerald-500/50"></span>
                 </span>
               </div>
@@ -441,8 +441,8 @@ function DashboardContent() {
                   <span className="text-sm font-bold text-white tracking-tight">Welcome, {user.name}</span>
                   <span className={`px-2 py-0.5 rounded text-[10px] font-mono font-semibold uppercase border ${
                     user.role === 'admin' 
-                      ? 'bg-rose-500/10 text-rose-300 border-rose-500/30' 
-                      : 'bg-indigo-500/10 text-indigo-300 border-indigo-500/30'
+                      ? 'bg-rose-500/15 text-rose-300 border-rose-500/30' 
+                      : 'bg-rose-500/10 text-rose-300 border-rose-500/30'
                   }`}>
                     {user.role === 'admin' ? 'DCPD TPO Administrator' : 'Student Session'}
                   </span>
@@ -460,7 +460,7 @@ function DashboardContent() {
                     </>
                   ) : (
                     <>
-                      <span>Candidate: <code className="text-indigo-300 font-mono">{user.email}</code></span>
+                      <span>Candidate: <code className="text-rose-300 font-mono">{user.email}</code></span>
                       <span className="text-slate-600">•</span>
                       <span className="text-slate-400">HireMatrix Enterprise Workspace</span>
                     </>
@@ -477,8 +477,8 @@ function DashboardContent() {
                     onClick={() => navigateToView('admin')}
                     className={`px-3.5 py-1.5 text-xs font-semibold rounded-xl transition-all duration-200 cursor-pointer flex items-center gap-1.5 hover:-translate-y-0.5 hover:scale-[1.02] ${
                       activeView === 'admin'
-                        ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/30'
-                        : 'text-indigo-300 hover:text-white bg-indigo-950/40 hover:bg-indigo-900/60 border border-indigo-500/30'
+                        ? 'bg-gradient-to-r from-rose-600 to-pink-600 text-white shadow-md shadow-rose-600/30'
+                        : 'text-rose-300 hover:text-white bg-rose-950/40 hover:bg-rose-900/60 border border-rose-500/30'
                     }`}
                   >
                     <Building2 className="w-3.5 h-3.5" />
@@ -488,8 +488,8 @@ function DashboardContent() {
                     onClick={() => navigateToView('explainer')}
                     className={`px-3.5 py-1.5 text-xs font-semibold rounded-xl transition-all duration-200 cursor-pointer flex items-center gap-1.5 hover:-translate-y-0.5 hover:scale-[1.02] ${
                       activeView === 'explainer'
-                        ? 'bg-cyan-600 text-white shadow-md shadow-cyan-600/30'
-                        : 'text-cyan-300 hover:text-white bg-cyan-950/40 hover:bg-cyan-900/60 border border-cyan-500/30'
+                        ? 'bg-gradient-to-r from-rose-600 to-pink-600 text-white shadow-md shadow-rose-600/30'
+                        : 'text-rose-300 hover:text-white bg-rose-950/40 hover:bg-rose-900/60 border border-rose-500/30'
                     }`}
                   >
                     <Sparkles className="w-3.5 h-3.5" />
@@ -513,8 +513,8 @@ function DashboardContent() {
                     onClick={() => navigateToView('prediction')}
                     className={`px-3.5 py-1.5 text-xs font-medium rounded-xl transition-all duration-200 cursor-pointer flex items-center gap-1.5 hover:-translate-y-0.5 hover:scale-[1.02] ${
                       activeView === 'prediction'
-                        ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/30'
-                        : 'text-indigo-300 hover:text-white bg-indigo-950/40 hover:bg-indigo-900/60 border border-indigo-500/30'
+                        ? 'bg-gradient-to-r from-rose-600 to-pink-600 text-white shadow-md shadow-rose-600/30'
+                        : 'text-rose-300 hover:text-white bg-rose-950/40 hover:bg-rose-900/60 border border-rose-500/30'
                     }`}
                   >
                     <Zap className="w-3.5 h-3.5 text-amber-400" />
@@ -524,11 +524,11 @@ function DashboardContent() {
                     onClick={() => navigateToView('assessments')}
                     className={`px-3.5 py-1.5 text-xs font-medium rounded-xl transition-all duration-200 cursor-pointer flex items-center gap-1.5 hover:-translate-y-0.5 hover:scale-[1.02] ${
                       activeView === 'assessments'
-                        ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/30'
-                        : 'text-indigo-300 hover:text-white bg-indigo-950/40 hover:bg-indigo-900/60 border border-indigo-500/30'
+                        ? 'bg-gradient-to-r from-rose-600 to-pink-600 text-white shadow-md shadow-rose-600/30'
+                        : 'text-rose-300 hover:text-white bg-rose-950/40 hover:bg-rose-900/60 border border-rose-500/30'
                     }`}
                   >
-                    <Brain className="w-3.5 h-3.5 text-cyan-400" />
+                    <Brain className="w-3.5 h-3.5 text-pink-400" />
                     <span>Assessment</span>
                   </button>
                 </>
@@ -567,15 +567,15 @@ function DashboardContent() {
                   }}
                   className={`group relative flex items-center gap-3 p-3.5 sm:p-4 rounded-2xl transition-all duration-300 cursor-pointer text-left ${
                     isPillarActive
-                      ? 'bg-gradient-to-br from-indigo-950/70 via-slate-900/90 to-slate-900 border border-indigo-500/60 text-white shadow-xl shadow-indigo-500/15 ring-1 ring-indigo-500/30 -translate-y-0.5'
-                      : 'bg-slate-900/75 hover:bg-slate-800/85 border border-slate-800/80 hover:border-slate-700/90 text-slate-300 hover:text-white shadow-md hover:shadow-xl hover:shadow-indigo-500/10 hover:-translate-y-1 hover:scale-[1.02]'
+                      ? 'bg-gradient-to-br from-rose-950/70 via-slate-900/90 to-rose-950/80 border border-rose-500/60 text-white shadow-xl shadow-rose-500/20 ring-1 ring-rose-500/30 -translate-y-0.5'
+                      : 'bg-slate-900/75 hover:bg-slate-800/85 border border-slate-800/80 hover:border-rose-900/40 text-slate-300 hover:text-white shadow-md hover:shadow-xl hover:shadow-rose-500/10 hover:-translate-y-1 hover:scale-[1.02]'
                   }`}
                 >
                   <div
                     className={`p-2.5 rounded-xl shrink-0 transition-transform duration-200 group-hover:scale-110 ${
                       isPillarActive
-                        ? 'bg-gradient-to-br from-indigo-600 to-indigo-700 text-white shadow-md shadow-indigo-600/30 ring-1 ring-indigo-400/40'
-                        : 'bg-slate-800/90 text-indigo-400 group-hover:bg-indigo-600/20 group-hover:text-indigo-300 border border-slate-700/60'
+                        ? 'bg-gradient-to-br from-rose-600 to-pink-600 text-white shadow-md shadow-rose-600/30 ring-1 ring-rose-400/40'
+                        : 'bg-slate-800/90 text-rose-300 group-hover:bg-rose-600/20 group-hover:text-rose-200 border border-slate-700/60'
                     }`}
                   >
                     <PillarIcon className="w-4 h-4 sm:w-5 sm:h-5" />
@@ -588,8 +588,8 @@ function DashboardContent() {
                       <span
                         className={`text-[10px] font-mono font-semibold px-2 py-0.5 rounded-full shrink-0 ${
                           isPillarActive
-                            ? 'bg-indigo-500/30 text-indigo-200 border border-indigo-400/30'
-                            : 'bg-slate-800 text-slate-400 group-hover:text-slate-300 border border-slate-700/60'
+                            ? 'bg-rose-500/30 text-rose-200 border border-rose-400/30'
+                            : 'bg-slate-800 text-slate-400 group-hover:text-rose-200 border border-slate-700/60'
                         }`}
                       >
                         {pillar.tools.length}
@@ -605,7 +605,7 @@ function DashboardContent() {
           </div>
 
           {/* Tier 2: Contextual Sub-Tool Ribbon */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-2.5 bg-slate-900/60 border border-slate-800/70 rounded-2xl backdrop-blur-md shadow-lg">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-2.5 bg-slate-900/60 border border-rose-950/40 rounded-2xl backdrop-blur-md shadow-lg">
             <div className="flex flex-wrap items-center gap-2">
               {currentPillar.tools.map((tool) => {
                 const isToolActive = activeView === tool.id;
@@ -726,9 +726,9 @@ function DashboardContent() {
         <button
           onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
           aria-label="Scroll back to top"
-          className="back-to-top-btn flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-900/90 hover:bg-slate-800 border border-indigo-500/30 text-indigo-300 hover:text-white shadow-xl shadow-indigo-950/40 backdrop-blur-md text-xs font-semibold cursor-pointer animate-in fade-in slide-in-from-bottom-2 hover:scale-105"
+          className="back-to-top-btn flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-900/90 hover:bg-slate-800 border border-rose-500/30 text-rose-300 hover:text-white shadow-xl shadow-rose-950/40 backdrop-blur-md text-xs font-semibold cursor-pointer animate-in fade-in slide-in-from-bottom-2 hover:scale-105"
         >
-          <ArrowUp className="w-3.5 h-3.5 text-cyan-400" />
+          <ArrowUp className="w-3.5 h-3.5 text-pink-400" />
           <span className="hidden sm:inline">Top</span>
         </button>
       )}

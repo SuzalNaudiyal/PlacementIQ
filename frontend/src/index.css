@@ -2,8 +2,8 @@
 
 @layer base {
   :root {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
+    --background: 330 30% 4.5%;
+    --foreground: 330 20% 98%;
   }
 
   * {
@@ -12,12 +12,37 @@
     padding: 0;
   }
 
+  ::selection {
+    background-color: rgba(244, 63, 94, 0.35);
+    color: #fecdd3;
+  }
+
   body {
-    background-color: #07090e;
-    color: #f1f5f9;
+    background-color: #0c060d;
+    color: #fce4ef;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
     min-height: 100vh;
     overflow-x: hidden;
+  }
+
+  /* Custom Rose-Tinted Sleek Scrollbar */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: #0c060d;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: #3a1024;
+    border-radius: 9999px;
+    border: 2px solid #0c060d;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: #881337;
   }
 }
 
@@ -91,16 +116,16 @@
 
 @keyframes badgeGlowSweep {
   0%, 100% {
-    box-shadow: 0 0 15px rgba(99, 102, 241, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    box-shadow: 0 0 15px rgba(244, 63, 94, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.1);
   }
   50% {
-    box-shadow: 0 0 25px rgba(34, 211, 238, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    box-shadow: 0 0 25px rgba(236, 72, 153, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.2);
   }
 }
 
-/* Hero Title Vibrant Multicolored Flow */
+/* Hero Title Vibrant Pinky / Rose Gradient Flow */
 .hero-title-gradient {
-  background: linear-gradient(135deg, #ffffff 0%, #c7d2fe 22%, #38bdf8 45%, #a855f7 70%, #ffffff 100%);
+  background: linear-gradient(135deg, #ffffff 0%, #fecdd3 22%, #fb7185 45%, #f43f5e 70%, #fda4af 100%);
   background-size: 250% 250%;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -108,16 +133,16 @@
   display: inline-block;
 }
 
-/* Glowing Aura Behind Hero Title */
+/* Glowing Aura Behind Hero Title - Rose / Pink Ambiance */
 .title-aura {
   position: absolute;
   top: 50%;
   left: 50%;
-  width: 540px;
+  width: 560px;
   max-width: 90vw;
-  height: 240px;
+  height: 250px;
   transform: translate(-50%, -50%);
-  background: radial-gradient(ellipse, rgba(99, 102, 241, 0.38) 0%, rgba(56, 189, 248, 0.2) 45%, transparent 70%);
+  background: radial-gradient(ellipse, rgba(244, 63, 94, 0.35) 0%, rgba(236, 72, 153, 0.22) 45%, transparent 70%);
   filter: blur(52px);
   pointer-events: none;
   animation: titleAuraPulse 6s ease-in-out infinite;
@@ -126,10 +151,10 @@
 
 @keyframes heroGlowSweep {
   0%, 100% {
-    filter: drop-shadow(0 0 20px rgba(99, 102, 241, 0.35));
+    filter: drop-shadow(0 0 22px rgba(244, 63, 94, 0.4));
   }
   50% {
-    filter: drop-shadow(0 0 35px rgba(56, 189, 248, 0.55));
+    filter: drop-shadow(0 0 38px rgba(236, 72, 153, 0.6));
   }
 }
 
@@ -158,23 +183,23 @@
   animation: badgeGlowSweep 3.5s ease-in-out infinite;
 }
 
-/* Background Cyber Mesh Grid */
+/* Background Cyber Mesh Grid with subtle Rose Wine tint */
 .cyber-grid {
   background-image: 
-    linear-gradient(to right, rgba(255, 255, 255, 0.035) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(255, 255, 255, 0.035) 1px, transparent 1px);
+    linear-gradient(to right, rgba(244, 114, 182, 0.04) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(244, 114, 182, 0.04) 1px, transparent 1px);
   background-size: 36px 36px;
   mask-image: radial-gradient(ellipse 65% 55% at 50% 30%, #000 60%, transparent 100%);
   -webkit-mask-image: radial-gradient(ellipse 65% 55% at 50% 30%, #000 60%, transparent 100%);
 }
 
-/* Glassmorphism Cards */
+/* Glassmorphism Cards with Rose Obsidian Tone */
 .glass-card {
-  background: rgba(15, 23, 42, 0.65);
+  background: rgba(22, 10, 21, 0.72);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.5), inset 0 1px 0 0 rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(244, 114, 182, 0.12);
+  box-shadow: 0 20px 40px -15px rgba(12, 3, 11, 0.65), inset 0 1px 0 0 rgba(255, 255, 255, 0.08);
 }
 
 .glass-card-hover {
@@ -183,8 +208,8 @@
 
 .glass-card-hover:hover {
   transform: translateY(-6px);
-  border-color: rgba(99, 102, 241, 0.45);
-  box-shadow: 0 24px 48px -12px rgba(99, 102, 241, 0.3), inset 0 1px 0 0 rgba(255, 255, 255, 0.2);
+  border-color: rgba(244, 63, 94, 0.45);
+  box-shadow: 0 24px 48px -12px rgba(244, 63, 94, 0.28), inset 0 1px 0 0 rgba(255, 255, 255, 0.15);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -211,14 +236,14 @@
 .reveal-delay-5 { transition-delay: 400ms; }
 .reveal-delay-6 { transition-delay: 480ms; }
 
-/* Sticky Top Scroll Progress Bar */
+/* Sticky Top Scroll Progress Bar - Glowing Rose to Pink */
 .scroll-progress-line {
   position: fixed;
   top: 0;
   left: 0;
   height: 3px;
-  background: linear-gradient(90deg, #22d3ee 0%, #6366f1 50%, #a855f7 100%);
-  box-shadow: 0 0 12px rgba(34, 211, 238, 0.75);
+  background: linear-gradient(90deg, #f43f5e 0%, #ec4899 50%, #d946ef 100%);
+  box-shadow: 0 0 14px rgba(244, 63, 94, 0.8);
   z-index: 100;
   transition: width 0.08s ease-out;
   pointer-events: none;

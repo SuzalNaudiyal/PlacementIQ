@@ -66,8 +66,8 @@ export const FeatureGrid: React.FC<FeatureGridProps> = ({ onSelectFeature }) => 
   return (
     <div className="py-12 relative z-10">
       <div className="text-center max-w-3xl mx-auto mb-12 reveal-on-scroll">
-        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-900 border border-slate-800 text-slate-400 text-xs font-semibold mb-3">
-          <span className="w-1.5 h-1.5 rounded-full bg-indigo-400"></span>
+        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-900 border border-rose-950/80 text-rose-300 text-xs font-semibold mb-3">
+          <span className="w-1.5 h-1.5 rounded-full bg-rose-400"></span>
           <span>Unified Placement Operating System</span>
         </div>
         <h2 className="text-2xl sm:text-3xl font-bold text-white tracking-tight">
@@ -97,7 +97,7 @@ export const FeatureGrid: React.FC<FeatureGridProps> = ({ onSelectFeature }) => 
                     {feature.badge}
                   </span>
                 </div>
-                <h3 className="text-lg font-bold text-white group-hover:text-indigo-300 transition-colors">
+                <h3 className="text-lg font-bold text-white group-hover:text-rose-300 transition-colors">
                   {feature.title}
                 </h3>
                 <p className="mt-2 text-sm text-slate-300 leading-relaxed">
@@ -107,7 +107,7 @@ export const FeatureGrid: React.FC<FeatureGridProps> = ({ onSelectFeature }) => 
 
               <div className="mt-5 pt-4 border-t border-slate-800/80 flex items-center justify-between text-xs">
                 <span className="text-emerald-400 font-medium">{feature.highlight}</span>
-                <span className="text-indigo-400 font-semibold group-hover:translate-x-1 transition-transform flex items-center gap-1">
+                <span className="text-rose-400 font-semibold group-hover:translate-x-1 transition-transform flex items-center gap-1">
                   <span>Explore</span>
                   <ArrowRight className="w-3.5 h-3.5" />
                 </span>

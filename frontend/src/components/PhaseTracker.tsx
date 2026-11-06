@@ -26,7 +26,7 @@ export const PhaseTracker: React.FC = () => {
       <div className="max-w-7xl mx-auto">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-8">
           <div>
-            <span className="text-xs font-semibold uppercase tracking-wider text-indigo-400">Engineering Roadmap</span>
+            <span className="text-xs font-semibold uppercase tracking-wider text-rose-400">Engineering Roadmap</span>
             <h2 className="text-xl sm:text-2xl font-bold text-white mt-1">Phased Implementation Strategy</h2>
           </div>
           <p className="text-xs text-slate-400 max-w-sm mt-2 sm:mt-0">

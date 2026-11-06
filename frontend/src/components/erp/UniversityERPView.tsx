@@ -272,14 +272,14 @@ export const UniversityERPView: React.FC = () => {
   return (
     <div className="space-y-8 animate-in fade-in duration-300">
       {/* Hero Header Card */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-emerald-950/60 via-slate-900/90 to-indigo-950/60 border border-emerald-500/30 p-6 md:p-8 backdrop-blur-md shadow-xl shadow-emerald-950/20">
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-rose-950/40 via-slate-900/90 to-pink-950/30 border border-rose-500/30 p-6 md:p-8 backdrop-blur-md shadow-xl shadow-rose-950/20">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div>
             <div className="flex items-center gap-2 mb-2">
-              <span className="px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 font-mono">
+              <span className="px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-rose-500/20 text-rose-300 border border-rose-500/30 font-mono">
                 {isAdmin ? 'Phase 17: University ERP & Roster Sync' : 'Phase 17: Campus Placement Drives'}
               </span>
-              <span className="flex items-center gap-1 text-[11px] font-medium text-indigo-400 bg-indigo-950/50 px-2 py-0.5 rounded-full border border-indigo-500/30">
+              <span className="flex items-center gap-1 text-[11px] font-medium text-pink-300 bg-pink-950/50 px-2 py-0.5 rounded-full border border-pink-500/30">
                 <Building2 className="w-3 h-3" />
                 {isAdmin ? 'Institutional Placement Portal' : 'Student Placement Portal'}
               </span>
@@ -301,7 +301,7 @@ export const UniversityERPView: React.FC = () => {
                 onClick={() => setActiveTab('drives')}
                 className={`px-3.5 py-2 rounded-lg text-xs font-semibold transition cursor-pointer flex items-center gap-1.5 ${
                   activeTab === 'drives'
-                    ? 'bg-emerald-600 text-white shadow-sm'
+                    ? 'bg-rose-600 text-white shadow-sm shadow-rose-600/30'
                     : 'text-slate-400 hover:text-white'
                 }`}
               >
@@ -312,7 +312,7 @@ export const UniversityERPView: React.FC = () => {
                 onClick={() => setActiveTab('alerts')}
                 className={`px-3.5 py-2 rounded-lg text-xs font-semibold transition cursor-pointer flex items-center gap-1.5 ${
                   activeTab === 'alerts'
-                    ? 'bg-teal-600 text-white shadow-sm'
+                    ? 'bg-gradient-to-r from-rose-600 to-pink-600 text-white shadow-sm shadow-rose-600/30'
                     : 'text-slate-400 hover:text-white'
                 }`}
               >
@@ -323,7 +323,7 @@ export const UniversityERPView: React.FC = () => {
                 onClick={() => setActiveTab('roster_sync')}
                 className={`px-3.5 py-2 rounded-lg text-xs font-semibold transition cursor-pointer flex items-center gap-1.5 ${
                   activeTab === 'roster_sync'
-                    ? 'bg-indigo-600 text-white shadow-sm'
+                    ? 'bg-purple-600 text-white shadow-sm'
                     : 'text-slate-400 hover:text-white'
                 }`}
               >
@@ -333,8 +333,8 @@ export const UniversityERPView: React.FC = () => {
             </div>
           ) : (
             <div className="flex items-center gap-2">
-              <div className="px-3.5 py-2 rounded-xl bg-slate-950/80 border border-emerald-500/30 text-emerald-300 text-xs font-semibold flex items-center gap-2 shadow-inner">
-                <Briefcase className="w-4 h-4 text-emerald-400" />
+              <div className="px-3.5 py-2 rounded-xl bg-slate-950/80 border border-rose-500/30 text-rose-300 text-xs font-semibold flex items-center gap-2 shadow-inner">
+                <Briefcase className="w-4 h-4 text-pink-400" />
                 <span>Verified Drives: <strong className="text-white">{studentDrives.length} Available</strong></span>
               </div>
             </div>
@@ -499,7 +499,7 @@ export const UniversityERPView: React.FC = () => {
                       ) : drive.is_eligible ? (
                         <button
                           onClick={() => handleApply(drive.drive_id)}
-                          className="w-full py-2.5 px-4 rounded-xl font-bold text-xs bg-indigo-600 hover:bg-indigo-500 text-white shadow-md shadow-indigo-900/20 transition flex items-center justify-center gap-2 cursor-pointer"
+                          className="w-full py-2.5 px-4 rounded-xl font-bold text-xs bg-gradient-to-r from-rose-600 via-pink-600 to-rose-600 hover:from-rose-500 hover:to-pink-500 text-white shadow-md shadow-rose-900/30 transition flex items-center justify-center gap-2 cursor-pointer"
                         >
                           <Send className="w-3.5 h-3.5" />
                           1-Click Apply for Drive

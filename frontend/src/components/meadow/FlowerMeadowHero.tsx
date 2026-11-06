@@ -8,7 +8,7 @@ import { Sparkles, ArrowRight } from 'lucide-react';
 
 const MEADOW_COLORS = {
   flowers: ["#14050d", "#3a0f28", "#74275a", "#9a4c82", "#d988b4", "#fce4ef", "#ffffff"],
-  sky: "#12142e",
+  sky: "#120816",
   straw: ["#3b3528", "#6f6650"]
 };
 
@@ -669,8 +669,8 @@ export const FlowerMeadowHero: React.FC<FlowerMeadowHeroProps> = ({
         <div className="relative z-10 max-w-4xl mx-auto flex flex-col items-center text-center">
           {/* Top Pill Badge */}
           <div className="mb-4 flex justify-center w-full">
-            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-indigo-500/15 border border-indigo-400/30 text-indigo-200 text-xs font-semibold shadow-md backdrop-blur-md animate-float">
-              <Sparkles className="w-3.5 h-3.5 text-cyan-400" />
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-rose-500/15 border border-rose-400/30 text-rose-200 text-xs font-semibold shadow-md backdrop-blur-md animate-float">
+              <Sparkles className="w-3.5 h-3.5 text-pink-400" />
               <span>AI Career Intelligence & Placement Readiness OS</span>
             </div>
           </div>
@@ -682,10 +682,10 @@ export const FlowerMeadowHero: React.FC<FlowerMeadowHeroProps> = ({
               <span className="hero-title-gradient hover:scale-[1.02] transition-transform duration-300 cursor-default select-none">
                 HireMatrix
               </span>{' '}
-              <span className="relative inline-flex items-center gap-2 px-3 sm:px-4 py-0.5 sm:py-1 rounded-2xl bg-gradient-to-r from-indigo-500/20 via-purple-500/25 to-pink-500/20 border border-indigo-400/40 shadow-lg shadow-indigo-500/30 backdrop-blur-md align-middle text-2xl sm:text-4xl lg:text-5xl text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 via-indigo-200 to-purple-300 animate-text-shimmer">
+              <span className="relative inline-flex items-center gap-2 px-3 sm:px-4 py-0.5 sm:py-1 rounded-2xl bg-gradient-to-r from-rose-500/25 via-pink-500/30 to-purple-500/25 border border-rose-400/40 shadow-lg shadow-rose-500/30 backdrop-blur-md align-middle text-2xl sm:text-4xl lg:text-5xl text-transparent bg-clip-text bg-gradient-to-r from-pink-200 via-rose-200 to-purple-200 animate-text-shimmer">
                 <span className="absolute -top-1 -right-1 flex h-3 w-3">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75"></span>
-                  <span className="relative inline-flex rounded-full h-3 w-3 bg-cyan-500"></span>
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-pink-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-3 w-3 bg-rose-500"></span>
                 </span>
                 AI
               </span>
@@ -693,9 +693,9 @@ export const FlowerMeadowHero: React.FC<FlowerMeadowHeroProps> = ({
           </div>
 
           {/* Subtitle */}
-          <h2 className="mt-2 text-xl sm:text-2xl lg:text-3xl font-bold tracking-tight text-indigo-100 text-center">
+          <h2 className="mt-2 text-xl sm:text-2xl lg:text-3xl font-bold tracking-tight text-rose-100 text-center">
             AI Placement &{' '}
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 via-purple-300 to-pink-400">
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-rose-400 via-pink-300 to-purple-300">
               Skill Gap Analyzer
             </span>
           </h2>
@@ -709,16 +709,16 @@ export const FlowerMeadowHero: React.FC<FlowerMeadowHeroProps> = ({
           <div className="flex flex-wrap items-center justify-center gap-3 mt-7">
             <button
               onClick={onGetStarted}
-              className="px-6 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-sm shadow-xl shadow-indigo-600/30 flex items-center gap-2 transition-all duration-200 cursor-pointer hover:scale-[1.02] hover:-translate-y-0.5"
+              className="px-6 py-3 rounded-xl bg-gradient-to-r from-rose-600 via-pink-600 to-rose-600 hover:from-rose-500 hover:to-pink-500 text-white font-semibold text-sm shadow-xl shadow-rose-600/30 flex items-center gap-2 transition-all duration-200 cursor-pointer hover:scale-[1.02] hover:-translate-y-0.5"
             >
               <span>Get Started (Sign In / Register)</span>
               <ArrowRight className="w-4 h-4" />
             </button>
             <button
               onClick={onWatchTour}
-              className="px-5 py-3 rounded-xl bg-slate-900/90 hover:bg-slate-800 text-cyan-300 border border-cyan-500/40 font-semibold text-sm shadow-xl flex items-center gap-2 transition-all duration-200 cursor-pointer hover:scale-[1.02] hover:-translate-y-0.5 backdrop-blur-md"
+              className="px-5 py-3 rounded-xl bg-slate-900/90 hover:bg-slate-800 text-rose-200 border border-rose-500/40 font-semibold text-sm shadow-xl flex items-center gap-2 transition-all duration-200 cursor-pointer hover:scale-[1.02] hover:-translate-y-0.5 backdrop-blur-md"
             >
-              <Sparkles className="w-4 h-4 text-cyan-400" />
+              <Sparkles className="w-4 h-4 text-pink-400" />
               <span>Watch HireMatrix Tour</span>
             </button>
           </div>
@@ -726,8 +726,8 @@ export const FlowerMeadowHero: React.FC<FlowerMeadowHeroProps> = ({
           {/* Value Proposition Pills */}
           <div className="flex flex-wrap items-center justify-center gap-2.5 mt-8 max-w-2xl">
             {[
-              { label: 'Explainable TreeSHAP ML', icon: '🎯', color: 'border-indigo-500/40 text-indigo-200 bg-indigo-950/60' },
-              { label: 'SVAR Voice AI & Aptitude', icon: '🎙️', color: 'border-cyan-500/40 text-cyan-200 bg-cyan-950/60' },
+              { label: 'Explainable TreeSHAP ML', icon: '🎯', color: 'border-rose-500/40 text-rose-200 bg-rose-950/60' },
+              { label: 'SVAR Voice AI & Aptitude', icon: '🎙️', color: 'border-pink-500/40 text-pink-200 bg-pink-950/60' },
               { label: 'Zero Google Forms', icon: '🏢', color: 'border-emerald-500/40 text-emerald-200 bg-emerald-950/60' },
               { label: '1-Click Campus Apply', icon: '⚡', color: 'border-amber-500/40 text-amber-200 bg-amber-950/60' },
               { label: 'Real-Time Recruiter Shortlists', icon: '📊', color: 'border-purple-500/40 text-purple-200 bg-purple-950/60' },
