@@ -19,6 +19,7 @@ import { CompanyPrepView } from './components/companyprep/CompanyPrepView';
 import { LinkedInOutreachView } from './components/outreach/LinkedInOutreachView';
 import { AssessmentHubView } from './components/assessments/AssessmentHubView';
 import HireMatrixTourModal from './components/HireMatrixTourModal';
+import { FlowerMeadowLanding } from './components/meadow/FlowerMeadowLanding';
 import { CareerCopilotWidget } from './components/copilot/CareerCopilotWidget';
 import { Footer } from './components/Footer';
 import { fetchSystemHealth, pingBackend } from './services/api';
@@ -29,7 +30,6 @@ import {
   ShieldCheck,
   User,
   CheckCircle2,
-  ArrowRight,
   LayoutDashboard,
   UserCheck,
   Zap,
@@ -60,7 +60,8 @@ type ViewId =
   | 'explainer'
   | 'company_prep'
   | 'outreach'
-  | 'assessments';
+  | 'assessments'
+  | 'meadow';
 
 type PillarId = 'intelligence' | 'preparation' | 'placements' | 'governance';
 
@@ -256,6 +257,16 @@ const PILLARS: Pillar[] = [
         requiresAdmin: true,
         phaseLabel: 'Administration & Assessment Telemetry Hub',
       },
+      {
+        id: 'meadow',
+        label: 'Flower Meadow Hero (21st.dev)',
+        shortLabel: 'Flower Meadow',
+        icon: Sparkles,
+        color: 'text-rose-400',
+        activeBg: 'bg-rose-600 text-white shadow-md shadow-rose-600/30',
+        badge: 'NEW',
+        phaseLabel: '21st.dev Fintech Landing Template with Flower Meadow Hero',
+      },
     ],
   },
 ];
@@ -285,6 +296,16 @@ const ADMIN_PILLARS: Pillar[] = [
         color: 'text-cyan-400',
         activeBg: 'bg-cyan-600 text-white shadow-md shadow-cyan-600/30',
         phaseLabel: 'HireMatrix Enterprise Architecture Tour',
+      },
+      {
+        id: 'meadow',
+        label: 'Flower Meadow Hero (21st.dev)',
+        shortLabel: 'Flower Meadow',
+        icon: Sparkles,
+        color: 'text-rose-400',
+        activeBg: 'bg-rose-600 text-white shadow-md shadow-rose-600/30',
+        badge: 'NEW',
+        phaseLabel: '21st.dev Fintech Landing Template with Flower Meadow Hero',
       },
     ],
   },
@@ -420,6 +441,7 @@ function DashboardContent() {
         latency={latency}
         onOpenAuth={() => setIsAuthModalOpen(true)}
         onNavigateToTour={() => setIsTourModalOpen(true)}
+        onNavigateToMeadow={() => navigateToView('meadow')}
       />
 
       {/* Main Container */}
@@ -667,6 +689,25 @@ function DashboardContent() {
               <HireMatrixTourModal isOpen={true} onClose={() => navigateToView('overview')} />
             </div>
           </div>
+        ) : activeView === 'meadow' ? (
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <button
+                onClick={() => navigateToView('overview')}
+                className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-slate-900 border border-slate-800 text-xs text-slate-300 hover:text-white transition cursor-pointer hover:border-slate-700 hover:-translate-y-0.5 hover:scale-[1.02]"
+              >
+                ← Back to Overview
+              </button>
+            </div>
+            <div className="rounded-3xl overflow-hidden border border-slate-800/80 shadow-2xl">
+              <FlowerMeadowLanding
+                mode="career"
+                initialPalette="rose"
+                onGetStarted={() => setIsAuthModalOpen(true)}
+                onWatchTour={() => setIsTourModalOpen(true)}
+              />
+            </div>
+          </div>
         ) : activeView === 'profile' && isAuthenticated ? (
           <ProfileView />
         ) : activeView === 'prediction' && isAuthenticated ? (
@@ -694,96 +735,18 @@ function DashboardContent() {
         ) : isAuthenticated ? (
           <UnifiedDashboard onNavigate={(view) => navigateToView(view as ViewId)} />
         ) : (
-          <>
-            {/* Main Authentic Hero Section: HireMatrix AI */}
-            <div className="max-w-4xl w-full mx-auto mb-14 relative z-10 flex flex-col items-center text-center">
-              {/* Row 1: Pill Badge */}
-              <div className="mb-5 flex justify-center w-full">
-                <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-300 text-xs font-semibold shadow-sm backdrop-blur-md animate-float animate-badge-sweep">
-                  <Sparkles className="w-3.5 h-3.5 text-cyan-400" />
-                  <span>AI Career Intelligence & Placement Readiness SaaS</span>
-                </div>
-              </div>
-
-              {/* Row 2: Glowing Dynamic Hero Title with Aura & Transition */}
-              <div className="relative flex justify-center items-center w-full my-3">
-                <div className="title-aura" aria-hidden="true" />
-                <h1 className="relative text-4xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight leading-tight hero-glow-fx text-center">
-                  <span className="hero-title-gradient hover:scale-[1.02] transition-transform duration-300 cursor-default select-none">
-                    HireMatrix
-                  </span>{' '}
-                  <span className="relative inline-flex items-center gap-2 px-3 sm:px-4 py-0.5 sm:py-1 rounded-2xl bg-gradient-to-r from-indigo-500/20 via-purple-500/25 to-pink-500/20 border border-indigo-400/40 shadow-lg shadow-indigo-500/30 backdrop-blur-md align-middle text-2xl sm:text-4xl lg:text-5xl text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 via-indigo-200 to-purple-300 animate-text-shimmer">
-                    <span className="absolute -top-1 -right-1 flex h-3 w-3">
-                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75"></span>
-                      <span className="relative inline-flex rounded-full h-3 w-3 bg-cyan-500"></span>
-                    </span>
-                    AI
-                  </span>
-                </h1>
-              </div>
-
-              {/* Row 3: Subtitle */}
-              <h2 className="mt-3 text-xl sm:text-2xl lg:text-3xl font-bold tracking-tight text-indigo-200 text-center">
-                AI Placement &{' '}
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 via-purple-300 to-pink-400">
-                  Skill Gap Analyzer
-                </span>
-              </h2>
-
-              {/* Row 4: Description */}
-              <p className="mt-5 text-base sm:text-lg text-slate-300 max-w-2xl mx-auto text-center leading-relaxed">
-                Evaluate placement readiness, parse resumes with NLP, identify missing skills for specific job roles, match against industry opportunities, and follow an explainable 8-week roadmap.
-              </p>
-
-              {/* Row 5: Action Callouts */}
-              <div className="flex flex-wrap items-center justify-center gap-3 mt-7">
-                {!isAuthenticated ? (
-                  <>
-                    <button
-                      onClick={() => setIsAuthModalOpen(true)}
-                      className="px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-sm shadow-lg shadow-indigo-600/30 flex items-center gap-2 transition-all cursor-pointer hover:scale-[1.02]"
-                    >
-                      <span>Get Started (Sign In / Register)</span>
-                      <ArrowRight className="w-4 h-4" />
-                    </button>
-                    <button
-                      onClick={() => setIsTourModalOpen(true)}
-                      className="px-5 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-cyan-300 border border-cyan-500/30 font-semibold text-sm shadow-lg flex items-center gap-2 transition-all cursor-pointer hover:scale-[1.02]"
-                    >
-                      <Sparkles className="w-4 h-4 text-cyan-400" />
-                      <span>Watch HireMatrix Tour</span>
-                    </button>
-                  </>
-                ) : (
-                  <button
-                    onClick={() => navigateToView('profile')}
-                    className="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-sm shadow-lg shadow-emerald-600/30 flex items-center gap-2 transition-all cursor-pointer hover:scale-[1.02]"
-                  >
-                    <span>Go to My Student Profile</span>
-                    <ArrowRight className="w-4 h-4" />
-                  </button>
-                )}
-              </div>
-
-              {/* Row 6: Key Feature Highlights / Value Propositions */}
-              <div className="flex flex-wrap items-center justify-center gap-2.5 mt-7 max-w-2xl">
-                {[
-                  { label: 'Explainable TreeSHAP ML', icon: '🎯', color: 'border-indigo-500/30 text-indigo-200 bg-indigo-950/30' },
-                  { label: 'SVAR Voice AI & Aptitude', icon: '🎙️', color: 'border-cyan-500/30 text-cyan-200 bg-cyan-950/30' },
-                  { label: 'Zero Google Forms', icon: '🏢', color: 'border-emerald-500/30 text-emerald-200 bg-emerald-950/30' },
-                  { label: '1-Click Campus Apply', icon: '⚡', color: 'border-amber-500/30 text-amber-200 bg-amber-950/30' },
-                  { label: 'Real-Time Recruiter Shortlists', icon: '📊', color: 'border-purple-500/30 text-purple-200 bg-purple-950/30' },
-                ].map((item) => (
-                  <div
-                    key={item.label}
-                    className={`inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-xl border backdrop-blur-sm transition-all duration-200 hover:-translate-y-0.5 hover:scale-[1.02] shadow-sm cursor-default ${item.color}`}
-                  >
-                    <span>{item.icon}</span>
-                    <span className="font-medium">{item.label}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
+          <div className="space-y-12">
+            {/* 21st.dev Fintech Landing Page Template with Flower Meadow Hero */}
+            <FlowerMeadowLanding
+              mode="career"
+              initialPalette="rose"
+              onGetStarted={() => setIsAuthModalOpen(true)}
+              onWatchTour={() => setIsTourModalOpen(true)}
+              onExploreFeatures={() => {
+                const el = document.getElementById('features');
+                el?.scrollIntoView({ behavior: 'smooth' });
+              }}
+            />
 
             {/* Live Backend Telemetry Widget */}
             <div className="mb-14 reveal-on-scroll">
@@ -801,7 +764,7 @@ function DashboardContent() {
 
             {/* Project Roadmap & Phase Tracker */}
             <PhaseTracker />
-          </>
+          </div>
         )}
       </main>
 
